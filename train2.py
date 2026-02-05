@@ -1,19 +1,25 @@
+import os
+import sys
+import json
+import pickle
+import argparse
+from enum import Enum
+from typing import Tuple, Optional, Union
+
 import torch
 import torch.nn as nn
 from torch.nn import functional as nnf
 from torch.utils.data import Dataset, DataLoader
-from enum import Enum
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, AdamW, get_linear_schedule_with_warmup
 from tqdm import tqdm
-import os
-import pickle
-import sys
-import argparse
-import json
-from typing import Tuple, Optional, Union
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
+# =========================
+# Optional: comment these out if you want CPU-only and avoid any CUDA probing
+# =========================
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 class MappingType(Enum):
     MLP = 'mlp'
@@ -21,6 +27,46 @@ class MappingType(Enum):
 
 
 class ClipCocoDataset(Dataset):
+    def __init__(self, data_path: str, prefix_length: int, gpt2_type: str = "gpt2",
+                 normalize_prefix: bool = False):
+        self.tokenizer = GPT2Tokenizer.from_pretrained(gpt2_type)
+        # GPT2 has no pad token by default; we don't need it because we pad manually with -1 then mask->0
+        self.prefix_length = prefix_length
+        self.normalize_prefix = normalize_prefix
+
+        with open(data_path, 'rb') as f:
+            all_data = pickle.load(f)
+
+        print("Data size is %0d" % len(all_data["clip_embedding"]))
+        sys.stdout.flush()
+
+        self.prefixes = all_data["clip_embedding"]
+        captions_raw = all_data["captions"]
+
+        self.image_ids = [caption["image_id"] for caption in captions_raw]
+        self.captions = [caption["caption"] for caption in captions_raw]
+
+        tokens_cache_path = f"{data_path[:-4]}_tokens.pkl"
+        if os.path.isfile(tokens_cache_path):
+            with open(tokens_cache_path, 'rb') as f:
+                self.captions_tokens, self.caption2embedding, self.max_seq_len = pickle.load(f)
+        else:
+            self.captions_tokens = []
+            self.caption2embedding = []
+            max_seq_len = 0
+            for caption in captions_raw:
+                self.captions_tokens.append(
+                    torch.tensor(self.tokenizer.encode(caption['caption']), dtype=torch.int64)
+                )
+                self.caption2embedding.append(caption["clip_embedding"])
+                max_seq_len = max(max_seq_len, self.captions_tokens[-1].shape[0])
+
+            with open(tokens_cache_path, 'wb') as f:
+                pickle.dump([self.captions_tokens, self.caption2embedding, max_seq_len], f)
+
+        all_len = torch.tensor([len(self.captions_tokens[i]) for i in range(len(self))]).float()
+        # Keep original heuristic
+        self.max_seq_len = min(int(all_len.mean() + all_len.std() * 10), int(all_len.max()))
 
     def __len__(self) -> int:
         return len(self.captions_tokens)
@@ -28,16 +74,21 @@ class ClipCocoDataset(Dataset):
     def pad_tokens(self, item: int):
         tokens = self.captions_tokens[item]
         padding = self.max_seq_len - tokens.shape[0]
+
         if padding > 0:
             tokens = torch.cat((tokens, torch.zeros(padding, dtype=torch.int64) - 1))
             self.captions_tokens[item] = tokens
         elif padding < 0:
             tokens = tokens[:self.max_seq_len]
             self.captions_tokens[item] = tokens
-        mask = tokens.ge(0)  # mask is zero where we out of sequence
-        tokens[~mask] = 0
+
+        mask = tokens.ge(0)  # True where token valid
+        tokens = tokens.clone()
+        tokens[~mask] = 0     # replace pad(-1) with 0 (ignored later by mask)
         mask = mask.float()
-        mask = torch.cat((torch.ones(self.prefix_length), mask), dim=0)  # adding prefix mask
+
+        # prefix tokens are always "present"
+        mask = torch.cat((torch.ones(self.prefix_length), mask), dim=0)
         return tokens, mask
 
     def __getitem__(self, item: int) -> Tuple[torch.Tensor, ...]:
@@ -48,44 +99,10 @@ class ClipCocoDataset(Dataset):
             prefix = prefix / prefix.norm(2, -1)
         return tokens, mask, prefix
 
-    def __init__(self, data_path: str,  prefix_length: int, gpt2_type: str = "gpt2",
-                 normalize_prefix=False):
-        self.tokenizer = GPT2Tokenizer.from_pretrained(gpt2_type)
-        self.prefix_length = prefix_length
-        self.normalize_prefix = normalize_prefix
-        with open(data_path, 'rb') as f:
-            all_data = pickle.load(f)
-        print("Data size is %0d" % len(all_data["clip_embedding"]))
-        sys.stdout.flush()
-        self.prefixes = all_data["clip_embedding"]
-        captions_raw = all_data["captions"]
-        self.image_ids = [caption["image_id"] for caption in captions_raw]
-        self.captions = [caption['caption'] for caption in captions_raw]
-        if os.path.isfile(f"{data_path[:-4]}_tokens.pkl"):
-            with open(f"{data_path[:-4]}_tokens.pkl", 'rb') as f:
-                self.captions_tokens, self.caption2embedding, self.max_seq_len = pickle.load(f)
-        else:
-            self.captions_tokens = []
-            self.caption2embedding = []
-            max_seq_len = 0
-            for caption in captions_raw:
-                self.captions_tokens.append(torch.tensor(self.tokenizer.encode(caption['caption']), dtype=torch.int64))
-                self.caption2embedding.append(caption["clip_embedding"])
-                max_seq_len = max(max_seq_len, self.captions_tokens[-1].shape[0])
-            # self.max_seq_len = max_seq_len
-            with open(f"{data_path[:-4]}_tokens.pkl", 'wb') as f:
-                pickle.dump([self.captions_tokens, self.caption2embedding, max_seq_len], f)
-        all_len = torch.tensor([len(self.captions_tokens[i]) for i in range(len(self))]).float()
-        self.max_seq_len = min(int(all_len.mean() + all_len.std() * 10), int(all_len.max()))
-
 
 class MLP(nn.Module):
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.model(x)
-
-    def __init__(self, sizes: Tuple[int, ...], bias=True, act=nn.Tanh):
-        super(MLP, self).__init__()
+    def __init__(self, sizes: Tuple[int, ...], bias: bool = True, act=nn.Tanh):
+        super().__init__()
         layers = []
         for i in range(len(sizes) - 1):
             layers.append(nn.Linear(sizes[i], sizes[i + 1], bias=bias))
@@ -93,9 +110,12 @@ class MLP(nn.Module):
                 layers.append(act())
         self.model = nn.Sequential(*layers)
 
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model(x)
+
 
 class MlpTransformer(nn.Module):
-    def __init__(self, in_dim, h_dim, out_d: Optional[int] = None, act=nnf.relu, dropout=0.):
+    def __init__(self, in_dim, h_dim, out_d: Optional[int] = None, act=nnf.relu, dropout: float = 0.):
         super().__init__()
         out_d = out_d if out_d is not None else in_dim
         self.fc1 = nn.Linear(in_dim, h_dim)
@@ -111,9 +131,9 @@ class MlpTransformer(nn.Module):
         x = self.dropout(x)
         return x
 
-class MultiHeadAttention(nn.Module):
 
-    def __init__(self, dim_self, dim_ref, num_heads, bias=True, dropout=0.):
+class MultiHeadAttention(nn.Module):
+    def __init__(self, dim_self, dim_ref, num_heads, bias: bool = True, dropout: float = 0.):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim_self // num_heads
@@ -126,17 +146,20 @@ class MultiHeadAttention(nn.Module):
     def forward(self, x, y=None, mask=None):
         y = y if y is not None else x
         b, n, c = x.shape
-        _, m, d = y.shape
-        # b n h dh
+        _, m, _ = y.shape
+
         queries = self.to_queries(x).reshape(b, n, self.num_heads, c // self.num_heads)
-        # b m 2 h dh
         keys_values = self.to_keys_values(y).reshape(b, m, 2, self.num_heads, c // self.num_heads)
         keys, values = keys_values[:, :, 0], keys_values[:, :, 1]
+
         attention = torch.einsum('bnhd,bmhd->bnmh', queries, keys) * self.scale
+
         if mask is not None:
+            # NOTE: This matches your original logic (even if unusual). Keeping as-is.
             if mask.dim() == 2:
                 mask = mask.unsqueeze(1)
             attention = attention.masked_fill(mask.unsqueeze(3), float("-inf"))
+
         attention = attention.softmax(dim=2)
         out = torch.einsum('bnmh,bmhd->bnhd', attention, values).reshape(b, n, c)
         out = self.project(out)
@@ -144,6 +167,13 @@ class MultiHeadAttention(nn.Module):
 
 
 class TransformerLayer(nn.Module):
+    def __init__(self, dim_self, dim_ref, num_heads, mlp_ratio: float = 4., bias: bool = False,
+                 dropout: float = 0., act=nnf.relu, norm_layer: nn.Module = nn.LayerNorm):
+        super().__init__()
+        self.norm1 = norm_layer(dim_self)
+        self.attn = MultiHeadAttention(dim_self, dim_ref, num_heads, bias=bias, dropout=dropout)
+        self.norm2 = norm_layer(dim_self)
+        self.mlp = MlpTransformer(dim_self, int(dim_self * mlp_ratio), act=act, dropout=dropout)
 
     def forward_with_attention(self, x, y=None, mask=None):
         x_, attention = self.attn(self.norm1(x), y, mask)
@@ -156,41 +186,17 @@ class TransformerLayer(nn.Module):
         x = x + self.mlp(self.norm2(x))
         return x
 
-    def __init__(self, dim_self, dim_ref, num_heads, mlp_ratio=4., bias=False, dropout=0., act=nnf.relu,
-                 norm_layer: nn.Module = nn.LayerNorm):
-        super().__init__()
-        self.norm1 = norm_layer(dim_self)
-        self.attn = MultiHeadAttention(dim_self, dim_ref, num_heads, bias=bias, dropout=dropout)
-        self.norm2 = norm_layer(dim_self)
-        self.mlp = MlpTransformer(dim_self, int(dim_self * mlp_ratio), act=act, dropout=dropout)
-
 
 class Transformer(nn.Module):
-
-    def forward_with_attention(self, x, y=None, mask=None):
-        attentions = []
-        for layer in self.layers:
-            x, att = layer.forward_with_attention(x, y, mask)
-            attentions.append(att)
-        return x, attentions
-
-    def forward(self, x, y=None, mask=None):
-        for i, layer in enumerate(self.layers):
-            if i % 2 == 0 and self.enc_dec: # cross
-                x = layer(x, y)
-            elif self.enc_dec:  # self
-                x = layer(x, x, mask)
-            else:  # self or cross
-                x = layer(x, y, mask)
-        return x
-
     def __init__(self, dim_self: int, num_heads: int, num_layers: int, dim_ref: Optional[int] = None,
-                 mlp_ratio: float = 2., act=nnf.relu, norm_layer: nn.Module = nn.LayerNorm, enc_dec: bool = False):
-        super(Transformer, self).__init__()
+                 mlp_ratio: float = 2., act=nnf.relu, norm_layer: nn.Module = nn.LayerNorm,
+                 enc_dec: bool = False):
+        super().__init__()
         dim_ref = dim_ref if dim_ref is not None else dim_self
         self.enc_dec = enc_dec
         if enc_dec:
             num_layers = num_layers * 2
+
         layers = []
         for i in range(num_layers):
             if i % 2 == 0 and enc_dec:  # cross
@@ -201,8 +207,32 @@ class Transformer(nn.Module):
                 layers.append(TransformerLayer(dim_self, dim_ref, num_heads, mlp_ratio, act=act, norm_layer=norm_layer))
         self.layers = nn.ModuleList(layers)
 
+    def forward_with_attention(self, x, y=None, mask=None):
+        attentions = []
+        for layer in self.layers:
+            x, att = layer.forward_with_attention(x, y, mask)
+            attentions.append(att)
+        return x, attentions
+
+    def forward(self, x, y=None, mask=None):
+        for i, layer in enumerate(self.layers):
+            if i % 2 == 0 and self.enc_dec:  # cross
+                x = layer(x, y)
+            elif self.enc_dec:  # self
+                x = layer(x, x, mask)
+            else:  # self or cross
+                x = layer(x, y, mask)
+        return x
+
 
 class TransformerMapper(nn.Module):
+    def __init__(self, dim_clip: int, dim_embedding: int, prefix_length: int,
+                 clip_length: int, num_layers: int = 8):
+        super().__init__()
+        self.clip_length = clip_length
+        self.transformer = Transformer(dim_embedding, 8, num_layers)
+        self.linear = nn.Linear(dim_clip, clip_length * dim_embedding)
+        self.prefix_const = nn.Parameter(torch.randn(prefix_length, dim_embedding), requires_grad=True)
 
     def forward(self, x):
         x = self.linear(x).view(x.shape[0], self.clip_length, -1)
@@ -211,15 +241,25 @@ class TransformerMapper(nn.Module):
         out = self.transformer(prefix)[:, self.clip_length:]
         return out
 
-    def __init__(self, dim_clip: int, dim_embedding: int, prefix_length: int, clip_length: int, num_layers: int = 8):
-        super(TransformerMapper, self).__init__()
-        self.clip_length = clip_length
-        self.transformer = Transformer(dim_embedding, 8, num_layers)
-        self.linear = nn.Linear(dim_clip, clip_length * dim_embedding)
-        self.prefix_const = nn.Parameter(torch.randn(prefix_length, dim_embedding), requires_grad=True)
-
 
 class ClipCaptionModel(nn.Module):
+    def __init__(self, prefix_length: int, clip_length: Optional[int] = None, prefix_size: int = 512,
+                 num_layers: int = 8, mapping_type: MappingType = MappingType.MLP, gpt2_type: str = "gpt2"):
+        super().__init__()
+        self.prefix_length = prefix_length
+        self.gpt = GPT2LMHeadModel.from_pretrained(gpt2_type)
+        self.gpt_embedding_size = self.gpt.transformer.wte.weight.shape[1]
+
+        if mapping_type == MappingType.MLP:
+            self.clip_project = MLP((
+                prefix_size,
+                (self.gpt_embedding_size * prefix_length) // 2,
+                self.gpt_embedding_size * prefix_length
+            ))
+        else:
+            self.clip_project = TransformerMapper(
+                prefix_size, self.gpt_embedding_size, prefix_length, clip_length, num_layers
+            )
 
     def get_dummy_token(self, batch_size: int, device: torch.device) -> torch.Tensor:
         return torch.zeros(batch_size, self.prefix_length, dtype=torch.int64, device=device)
@@ -229,34 +269,22 @@ class ClipCaptionModel(nn.Module):
         embedding_text = self.gpt.transformer.wte(tokens)
         prefix_projections = self.clip_project(prefix).view(-1, self.prefix_length, self.gpt_embedding_size)
         embedding_cat = torch.cat((prefix_projections, embedding_text), dim=1)
+
         if labels is not None:
             dummy_token = self.get_dummy_token(tokens.shape[0], tokens.device)
             labels = torch.cat((dummy_token, tokens), dim=1)
+
         out = self.gpt(inputs_embeds=embedding_cat, labels=labels, attention_mask=mask)
         return out
 
-    def __init__(self, prefix_length: int, clip_length: Optional[int] = None, prefix_size: int = 512,
-                 num_layers: int = 8, mapping_type: MappingType = MappingType.MLP):
-        super(ClipCaptionModel, self).__init__()
-        self.prefix_length = prefix_length
-        self.gpt = GPT2LMHeadModel.from_pretrained('gpt2')
-        self.gpt_embedding_size = self.gpt.transformer.wte.weight.shape[1]
-        if mapping_type == MappingType.MLP:
-            self.clip_project = MLP((prefix_size, (self.gpt_embedding_size * prefix_length) // 2,
-                                     self.gpt_embedding_size * prefix_length))
-        else:
-            self.clip_project = TransformerMapper(prefix_size, self.gpt_embedding_size, prefix_length,
-                                                                     clip_length, num_layers)
-
 
 class ClipCaptionPrefix(ClipCaptionModel):
-
     def parameters(self, recurse: bool = True):
         return self.clip_project.parameters()
 
     def train(self, mode: bool = True):
-        super(ClipCaptionPrefix, self).train(mode)
-        self.gpt.eval()
+        super().train(mode)
+        self.gpt.eval()  # freeze GPT
         return self
 
 
@@ -278,10 +306,12 @@ def load_model(config_path: str, epoch_or_latest: Union[str, int] = '_latest'):
     if type(epoch_or_latest) is int:
         epoch_or_latest = f"-{epoch_or_latest:03d}"
     model_path = os.path.join(args.out_dir, f"{args.prefix}{epoch_or_latest}.pt")
+
     if args.only_prefix:
         model = ClipCaptionPrefix(args.prefix_length)
     else:
         model = ClipCaptionModel(args.prefix_length)
+
     if os.path.isfile(model_path):
         print(f"loading model from {model_path}")
         model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
@@ -291,48 +321,71 @@ def load_model(config_path: str, epoch_or_latest: Union[str, int] = '_latest'):
 
 
 def train(dataset: ClipCocoDataset, model: ClipCaptionModel, args,
-          lr: float = 2e-5, warmup_steps: int = 5000, output_dir: str = ".", output_prefix: str = ""):
+          lr: float = 2e-5, warmup_steps: int = 5000,
+          output_dir: str = ".", output_prefix: str = ""):
+    # CPU/GPU auto (use --device cpu to force cpu)
+    device = torch.device(args.device)
 
-    device = torch.device('cuda:0')
     batch_size = args.bs
     epochs = args.epochs
+
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
     model = model.to(device)
     model.train()
+
     optimizer = AdamW(model.parameters(), lr=lr)
     train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+
     scheduler = get_linear_schedule_with_warmup(
-        optimizer, num_warmup_steps=warmup_steps, num_training_steps=epochs * len(train_dataloader)
+        optimizer,
+        num_warmup_steps=warmup_steps,
+        num_training_steps=epochs * len(train_dataloader)
     )
-    # save_config(args)
+
     for epoch in range(epochs):
         print(f">>> Training epoch {epoch}")
         sys.stdout.flush()
+
         progress = tqdm(total=len(train_dataloader), desc=output_prefix)
+
         for idx, (tokens, mask, prefix) in enumerate(train_dataloader):
-            model.zero_grad()
-            tokens, mask, prefix = tokens.to(device), mask.to(device), prefix.to(device, dtype=torch.float32)
+            tokens = tokens.to(device)
+            mask = mask.to(device)
+            prefix = prefix.to(device, dtype=torch.float32)
+
             outputs = model(tokens, prefix, mask)
+
             logits = outputs.logits[:, dataset.prefix_length - 1: -1]
-            loss = nnf.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
+            loss = nnf.cross_entropy(
+                logits.reshape(-1, logits.shape[-1]),
+                tokens.flatten(),
+                ignore_index=0
+            )
+
             loss.backward()
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
+
             progress.set_postfix({"loss": loss.item()})
             progress.update()
+
             if (idx + 1) % 10000 == 0:
                 torch.save(
                     model.state_dict(),
                     os.path.join(output_dir, f"{output_prefix}_latest.pt"),
                 )
+
         progress.close()
+
         if epoch % args.save_every == 0 or epoch == epochs - 1:
             torch.save(
                 model.state_dict(),
                 os.path.join(output_dir, f"{output_prefix}-{epoch:03d}.pt"),
             )
+
     return model
 
 
@@ -351,20 +404,43 @@ def main():
     parser.add_argument('--num_layers', type=int, default=8)
     parser.add_argument('--is_rn', dest='is_rn', action='store_true')
     parser.add_argument('--normalize_prefix', dest='normalize_prefix', action='store_true')
+
+    # NEW: device control
+    # Use: --device cpu   or   --device cuda (if available)
+    parser.add_argument('--device', type=str, default=None, help='cpu or cuda (default: auto)')
+
     args = parser.parse_args()
+
+    # auto device if not forced
+    if args.device is None:
+        args.device = "cuda" if torch.cuda.is_available() else "cpu"
+
     prefix_length = args.prefix_length
     dataset = ClipCocoDataset(args.data, prefix_length, normalize_prefix=args.normalize_prefix)
+
     prefix_dim = 640 if args.is_rn else 512
     args.mapping_type = {'mlp': MappingType.MLP, 'transformer': MappingType.Transformer}[args.mapping_type]
+
     if args.only_prefix:
-        model = ClipCaptionPrefix(prefix_length, clip_length=args.prefix_length_clip, prefix_size=prefix_dim,
-                                  num_layers=args.num_layers, mapping_type=args.mapping_type)
+        model = ClipCaptionPrefix(
+            prefix_length,
+            clip_length=args.prefix_length_clip,
+            prefix_size=prefix_dim,
+            num_layers=args.num_layers,
+            mapping_type=args.mapping_type
+        )
         print("Train only prefix")
     else:
-        model = ClipCaptionModel(prefix_length, clip_length=args.prefix_length_clip, prefix_size=prefix_dim,
-                                  num_layers=args.num_layers, mapping_type=args.mapping_type)
+        model = ClipCaptionModel(
+            prefix_length,
+            clip_length=args.prefix_length_clip,
+            prefix_size=prefix_dim,
+            num_layers=args.num_layers,
+            mapping_type=args.mapping_type
+        )
         print("Train both prefix and GPT")
         sys.stdout.flush()
+
     train(dataset, model, args, output_dir=args.out_dir, output_prefix=args.prefix)
 
 

@@ -64,7 +64,7 @@ In our work, we use the [CLIP](https://github.com/openai/CLIP) model, which was 
  <table>
   <tr>
     <td><img src="Images/CONCEPTUAL_04.jpg" ></td>
-    <td><img src="Images/CONCEPTUAL_05.jpg" ></td>
+    <td><img src="Images/CONCEPTUAL_05.jpg" ></td> 
     <td><img src="Images/CONCEPTUAL_06.jpg" ></td>
   </tr>
   <tr>

@@ -1,0 +1,17 @@
+scikit-image==0.20.0
+transformers==4.39.3
+ftfy
+regex
+tqdm
+numpy
+pillow
+matplotlib
+pandas
+requests
+open_clip_torch
+ipython
+bert-score
+evaluate
+pydrive
+oauth2client
+git+https://github.com/openai/CLIP.git
