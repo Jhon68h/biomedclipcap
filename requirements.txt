@@ -8,7 +8,7 @@ pillow
 matplotlib
 pandas
 requests
-open_clip_torch
+open-clip-torch
 ipython
 bert-score
 evaluate
