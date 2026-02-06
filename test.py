@@ -189,17 +189,28 @@ def load_mapper(
 
 
 def main():
+    project_root = os.path.dirname(os.path.abspath(__file__))
+
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--images_root", required=True)
-    parser.add_argument("--checkpoint", required=True)
-    parser.add_argument("--output_csv", required=True)
+    parser.add_argument(
+        "--images_root",
+        default="Sun_Multimodal/Test_join",
+    )
+    parser.add_argument(
+        "--checkpoint",
+        default="outputs/train/colono_vit_prefix-014.pt",
+    )
+    parser.add_argument(
+        "--output_csv",
+        default="experiments_colono/experiments_colono/captions_BioMed_final_14epochs.csv",
+    )
 
     parser.add_argument("--prefix_length", type=int, default=10)
     parser.add_argument("--mapping_type", type=str, default="transformer")
     parser.add_argument("--num_layers", type=int, default=8)
 
-    parser.add_argument("--beam_search", action="store_true")
+    parser.add_argument("--beam_search", action="store_true", default=True)
 
     # Encoder selector
     parser.add_argument(
@@ -228,6 +239,13 @@ def main():
     parser.add_argument("--stop_token", type=str, default=".")
 
     args = parser.parse_args()
+
+    if not os.path.isabs(args.images_root):
+        args.images_root = os.path.join(project_root, args.images_root)
+    if not os.path.isabs(args.checkpoint):
+        args.checkpoint = os.path.join(project_root, args.checkpoint)
+    if not os.path.isabs(args.output_csv):
+        args.output_csv = os.path.join(project_root, args.output_csv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("DEVICE:", device)

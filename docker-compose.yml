@@ -6,6 +6,7 @@ services:
     working_dir: /workspace
     volumes:
       - ./:/workspace
+      - /home/Data/jefelitman_pupils/CLIP_prefix_caption/Sun_Multimodal:/data/jefelitman_pupils/Sun_Multimodal:ro
     deploy:
       resources:
         reservations:
