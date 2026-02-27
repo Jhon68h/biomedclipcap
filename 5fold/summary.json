@@ -1,0 +1,78 @@
+{
+  "input_csv": "experiments_colono/experiments_colono/clipclap_train_labeled_join.csv",
+  "label_csv": "experiments_colono/experiments_colono/clipclap_train_labeled_positive.csv",
+  "output_dir": "5fold",
+  "project_root": "/home/colon/Data/Users/jhonatan/CLIP_prefix_caption",
+  "n_splits": 5,
+  "seed": 42,
+  "num_rows": 11400,
+  "num_cases": 77,
+  "image_path_rewrite_enabled": true,
+  "image_paths_remapped": 11400,
+  "image_paths_existing": 11400,
+  "image_paths_missing": 0,
+  "case_label_distribution": {
+    "adenoma": 70,
+    "hyperplastic": 5,
+    "no_polyp": 2
+  },
+  "folds": [
+    {
+      "fold": 1,
+      "train_rows": 9120,
+      "val_rows": 2280,
+      "train_cases": 62,
+      "val_cases": 15,
+      "val_case_label_distribution": {
+        "adenoma": 14,
+        "hyperplastic": 1
+      }
+    },
+    {
+      "fold": 2,
+      "train_rows": 9120,
+      "val_rows": 2280,
+      "train_cases": 62,
+      "val_cases": 15,
+      "val_case_label_distribution": {
+        "adenoma": 14,
+        "hyperplastic": 1
+      }
+    },
+    {
+      "fold": 3,
+      "train_rows": 9120,
+      "val_rows": 2280,
+      "train_cases": 62,
+      "val_cases": 15,
+      "val_case_label_distribution": {
+        "adenoma": 14,
+        "hyperplastic": 1
+      }
+    },
+    {
+      "fold": 4,
+      "train_rows": 9120,
+      "val_rows": 2280,
+      "train_cases": 61,
+      "val_cases": 16,
+      "val_case_label_distribution": {
+        "adenoma": 14,
+        "hyperplastic": 1,
+        "no_polyp": 1
+      }
+    },
+    {
+      "fold": 5,
+      "train_rows": 9120,
+      "val_rows": 2280,
+      "train_cases": 61,
+      "val_cases": 16,
+      "val_case_label_distribution": {
+        "adenoma": 14,
+        "hyperplastic": 1,
+        "no_polyp": 1
+      }
+    }
+  ]
+}

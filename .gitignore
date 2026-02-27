@@ -1,0 +1,69 @@
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Project outputs and experiment artifacts
+outputs/
+experiments_colono/
+checkpoints/
+logs/
+runs/
+
+# Datasets, media, and local assets
+data/
+Sun_Multimodal/
+Images/
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tif
+*.tiff
+*.gif
+
+# Model weights and serialized tensors
+clip_weights/
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+*.pkl
+*.npz
+*.npy
+*.h5
+*.hdf5
+*.onnx
+
+# Archives and packaged data
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.gz
+
+# Non-source auxiliary files
+*.txt
+*.pdf
