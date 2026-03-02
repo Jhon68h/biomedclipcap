@@ -76,7 +76,7 @@ In our work, we use the [CLIP](https://github.com/openai/CLIP) model, which was 
 
 
 ## Inference Notebooks
-To help visualize the results we provide a Colab notebook found in `notebooks/clip_prefix_captioning_inference.ipynb`.   
+To help visualize the results we provide a Colab notebook found in `notebooks/biomedclipcap_inference.ipynb`.   
 The notebook will download the pretrained models and run inference on a sample images or 
 on images of your choosing. It is recommended to run this in [Google Colab](https://colab.research.google.com/drive/1tuoAC5F4sC7qid56Z0ap-stR3rwdk0ZV?usp=sharing).
 Inference notebook for the **transformer mapping network (without fine-tune GPT-2)** can be found [here](https://colab.research.google.com/drive/180L3rMFmGujudwO1EJNF-lHIpAsAZ5xq?usp=sharing) for the COCO model (also in `notebooks/transformer_inference.ipynb`).
@@ -88,8 +88,8 @@ Both [COCO](https://drive.google.com/file/d/1IdaBtMSvtyzF0ByVaBHtvM0JYSXRExRX/vi
 
 
 ## Inference GUI
-1. Run it [in the browser](https://replicate.ai/rmokady/clip_prefix_caption) using replicate.ai UI.
-2. Integrated to [Huggingface Spaces](https://huggingface.co/spaces) with [Gradio](https://github.com/gradio-app/gradio). See demo: [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/akhaliq/CLIP_prefix_captioning) (currently not supporting beam search)
+1. Run it locally from this repository (or configure your own Replicate endpoint).
+2. Integrated to [Huggingface Spaces](https://huggingface.co/spaces) with [Gradio](https://github.com/gradio-app/gradio); use your project Space URL (currently not supporting beam search).
 
 
 ## Training prerequisites
@@ -97,9 +97,9 @@ Both [COCO](https://drive.google.com/file/d/1IdaBtMSvtyzF0ByVaBHtvM0JYSXRExRX/vi
 [comment]: <> (Dependencies can be found at the [Inference notebook]&#40;https://colab.research.google.com/drive/1tuoAC5F4sC7qid56Z0ap-stR3rwdk0ZV?usp=sharing&#41; )
 Clone, create environment and install dependencies:  
 ```
-git clone https://github.com/rmokady/CLIP_prefix_caption && cd CLIP_prefix_caption
+git clone <your-repo-url>/biomedclipcap.git && cd biomedclipcap
 conda env create -f environment.yml
-conda activate clip_prefix_caption
+conda activate biomedclipcap
 ```
 
 ## COCO training
@@ -167,5 +167,4 @@ For training we used the data of [COCO dataset](https://cocodataset.org/#home) a
 
 ## Contact
 For any inquiry please contact us at our email addresses: ron.mokady@gmail.com or amirhertz@mail.tau.ac.il.
-
 

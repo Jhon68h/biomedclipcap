@@ -17,7 +17,8 @@ import matplotlib.cm as cm
 from train import ClipCaptionPrefix, MappingType
 from predict import generate2, generate_beam
 
-RESULTS_ROOT = "/home/colon/Data/Users/jhonatan/CLIP_prefix_caption/Resultados_Explicabilidad_Join"
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+RESULTS_ROOT = os.path.join(PROJECT_ROOT, "Resultados_Explicabilidad_Join")
 RUN_SUBDIR = "GradCAM_CLIPCAP"
 
 MORPH = ["sessile", "flat", "elevated", "mucosal", "pedunculated", "flat elevated"]

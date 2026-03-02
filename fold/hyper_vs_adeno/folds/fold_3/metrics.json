@@ -1,0 +1,208 @@
+{
+  "fold": "fold_3",
+  "num_train_rows": 4560,
+  "num_val_rows": 1140,
+  "train_label_distribution": {
+    "adenoma": 4256,
+    "hyperplastic": 304
+  },
+  "val_label_distribution": {
+    "adenoma": 1064,
+    "hyperplastic": 76
+  },
+  "train_cases": [
+    "case1",
+    "case4",
+    "case5",
+    "case6",
+    "case7",
+    "case8",
+    "case9",
+    "case10",
+    "case11",
+    "case12",
+    "case13",
+    "case14",
+    "case16",
+    "case17",
+    "case18",
+    "case19",
+    "case20",
+    "case21",
+    "case24",
+    "case26",
+    "case27",
+    "case28",
+    "case29",
+    "case30",
+    "case31",
+    "case33",
+    "case34",
+    "case35",
+    "case36",
+    "case37",
+    "case55",
+    "case56",
+    "case60",
+    "case61",
+    "case62",
+    "case64",
+    "case65",
+    "case66",
+    "case69",
+    "case70",
+    "case72",
+    "case73",
+    "case74",
+    "case75",
+    "case76",
+    "case77",
+    "case78",
+    "case80",
+    "case81",
+    "case85",
+    "case86",
+    "case87",
+    "case88",
+    "case89",
+    "case93",
+    "case94",
+    "case95",
+    "case96",
+    "case98",
+    "case99"
+  ],
+  "val_cases": [
+    "case38",
+    "case39",
+    "case41",
+    "case42",
+    "case43",
+    "case44",
+    "case45",
+    "case46",
+    "case47",
+    "case48",
+    "case49",
+    "case50",
+    "case51",
+    "case52",
+    "case54"
+  ],
+  "artifacts": {
+    "train_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train.csv",
+    "val_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_3/val.csv",
+    "train_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_3/data/train.pkl",
+    "val_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_3/data/val.pkl",
+    "model_dir": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train",
+    "best_checkpoint": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train/hyper_vs_adeno_fold_3-001.pt",
+    "train_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train/hyper_vs_adeno_fold_3_loss_per_epoch.csv",
+    "val_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_3/val_loss_per_epoch.csv",
+    "loss_plot_svg": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train_vs_val_loss.svg"
+  },
+  "training": {
+    "epochs": 12,
+    "train_bs": 4,
+    "eval_bs": 4,
+    "prefix_length": 10,
+    "prefix_length_clip": 10,
+    "mapping_type": "transformer",
+    "num_layers": 8,
+    "is_rn": false,
+    "only_prefix": true,
+    "normalize_prefix": true,
+    "gpu_visible": "1"
+  },
+  "loss": {
+    "best_epoch": 1,
+    "best_val_loss": 0.24446675722536287,
+    "train_loss_at_best_epoch": 0.211372598051502,
+    "epochs": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "train_loss": [
+      2.2552751518655243,
+      0.211372598051502,
+      0.1789136599357191,
+      0.15485687786223074,
+      0.10831068283143012,
+      0.08346563505351935,
+      0.04804548091242874,
+      0.027638653467262263,
+      0.01720697390938815,
+      0.010527712293735118,
+      0.004024637694697288,
+      0.0016028621031294102
+    ],
+    "val_loss": [
+      0.32363729837693667,
+      0.24446675722536287,
+      0.29368436174434526,
+      0.26115538370713853,
+      0.32349949971887104,
+      0.3454080622970012,
+      0.3579351529217603,
+      0.3560625050543693,
+      0.4186340605742053,
+      0.4552622196313582,
+      0.4678347961813734,
+      0.4670440391098198
+    ]
+  },
+  "classification": {
+    "num_samples": 1140,
+    "accuracy": 0.9333333333333333,
+    "macro_f1": 0.4827586206896552,
+    "true_labels": [
+      "adenoma",
+      "hyperplastic"
+    ],
+    "pred_labels": [
+      "adenoma",
+      "hyperplastic"
+    ],
+    "confusion_matrix": [
+      [
+        1064,
+        0
+      ],
+      [
+        76,
+        0
+      ]
+    ],
+    "per_class": {
+      "adenoma": {
+        "tp": 1064,
+        "fp": 76,
+        "fn": 0,
+        "tn": 0,
+        "precision": 0.9333333333333333,
+        "recall": 1.0,
+        "f1": 0.9655172413793104,
+        "specificity": 0.0
+      },
+      "hyperplastic": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 76,
+        "tn": 1064,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "specificity": 1.0
+      }
+    }
+  }
+}

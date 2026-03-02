@@ -1,0 +1,1544 @@
+{
+  "generated_at_utc": "2026-03-02T08:55:34.959659+00:00",
+  "inputs": {
+    "hyper_json": "/workspace/folds/hyper_vs_adeno.json",
+    "posneg_json": "/workspace/folds/negative_positive.json",
+    "positive_csv": "/workspace/experiments_colono/experiments_colono/clipclap_train_labeled_positive.csv",
+    "negative_csv": "/workspace/experiments_colono/experiments_colono/clipclap_train_labeled_negative.csv"
+  },
+  "runtime": {
+    "python_exec": "/opt/conda/bin/python3",
+    "gpu": "1",
+    "cuda_visible_devices": "1",
+    "parser_type": "biomed",
+    "parser_script": "parse_colono_biomed.py"
+  },
+  "training": {
+    "epochs": 12,
+    "train_bs": 4,
+    "eval_bs": 4,
+    "prefix_length": 10,
+    "prefix_length_clip": 10,
+    "mapping_type": "transformer",
+    "num_layers": 8,
+    "is_rn": false,
+    "only_prefix": true,
+    "normalize_prefix": true,
+    "skip_inference": false,
+    "beam_search": false
+  },
+  "dataset_stats": {
+    "hyper_vs_adeno": {
+      "rows": 5700,
+      "remapped_paths": 5700,
+      "missing_paths_filtered": 0
+    },
+    "positive_vs_negative": {
+      "rows": 6840,
+      "remapped_paths": 6840,
+      "missing_paths_filtered": 0
+    }
+  },
+  "tasks": {
+    "subtype_adenoma_vs_hyperplastic_5fold_groupcv": {
+      "task_name": "hyper_vs_adeno",
+      "num_rows": 5700,
+      "num_cases": 75,
+      "label_distribution": {
+        "adenoma": 5320,
+        "hyperplastic": 380
+      },
+      "folds": [
+        {
+          "fold": "fold_1",
+          "num_train_rows": 4560,
+          "num_val_rows": 1140,
+          "train_label_distribution": {
+            "adenoma": 4256,
+            "hyperplastic": 304
+          },
+          "val_label_distribution": {
+            "adenoma": 1064,
+            "hyperplastic": 76
+          },
+          "train_cases": [
+            "case19",
+            "case20",
+            "case21",
+            "case24",
+            "case26",
+            "case27",
+            "case28",
+            "case29",
+            "case30",
+            "case31",
+            "case33",
+            "case34",
+            "case35",
+            "case36",
+            "case37",
+            "case38",
+            "case39",
+            "case41",
+            "case42",
+            "case43",
+            "case44",
+            "case45",
+            "case46",
+            "case47",
+            "case48",
+            "case49",
+            "case50",
+            "case51",
+            "case52",
+            "case54",
+            "case55",
+            "case56",
+            "case60",
+            "case61",
+            "case62",
+            "case64",
+            "case65",
+            "case66",
+            "case69",
+            "case70",
+            "case72",
+            "case73",
+            "case74",
+            "case75",
+            "case76",
+            "case77",
+            "case78",
+            "case80",
+            "case81",
+            "case85",
+            "case86",
+            "case87",
+            "case88",
+            "case89",
+            "case93",
+            "case94",
+            "case95",
+            "case96",
+            "case98",
+            "case99"
+          ],
+          "val_cases": [
+            "case1",
+            "case4",
+            "case5",
+            "case6",
+            "case7",
+            "case8",
+            "case9",
+            "case10",
+            "case11",
+            "case12",
+            "case13",
+            "case14",
+            "case16",
+            "case17",
+            "case18"
+          ],
+          "artifacts": {
+            "train_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_1/train.csv",
+            "val_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_1/val.csv",
+            "train_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_1/data/train.pkl",
+            "val_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_1/data/val.pkl",
+            "model_dir": "/workspace/fold/hyper_vs_adeno/folds/fold_1/train",
+            "best_checkpoint": "/workspace/fold/hyper_vs_adeno/folds/fold_1/train/hyper_vs_adeno_fold_1-001.pt",
+            "train_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_1/train/hyper_vs_adeno_fold_1_loss_per_epoch.csv",
+            "val_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_1/val_loss_per_epoch.csv",
+            "loss_plot_svg": "/workspace/fold/hyper_vs_adeno/folds/fold_1/train_vs_val_loss.svg"
+          },
+          "training": {
+            "epochs": 12,
+            "train_bs": 4,
+            "eval_bs": 4,
+            "prefix_length": 10,
+            "prefix_length_clip": 10,
+            "mapping_type": "transformer",
+            "num_layers": 8,
+            "is_rn": false,
+            "only_prefix": true,
+            "normalize_prefix": true,
+            "gpu_visible": "1"
+          },
+          "loss": {
+            "best_epoch": 1,
+            "best_val_loss": 0.22138378045015167,
+            "train_loss_at_best_epoch": 0.1987434067616337,
+            "epochs": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "train_loss": [
+              2.2954894076183177,
+              0.1987434067616337,
+              0.14756654919566292,
+              0.11290619626249138,
+              0.08081450941972435,
+              0.04967481741894102,
+              0.03204972331367204,
+              0.02048412604500507,
+              0.01223403021214293,
+              0.006146957821431243,
+              0.0021571410737937858,
+              0.0007470828077011423
+            ],
+            "val_loss": [
+              0.2785332547468052,
+              0.22138378045015167,
+              0.24054838481702304,
+              0.2639850734618672,
+              0.28370415899052953,
+              0.33232234109912,
+              0.3736928144829315,
+              0.3502256205860983,
+              0.36783609901342473,
+              0.4215630189891447,
+              0.42361241179077247,
+              0.4259885724437864
+            ]
+          },
+          "classification": {
+            "num_samples": 1140,
+            "accuracy": 0.8850877192982456,
+            "macro_f1": 0.46952070730572365,
+            "true_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "pred_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "confusion_matrix": [
+              [
+                1009,
+                55
+              ],
+              [
+                76,
+                0
+              ]
+            ],
+            "per_class": {
+              "adenoma": {
+                "tp": 1009,
+                "fp": 76,
+                "fn": 55,
+                "tn": 0,
+                "precision": 0.9299539170506912,
+                "recall": 0.9483082706766918,
+                "f1": 0.9390414146114473,
+                "specificity": 0.0
+              },
+              "hyperplastic": {
+                "tp": 0,
+                "fp": 55,
+                "fn": 76,
+                "tn": 1009,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "specificity": 0.9483082706766918
+              }
+            }
+          }
+        },
+        {
+          "fold": "fold_2",
+          "num_train_rows": 4560,
+          "num_val_rows": 1140,
+          "train_label_distribution": {
+            "adenoma": 4256,
+            "hyperplastic": 304
+          },
+          "val_label_distribution": {
+            "adenoma": 1064,
+            "hyperplastic": 76
+          },
+          "train_cases": [
+            "case1",
+            "case4",
+            "case5",
+            "case6",
+            "case7",
+            "case8",
+            "case9",
+            "case10",
+            "case11",
+            "case12",
+            "case13",
+            "case14",
+            "case16",
+            "case17",
+            "case18",
+            "case38",
+            "case39",
+            "case41",
+            "case42",
+            "case43",
+            "case44",
+            "case45",
+            "case46",
+            "case47",
+            "case48",
+            "case49",
+            "case50",
+            "case51",
+            "case52",
+            "case54",
+            "case55",
+            "case56",
+            "case60",
+            "case61",
+            "case62",
+            "case64",
+            "case65",
+            "case66",
+            "case69",
+            "case70",
+            "case72",
+            "case73",
+            "case74",
+            "case75",
+            "case76",
+            "case77",
+            "case78",
+            "case80",
+            "case81",
+            "case85",
+            "case86",
+            "case87",
+            "case88",
+            "case89",
+            "case93",
+            "case94",
+            "case95",
+            "case96",
+            "case98",
+            "case99"
+          ],
+          "val_cases": [
+            "case19",
+            "case20",
+            "case21",
+            "case24",
+            "case26",
+            "case27",
+            "case28",
+            "case29",
+            "case30",
+            "case31",
+            "case33",
+            "case34",
+            "case35",
+            "case36",
+            "case37"
+          ],
+          "artifacts": {
+            "train_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_2/train.csv",
+            "val_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_2/val.csv",
+            "train_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_2/data/train.pkl",
+            "val_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_2/data/val.pkl",
+            "model_dir": "/workspace/fold/hyper_vs_adeno/folds/fold_2/train",
+            "best_checkpoint": "/workspace/fold/hyper_vs_adeno/folds/fold_2/train/hyper_vs_adeno_fold_2-001.pt",
+            "train_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_2/train/hyper_vs_adeno_fold_2_loss_per_epoch.csv",
+            "val_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_2/val_loss_per_epoch.csv",
+            "loss_plot_svg": "/workspace/fold/hyper_vs_adeno/folds/fold_2/train_vs_val_loss.svg"
+          },
+          "training": {
+            "epochs": 12,
+            "train_bs": 4,
+            "eval_bs": 4,
+            "prefix_length": 10,
+            "prefix_length_clip": 10,
+            "mapping_type": "transformer",
+            "num_layers": 8,
+            "is_rn": false,
+            "only_prefix": true,
+            "normalize_prefix": true,
+            "gpu_visible": "1"
+          },
+          "loss": {
+            "best_epoch": 1,
+            "best_val_loss": 0.217242267466428,
+            "train_loss_at_best_epoch": 0.17754468306114798,
+            "epochs": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "train_loss": [
+              1.9288521004023782,
+              0.17754468306114798,
+              0.13342309773229716,
+              0.09509374535920327,
+              0.06540062490875195,
+              0.03718654317801753,
+              0.024302555435937585,
+              0.013947730748291257,
+              0.006967413192155379,
+              0.003355193162605518,
+              0.0014906839848743147,
+              0.00044558554342202436
+            ],
+            "val_loss": [
+              0.22248944943411308,
+              0.217242267466428,
+              0.2641625225543976,
+              0.29493363002936046,
+              0.3395424972239294,
+              0.39452103712318237,
+              0.4520577782340217,
+              0.4280958450938526,
+              0.4490739317839606,
+              0.47456913744671303,
+              0.49334298327826615,
+              0.4929509764635249
+            ]
+          },
+          "classification": {
+            "num_samples": 1140,
+            "accuracy": 0.9254385964912281,
+            "macro_f1": 0.48063781321184507,
+            "true_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "pred_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "confusion_matrix": [
+              [
+                1055,
+                9
+              ],
+              [
+                76,
+                0
+              ]
+            ],
+            "per_class": {
+              "adenoma": {
+                "tp": 1055,
+                "fp": 76,
+                "fn": 9,
+                "tn": 0,
+                "precision": 0.9328028293545535,
+                "recall": 0.9915413533834586,
+                "f1": 0.9612756264236901,
+                "specificity": 0.0
+              },
+              "hyperplastic": {
+                "tp": 0,
+                "fp": 9,
+                "fn": 76,
+                "tn": 1055,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "specificity": 0.9915413533834586
+              }
+            }
+          }
+        },
+        {
+          "fold": "fold_3",
+          "num_train_rows": 4560,
+          "num_val_rows": 1140,
+          "train_label_distribution": {
+            "adenoma": 4256,
+            "hyperplastic": 304
+          },
+          "val_label_distribution": {
+            "adenoma": 1064,
+            "hyperplastic": 76
+          },
+          "train_cases": [
+            "case1",
+            "case4",
+            "case5",
+            "case6",
+            "case7",
+            "case8",
+            "case9",
+            "case10",
+            "case11",
+            "case12",
+            "case13",
+            "case14",
+            "case16",
+            "case17",
+            "case18",
+            "case19",
+            "case20",
+            "case21",
+            "case24",
+            "case26",
+            "case27",
+            "case28",
+            "case29",
+            "case30",
+            "case31",
+            "case33",
+            "case34",
+            "case35",
+            "case36",
+            "case37",
+            "case55",
+            "case56",
+            "case60",
+            "case61",
+            "case62",
+            "case64",
+            "case65",
+            "case66",
+            "case69",
+            "case70",
+            "case72",
+            "case73",
+            "case74",
+            "case75",
+            "case76",
+            "case77",
+            "case78",
+            "case80",
+            "case81",
+            "case85",
+            "case86",
+            "case87",
+            "case88",
+            "case89",
+            "case93",
+            "case94",
+            "case95",
+            "case96",
+            "case98",
+            "case99"
+          ],
+          "val_cases": [
+            "case38",
+            "case39",
+            "case41",
+            "case42",
+            "case43",
+            "case44",
+            "case45",
+            "case46",
+            "case47",
+            "case48",
+            "case49",
+            "case50",
+            "case51",
+            "case52",
+            "case54"
+          ],
+          "artifacts": {
+            "train_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train.csv",
+            "val_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_3/val.csv",
+            "train_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_3/data/train.pkl",
+            "val_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_3/data/val.pkl",
+            "model_dir": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train",
+            "best_checkpoint": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train/hyper_vs_adeno_fold_3-001.pt",
+            "train_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train/hyper_vs_adeno_fold_3_loss_per_epoch.csv",
+            "val_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_3/val_loss_per_epoch.csv",
+            "loss_plot_svg": "/workspace/fold/hyper_vs_adeno/folds/fold_3/train_vs_val_loss.svg"
+          },
+          "training": {
+            "epochs": 12,
+            "train_bs": 4,
+            "eval_bs": 4,
+            "prefix_length": 10,
+            "prefix_length_clip": 10,
+            "mapping_type": "transformer",
+            "num_layers": 8,
+            "is_rn": false,
+            "only_prefix": true,
+            "normalize_prefix": true,
+            "gpu_visible": "1"
+          },
+          "loss": {
+            "best_epoch": 1,
+            "best_val_loss": 0.24446675722536287,
+            "train_loss_at_best_epoch": 0.211372598051502,
+            "epochs": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "train_loss": [
+              2.2552751518655243,
+              0.211372598051502,
+              0.1789136599357191,
+              0.15485687786223074,
+              0.10831068283143012,
+              0.08346563505351935,
+              0.04804548091242874,
+              0.027638653467262263,
+              0.01720697390938815,
+              0.010527712293735118,
+              0.004024637694697288,
+              0.0016028621031294102
+            ],
+            "val_loss": [
+              0.32363729837693667,
+              0.24446675722536287,
+              0.29368436174434526,
+              0.26115538370713853,
+              0.32349949971887104,
+              0.3454080622970012,
+              0.3579351529217603,
+              0.3560625050543693,
+              0.4186340605742053,
+              0.4552622196313582,
+              0.4678347961813734,
+              0.4670440391098198
+            ]
+          },
+          "classification": {
+            "num_samples": 1140,
+            "accuracy": 0.9333333333333333,
+            "macro_f1": 0.4827586206896552,
+            "true_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "pred_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "confusion_matrix": [
+              [
+                1064,
+                0
+              ],
+              [
+                76,
+                0
+              ]
+            ],
+            "per_class": {
+              "adenoma": {
+                "tp": 1064,
+                "fp": 76,
+                "fn": 0,
+                "tn": 0,
+                "precision": 0.9333333333333333,
+                "recall": 1.0,
+                "f1": 0.9655172413793104,
+                "specificity": 0.0
+              },
+              "hyperplastic": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 76,
+                "tn": 1064,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "specificity": 1.0
+              }
+            }
+          }
+        },
+        {
+          "fold": "fold_4",
+          "num_train_rows": 4560,
+          "num_val_rows": 1140,
+          "train_label_distribution": {
+            "adenoma": 4256,
+            "hyperplastic": 304
+          },
+          "val_label_distribution": {
+            "adenoma": 1064,
+            "hyperplastic": 76
+          },
+          "train_cases": [
+            "case1",
+            "case4",
+            "case5",
+            "case6",
+            "case7",
+            "case8",
+            "case9",
+            "case10",
+            "case11",
+            "case12",
+            "case13",
+            "case14",
+            "case16",
+            "case17",
+            "case18",
+            "case19",
+            "case20",
+            "case21",
+            "case24",
+            "case26",
+            "case27",
+            "case28",
+            "case29",
+            "case30",
+            "case31",
+            "case33",
+            "case34",
+            "case35",
+            "case36",
+            "case37",
+            "case38",
+            "case39",
+            "case41",
+            "case42",
+            "case43",
+            "case44",
+            "case45",
+            "case46",
+            "case47",
+            "case48",
+            "case49",
+            "case50",
+            "case51",
+            "case52",
+            "case54",
+            "case77",
+            "case78",
+            "case80",
+            "case81",
+            "case85",
+            "case86",
+            "case87",
+            "case88",
+            "case89",
+            "case93",
+            "case94",
+            "case95",
+            "case96",
+            "case98",
+            "case99"
+          ],
+          "val_cases": [
+            "case55",
+            "case56",
+            "case60",
+            "case61",
+            "case62",
+            "case64",
+            "case65",
+            "case66",
+            "case69",
+            "case70",
+            "case72",
+            "case73",
+            "case74",
+            "case75",
+            "case76"
+          ],
+          "artifacts": {
+            "train_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_4/train.csv",
+            "val_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_4/val.csv",
+            "train_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_4/data/train.pkl",
+            "val_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_4/data/val.pkl",
+            "model_dir": "/workspace/fold/hyper_vs_adeno/folds/fold_4/train",
+            "best_checkpoint": "/workspace/fold/hyper_vs_adeno/folds/fold_4/train/hyper_vs_adeno_fold_4-001.pt",
+            "train_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_4/train/hyper_vs_adeno_fold_4_loss_per_epoch.csv",
+            "val_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_4/val_loss_per_epoch.csv",
+            "loss_plot_svg": "/workspace/fold/hyper_vs_adeno/folds/fold_4/train_vs_val_loss.svg"
+          },
+          "training": {
+            "epochs": 12,
+            "train_bs": 4,
+            "eval_bs": 4,
+            "prefix_length": 10,
+            "prefix_length_clip": 10,
+            "mapping_type": "transformer",
+            "num_layers": 8,
+            "is_rn": false,
+            "only_prefix": true,
+            "normalize_prefix": true,
+            "gpu_visible": "1"
+          },
+          "loss": {
+            "best_epoch": 1,
+            "best_val_loss": 0.25371874928997273,
+            "train_loss_at_best_epoch": 0.17762658775114176,
+            "epochs": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "train_loss": [
+              1.791892072558403,
+              0.17762658775114176,
+              0.1345784492888733,
+              0.09890158861679466,
+              0.06687365037045981,
+              0.039535738431578996,
+              0.02482047330449221,
+              0.015675295214577202,
+              0.00880655673150741,
+              0.0034710447239616003,
+              0.0013169095825057747,
+              0.0004428096746938025
+            ],
+            "val_loss": [
+              0.2614867221890834,
+              0.25371874928997273,
+              0.2798093456709594,
+              0.27142932322203067,
+              0.34625874079371755,
+              0.4067360947268051,
+              0.40867660726632987,
+              0.3931460809289363,
+              0.438043481281452,
+              0.49730351143761686,
+              0.47101576487746155,
+              0.48204710411659457
+            ]
+          },
+          "classification": {
+            "num_samples": 1140,
+            "accuracy": 0.9333333333333333,
+            "macro_f1": 0.4827586206896552,
+            "true_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "pred_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "confusion_matrix": [
+              [
+                1064,
+                0
+              ],
+              [
+                76,
+                0
+              ]
+            ],
+            "per_class": {
+              "adenoma": {
+                "tp": 1064,
+                "fp": 76,
+                "fn": 0,
+                "tn": 0,
+                "precision": 0.9333333333333333,
+                "recall": 1.0,
+                "f1": 0.9655172413793104,
+                "specificity": 0.0
+              },
+              "hyperplastic": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 76,
+                "tn": 1064,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "specificity": 1.0
+              }
+            }
+          }
+        },
+        {
+          "fold": "fold_5",
+          "num_train_rows": 4560,
+          "num_val_rows": 1140,
+          "train_label_distribution": {
+            "adenoma": 4256,
+            "hyperplastic": 304
+          },
+          "val_label_distribution": {
+            "adenoma": 1064,
+            "hyperplastic": 76
+          },
+          "train_cases": [
+            "case1",
+            "case4",
+            "case5",
+            "case6",
+            "case7",
+            "case8",
+            "case9",
+            "case10",
+            "case11",
+            "case12",
+            "case13",
+            "case14",
+            "case16",
+            "case17",
+            "case18",
+            "case19",
+            "case20",
+            "case21",
+            "case24",
+            "case26",
+            "case27",
+            "case28",
+            "case29",
+            "case30",
+            "case31",
+            "case33",
+            "case34",
+            "case35",
+            "case36",
+            "case37",
+            "case38",
+            "case39",
+            "case41",
+            "case42",
+            "case43",
+            "case44",
+            "case45",
+            "case46",
+            "case47",
+            "case48",
+            "case49",
+            "case50",
+            "case51",
+            "case52",
+            "case54",
+            "case55",
+            "case56",
+            "case60",
+            "case61",
+            "case62",
+            "case64",
+            "case65",
+            "case66",
+            "case69",
+            "case70",
+            "case72",
+            "case73",
+            "case74",
+            "case75",
+            "case76"
+          ],
+          "val_cases": [
+            "case77",
+            "case78",
+            "case80",
+            "case81",
+            "case85",
+            "case86",
+            "case87",
+            "case88",
+            "case89",
+            "case93",
+            "case94",
+            "case95",
+            "case96",
+            "case98",
+            "case99"
+          ],
+          "artifacts": {
+            "train_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_5/train.csv",
+            "val_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_5/val.csv",
+            "train_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_5/data/train.pkl",
+            "val_pkl": "/workspace/fold/hyper_vs_adeno/folds/fold_5/data/val.pkl",
+            "model_dir": "/workspace/fold/hyper_vs_adeno/folds/fold_5/train",
+            "best_checkpoint": "/workspace/fold/hyper_vs_adeno/folds/fold_5/train/hyper_vs_adeno_fold_5-001.pt",
+            "train_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_5/train/hyper_vs_adeno_fold_5_loss_per_epoch.csv",
+            "val_loss_csv": "/workspace/fold/hyper_vs_adeno/folds/fold_5/val_loss_per_epoch.csv",
+            "loss_plot_svg": "/workspace/fold/hyper_vs_adeno/folds/fold_5/train_vs_val_loss.svg"
+          },
+          "training": {
+            "epochs": 12,
+            "train_bs": 4,
+            "eval_bs": 4,
+            "prefix_length": 10,
+            "prefix_length_clip": 10,
+            "mapping_type": "transformer",
+            "num_layers": 8,
+            "is_rn": false,
+            "only_prefix": true,
+            "normalize_prefix": true,
+            "gpu_visible": "1"
+          },
+          "loss": {
+            "best_epoch": 1,
+            "best_val_loss": 0.2471375028553762,
+            "train_loss_at_best_epoch": 0.2086677289126735,
+            "epochs": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "train_loss": [
+              2.3203020735790854,
+              0.2086677289126735,
+              0.14895006205167688,
+              0.11580169929616284,
+              0.07676384491731593,
+              0.04767419471315582,
+              0.02984360411861225,
+              0.019190103042076277,
+              0.01159349219963412,
+              0.005659141644259523,
+              0.0020710647780281745,
+              0.0007126194572105816
+            ],
+            "val_loss": [
+              0.24728154864227564,
+              0.2471375028553762,
+              0.27399838506652596,
+              0.2892047865218238,
+              0.3386843182669397,
+              0.341569529467246,
+              0.4323744883858844,
+              0.42392525803624537,
+              0.4789399848058166,
+              0.4877475610362333,
+              0.5229684570510137,
+              0.5275447182847481
+            ]
+          },
+          "classification": {
+            "num_samples": 1140,
+            "accuracy": 0.9333333333333333,
+            "macro_f1": 0.4827586206896552,
+            "true_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "pred_labels": [
+              "adenoma",
+              "hyperplastic"
+            ],
+            "confusion_matrix": [
+              [
+                1064,
+                0
+              ],
+              [
+                76,
+                0
+              ]
+            ],
+            "per_class": {
+              "adenoma": {
+                "tp": 1064,
+                "fp": 76,
+                "fn": 0,
+                "tn": 0,
+                "precision": 0.9333333333333333,
+                "recall": 1.0,
+                "f1": 0.9655172413793104,
+                "specificity": 0.0
+              },
+              "hyperplastic": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 76,
+                "tn": 1064,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "specificity": 1.0
+              }
+            }
+          }
+        }
+      ],
+      "aggregate": {
+        "num_folds": 5,
+        "best_val_loss_mean": 0.23678981145745828,
+        "best_val_loss_std": 0.01464275532272795,
+        "val_classification_accuracy_mean": 0.9221052631578948,
+        "val_classification_accuracy_std": 0.018759628696250263,
+        "val_classification_macro_f1_mean": 0.47968687651730685,
+        "val_classification_macro_f1_std": 0.005149021534556434
+      }
+    },
+    "detection_polyp_vs_no_polyp_2fold_groupcv": {
+      "task_name": "positive_vs_negative",
+      "num_rows": 6840,
+      "num_cases": 77,
+      "label_distribution": {
+        "no_polyp": 1140,
+        "polyp": 5700
+      },
+      "folds": [
+        {
+          "fold": "fold_1",
+          "num_train_rows": 3382,
+          "num_val_rows": 3458,
+          "train_label_distribution": {
+            "no_polyp": 570,
+            "polyp": 2812
+          },
+          "val_label_distribution": {
+            "no_polyp": 570,
+            "polyp": 2888
+          },
+          "train_cases": [
+            "case3",
+            "case4",
+            "case6",
+            "case8",
+            "case10",
+            "case12",
+            "case14",
+            "case17",
+            "case19",
+            "case21",
+            "case26",
+            "case28",
+            "case30",
+            "case33",
+            "case35",
+            "case37",
+            "case39",
+            "case42",
+            "case44",
+            "case46",
+            "case48",
+            "case50",
+            "case52",
+            "case55",
+            "case60",
+            "case62",
+            "case65",
+            "case69",
+            "case72",
+            "case74",
+            "case76",
+            "case78",
+            "case81",
+            "case86",
+            "case88",
+            "case93",
+            "case95",
+            "case98"
+          ],
+          "val_cases": [
+            "case1",
+            "case2",
+            "case5",
+            "case7",
+            "case9",
+            "case11",
+            "case13",
+            "case16",
+            "case18",
+            "case20",
+            "case24",
+            "case27",
+            "case29",
+            "case31",
+            "case34",
+            "case36",
+            "case38",
+            "case41",
+            "case43",
+            "case45",
+            "case47",
+            "case49",
+            "case51",
+            "case54",
+            "case56",
+            "case61",
+            "case64",
+            "case66",
+            "case70",
+            "case73",
+            "case75",
+            "case77",
+            "case80",
+            "case85",
+            "case87",
+            "case89",
+            "case94",
+            "case96",
+            "case99"
+          ],
+          "artifacts": {
+            "train_csv": "/workspace/fold/positive_vs_negative/folds/fold_1/train.csv",
+            "val_csv": "/workspace/fold/positive_vs_negative/folds/fold_1/val.csv",
+            "train_pkl": "/workspace/fold/positive_vs_negative/folds/fold_1/data/train.pkl",
+            "val_pkl": "/workspace/fold/positive_vs_negative/folds/fold_1/data/val.pkl",
+            "model_dir": "/workspace/fold/positive_vs_negative/folds/fold_1/train",
+            "best_checkpoint": "/workspace/fold/positive_vs_negative/folds/fold_1/train/positive_vs_negative_fold_1-001.pt",
+            "train_loss_csv": "/workspace/fold/positive_vs_negative/folds/fold_1/train/positive_vs_negative_fold_1_loss_per_epoch.csv",
+            "val_loss_csv": "/workspace/fold/positive_vs_negative/folds/fold_1/val_loss_per_epoch.csv",
+            "loss_plot_svg": "/workspace/fold/positive_vs_negative/folds/fold_1/train_vs_val_loss.svg"
+          },
+          "training": {
+            "epochs": 12,
+            "train_bs": 4,
+            "eval_bs": 4,
+            "prefix_length": 10,
+            "prefix_length_clip": 10,
+            "mapping_type": "transformer",
+            "num_layers": 8,
+            "is_rn": false,
+            "only_prefix": true,
+            "normalize_prefix": true,
+            "gpu_visible": "1"
+          },
+          "loss": {
+            "best_epoch": 1,
+            "best_val_loss": 0.28700017614075735,
+            "train_loss_at_best_epoch": 0.3338249865985481,
+            "epochs": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "train_loss": [
+              3.0252200943478464,
+              0.3338249865985481,
+              0.14553184515449422,
+              0.10883336455158933,
+              0.08495334298873441,
+              0.07590505978169702,
+              0.0435946300526607,
+              0.02934398677271719,
+              0.01995039512623741,
+              0.011959002159202483,
+              0.005863345629148483,
+              0.0022727165892981985
+            ],
+            "val_loss": [
+              0.6584237716562007,
+              0.28700017614075735,
+              0.3120407951842754,
+              0.373406776825495,
+              0.4028571203661821,
+              0.38341333024675633,
+              0.4316346466773178,
+              0.4847415344727141,
+              0.4430552013182044,
+              0.4602277137732598,
+              0.4911688322134983,
+              0.5052978838137456
+            ]
+          },
+          "classification": {
+            "num_samples": 3458,
+            "accuracy": 0.8559861191440139,
+            "macro_f1": 0.5748381649310441,
+            "true_labels": [
+              "no_polyp",
+              "polyp"
+            ],
+            "pred_labels": [
+              "no_polyp",
+              "polyp"
+            ],
+            "confusion_matrix": [
+              [
+                74,
+                496
+              ],
+              [
+                2,
+                2886
+              ]
+            ],
+            "per_class": {
+              "no_polyp": {
+                "tp": 74,
+                "fp": 2,
+                "fn": 496,
+                "tn": 2886,
+                "precision": 0.9736842105263158,
+                "recall": 0.12982456140350876,
+                "f1": 0.2291021671826625,
+                "specificity": 0.9993074792243767
+              },
+              "polyp": {
+                "tp": 2886,
+                "fp": 496,
+                "fn": 2,
+                "tn": 74,
+                "precision": 0.8533412182140745,
+                "recall": 0.9993074792243767,
+                "f1": 0.9205741626794257,
+                "specificity": 0.12982456140350876
+              }
+            }
+          }
+        },
+        {
+          "fold": "fold_2",
+          "num_train_rows": 3458,
+          "num_val_rows": 3382,
+          "train_label_distribution": {
+            "no_polyp": 570,
+            "polyp": 2888
+          },
+          "val_label_distribution": {
+            "no_polyp": 570,
+            "polyp": 2812
+          },
+          "train_cases": [
+            "case1",
+            "case2",
+            "case5",
+            "case7",
+            "case9",
+            "case11",
+            "case13",
+            "case16",
+            "case18",
+            "case20",
+            "case24",
+            "case27",
+            "case29",
+            "case31",
+            "case34",
+            "case36",
+            "case38",
+            "case41",
+            "case43",
+            "case45",
+            "case47",
+            "case49",
+            "case51",
+            "case54",
+            "case56",
+            "case61",
+            "case64",
+            "case66",
+            "case70",
+            "case73",
+            "case75",
+            "case77",
+            "case80",
+            "case85",
+            "case87",
+            "case89",
+            "case94",
+            "case96",
+            "case99"
+          ],
+          "val_cases": [
+            "case3",
+            "case4",
+            "case6",
+            "case8",
+            "case10",
+            "case12",
+            "case14",
+            "case17",
+            "case19",
+            "case21",
+            "case26",
+            "case28",
+            "case30",
+            "case33",
+            "case35",
+            "case37",
+            "case39",
+            "case42",
+            "case44",
+            "case46",
+            "case48",
+            "case50",
+            "case52",
+            "case55",
+            "case60",
+            "case62",
+            "case65",
+            "case69",
+            "case72",
+            "case74",
+            "case76",
+            "case78",
+            "case81",
+            "case86",
+            "case88",
+            "case93",
+            "case95",
+            "case98"
+          ],
+          "artifacts": {
+            "train_csv": "/workspace/fold/positive_vs_negative/folds/fold_2/train.csv",
+            "val_csv": "/workspace/fold/positive_vs_negative/folds/fold_2/val.csv",
+            "train_pkl": "/workspace/fold/positive_vs_negative/folds/fold_2/data/train.pkl",
+            "val_pkl": "/workspace/fold/positive_vs_negative/folds/fold_2/data/val.pkl",
+            "model_dir": "/workspace/fold/positive_vs_negative/folds/fold_2/train",
+            "best_checkpoint": "/workspace/fold/positive_vs_negative/folds/fold_2/train/positive_vs_negative_fold_2-003.pt",
+            "train_loss_csv": "/workspace/fold/positive_vs_negative/folds/fold_2/train/positive_vs_negative_fold_2_loss_per_epoch.csv",
+            "val_loss_csv": "/workspace/fold/positive_vs_negative/folds/fold_2/val_loss_per_epoch.csv",
+            "loss_plot_svg": "/workspace/fold/positive_vs_negative/folds/fold_2/train_vs_val_loss.svg"
+          },
+          "training": {
+            "epochs": 12,
+            "train_bs": 4,
+            "eval_bs": 4,
+            "prefix_length": 10,
+            "prefix_length_clip": 10,
+            "mapping_type": "transformer",
+            "num_layers": 8,
+            "is_rn": false,
+            "only_prefix": true,
+            "normalize_prefix": true,
+            "gpu_visible": "1"
+          },
+          "loss": {
+            "best_epoch": 3,
+            "best_val_loss": 0.2317465596442953,
+            "train_loss_at_best_epoch": 0.1677073586012099,
+            "epochs": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "train_loss": [
+              3.295915867443438,
+              0.34875440542344693,
+              0.17779032284980295,
+              0.1677073586012099,
+              0.15908489912894933,
+              0.08831128785365124,
+              0.059348771429978554,
+              0.03628540651536443,
+              0.024020773201805748,
+              0.015183233088868696,
+              0.007438928330547815,
+              0.0034012353063627852
+            ],
+            "val_loss": [
+              0.6352507447364555,
+              0.2647136912005389,
+              0.24405923542152982,
+              0.2317465596442953,
+              0.264647602999725,
+              0.27890254735301173,
+              0.27480741145693993,
+              0.28095546413250466,
+              0.322390217786613,
+              0.3504807228355496,
+              0.3654707174612284,
+              0.37398818040153453
+            ]
+          },
+          "classification": {
+            "num_samples": 3382,
+            "accuracy": 0.8648728562980484,
+            "macro_f1": 0.6976990039898692,
+            "true_labels": [
+              "no_polyp",
+              "polyp"
+            ],
+            "pred_labels": [
+              "no_polyp",
+              "polyp"
+            ],
+            "confusion_matrix": [
+              [
+                205,
+                365
+              ],
+              [
+                92,
+                2720
+              ]
+            ],
+            "per_class": {
+              "no_polyp": {
+                "tp": 205,
+                "fp": 92,
+                "fn": 365,
+                "tn": 2720,
+                "precision": 0.6902356902356902,
+                "recall": 0.35964912280701755,
+                "f1": 0.47289504036908875,
+                "specificity": 0.9672830725462305
+              },
+              "polyp": {
+                "tp": 2720,
+                "fp": 365,
+                "fn": 92,
+                "tn": 205,
+                "precision": 0.8816855753646677,
+                "recall": 0.9672830725462305,
+                "f1": 0.9225029676106495,
+                "specificity": 0.35964912280701755
+              }
+            }
+          }
+        }
+      ],
+      "aggregate": {
+        "num_folds": 2,
+        "best_val_loss_mean": 0.2593733678925263,
+        "best_val_loss_std": 0.027626808248231022,
+        "val_classification_accuracy_mean": 0.8604294877210312,
+        "val_classification_accuracy_std": 0.00444336857701727,
+        "val_classification_macro_f1_mean": 0.6362685844604566,
+        "val_classification_macro_f1_std": 0.06143041952941253
+      }
+    }
+  }
+}
