@@ -1,0 +1,18 @@
+{
+  "val_batches": 1425,
+  "val_samples": 5700,
+  "mean_val_loss": 0.02486852235545245,
+  "val_loss_csv": "fold/2fold/resnet/folds/fold_1/inference/val_loss_per_batch.csv",
+  "pre_gpt_embeddings_path": "fold/2fold/resnet/folds/fold_1/embeddings/val_pre_gpt_embeddings.pt",
+  "post_gpt_embeddings_path": "fold/2fold/resnet/folds/fold_1/embeddings/val_post_gpt_embeddings.pt",
+  "pre_gpt_embeddings_shape": [
+    5700,
+    10,
+    768
+  ],
+  "post_gpt_embeddings_shape": [
+    5700,
+    10,
+    768
+  ]
+}

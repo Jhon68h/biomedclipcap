@@ -1,0 +1,266 @@
+{
+  "inputs": {
+    "fold_root": "fold/5kfold",
+    "models": [
+      "biomedclip",
+      "vit",
+      "resnet101"
+    ]
+  },
+  "probability_column_candidates": [
+    "prob_polyp",
+    "polyp_probability",
+    "probability_polyp",
+    "score_polyp",
+    "logit_polyp",
+    "y_score",
+    "prob_1",
+    "class_1_prob"
+  ],
+  "fallback_used_if_missing": "label_pred -> polyp=1.0, no_polyp=0.0",
+  "used_files": [
+    {
+      "prediction_csv": "fold/5kfold/biomedclip/folds/fold_1/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 0
+    },
+    {
+      "prediction_csv": "fold/5kfold/biomedclip/folds/fold_2/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/biomedclip/folds/fold_3/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/biomedclip/folds/fold_4/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/biomedclip/folds/fold_5/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/vit/folds/fold_1/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/vit/folds/fold_2/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/vit/folds/fold_3/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/vit/folds/fold_4/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/vit/folds/fold_5/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/resnet101/folds/fold_1/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/resnet101/folds/fold_2/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/resnet101/folds/fold_3/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/resnet101/folds/fold_4/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    },
+    {
+      "prediction_csv": "fold/5kfold/resnet101/folds/fold_5/inference/val_predictions.csv",
+      "score_source": "fallback_label_pred_binary",
+      "score_column": null,
+      "rows_total": 2280,
+      "rows_used": 2280
+    }
+  ],
+  "model_results": {
+    "biomedclip": {
+      "num_scores": 9120,
+      "class_counts": {
+        "no_polyp": 4560,
+        "polyp": 4560
+      },
+      "plot": "fold/5kfold/plots/prob_hist_biomedclip.png",
+      "fold_sources": [
+        {
+          "prediction_csv": "fold/5kfold/biomedclip/folds/fold_1/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 0
+        },
+        {
+          "prediction_csv": "fold/5kfold/biomedclip/folds/fold_2/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/biomedclip/folds/fold_3/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/biomedclip/folds/fold_4/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/biomedclip/folds/fold_5/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        }
+      ]
+    },
+    "vit": {
+      "num_scores": 11400,
+      "class_counts": {
+        "no_polyp": 5700,
+        "polyp": 5700
+      },
+      "plot": "fold/5kfold/plots/prob_hist_vit.png",
+      "fold_sources": [
+        {
+          "prediction_csv": "fold/5kfold/vit/folds/fold_1/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/vit/folds/fold_2/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/vit/folds/fold_3/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/vit/folds/fold_4/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/vit/folds/fold_5/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        }
+      ]
+    },
+    "resnet101": {
+      "num_scores": 11400,
+      "class_counts": {
+        "no_polyp": 5700,
+        "polyp": 5700
+      },
+      "plot": "fold/5kfold/plots/prob_hist_resnet101.png",
+      "fold_sources": [
+        {
+          "prediction_csv": "fold/5kfold/resnet101/folds/fold_1/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/resnet101/folds/fold_2/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/resnet101/folds/fold_3/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/resnet101/folds/fold_4/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        },
+        {
+          "prediction_csv": "fold/5kfold/resnet101/folds/fold_5/inference/val_predictions.csv",
+          "score_source": "fallback_label_pred_binary",
+          "score_column": null,
+          "rows_total": 2280,
+          "rows_used": 2280
+        }
+      ]
+    }
+  },
+  "warnings": []
+}

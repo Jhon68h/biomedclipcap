@@ -6,7 +6,6 @@ services:
     working_dir: /workspace
     volumes:
       - ./:/workspace
-      - ./Sun_Multimodal:/data/jefelitman_pupils/Sun_Multimodal:ro
     deploy:
       resources:
         reservations:

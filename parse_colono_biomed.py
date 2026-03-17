@@ -4,7 +4,7 @@ import pickle
 import argparse
 
 os.environ.setdefault("CUDA_DEVICE_ORDER", "PCI_BUS_ID")
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "3")
 
 import torch
 from PIL import Image

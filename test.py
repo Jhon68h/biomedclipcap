@@ -128,6 +128,38 @@ def load_openclip_encoder(
     return model, preprocess, embed_dim
 
 
+def load_biomedclip_encoder(
+    device: torch.device,
+    model_id: str,
+) -> Tuple[torch.nn.Module, object, int]:
+    """
+    Carga BioMedCLIP directamente desde hf-hub usando OpenCLIP:
+      model, preprocess = create_model_from_pretrained(model_id)
+      tokenizer = get_tokenizer(model_id)
+    """
+    try:
+        from open_clip import create_model_from_pretrained, get_tokenizer
+    except Exception as e:
+        raise RuntimeError(
+            "No pude importar open_clip (create_model_from_pretrained/get_tokenizer).\n"
+            f"Error: {e}"
+        )
+
+    print("[INFO] Cargando BioMedCLIP desde hf-hub...")
+    print(f"[INFO]   model_id={model_id}")
+    model, preprocess = create_model_from_pretrained(model_id)
+    model = model.to(device).eval()
+    _ = get_tokenizer(model_id)
+
+    with torch.no_grad():
+        dummy = torch.zeros(1, 3, 224, 224, device=device)
+        emb = model.encode_image(dummy).float()
+        embed_dim = int(emb.shape[-1])
+
+    print(f"[INFO] BioMedCLIP cargado. embed_dim={embed_dim}")
+    return model, preprocess, embed_dim
+
+
 def encode_image_to_embedding(
     encoder_name: str,
     clip_model,
@@ -217,8 +249,8 @@ def main():
         "--encoder",
         type=str,
         default="vit",
-        choices=["vit", "rn101", "openclip"],
-        help="vit: OpenAI CLIP ViT-B/32 | rn101: OpenAI CLIP RN101 | openclip: OpenCLIP/BioMedCLIP",
+        choices=["vit", "rn101", "openclip", "biomedclip"],
+        help="vit/rn101: OpenAI CLIP | openclip: OpenCLIP genérico | biomedclip: hf-hub BioMedCLIP",
     )
 
     # Para OpenAI CLIP:
@@ -228,6 +260,11 @@ def main():
     parser.add_argument("--openclip_model", type=str, default="ViT-B-16")
     parser.add_argument("--openclip_pretrained", type=str, default=None)
     parser.add_argument("--openclip_ckpt", type=str, default=None)
+    parser.add_argument(
+        "--biomedclip_model_id",
+        type=str,
+        default="hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+    )
 
     # Opcional: forzar prefix_size si ya sabes (si no, se infiere del encoder)
     parser.add_argument("--prefix_size", type=int, default=0)
@@ -265,6 +302,11 @@ def main():
             clip_name = "ViT-B/32" if args.encoder == "vit" else "RN101"
 
         clip_model, preprocess, inferred_dim = load_openai_clip(device, clip_name)
+    elif args.encoder == "biomedclip":
+        clip_model, preprocess, inferred_dim = load_biomedclip_encoder(
+            device=device,
+            model_id=args.biomedclip_model_id,
+        )
     else:
         clip_model, preprocess, inferred_dim = load_openclip_encoder(
             device=device,

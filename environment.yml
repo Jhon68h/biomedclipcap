@@ -6,6 +6,7 @@ dependencies:
 - pip>=21
 - scikit-image=0.18.1
 - pip:
+   - scikit-learn
    - transformers~=4.10.2
    - ftfy
    - regex

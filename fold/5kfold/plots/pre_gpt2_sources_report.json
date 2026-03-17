@@ -1,0 +1,208 @@
+{
+  "selected_primary_source": "fold/5kfold/<model>/folds/fold_*/data/val.pkl (key: clip_embedding)",
+  "selected_token_source": "fold/5kfold/<model>/folds/fold_*/data/val_tokens.pkl",
+  "used_artifacts": {
+    "biomedclip": [
+      {
+        "fold": "fold_1",
+        "meta_csv": "fold/5kfold/biomedclip/folds/fold_1/val.csv",
+        "embedding_pkl": "fold/5kfold/biomedclip/folds/fold_1/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/biomedclip/folds/fold_1/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/biomedclip/folds/fold_1/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_2",
+        "meta_csv": "fold/5kfold/biomedclip/folds/fold_2/val.csv",
+        "embedding_pkl": "fold/5kfold/biomedclip/folds/fold_2/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/biomedclip/folds/fold_2/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/biomedclip/folds/fold_2/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_3",
+        "meta_csv": "fold/5kfold/biomedclip/folds/fold_3/val.csv",
+        "embedding_pkl": "fold/5kfold/biomedclip/folds/fold_3/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/biomedclip/folds/fold_3/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/biomedclip/folds/fold_3/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_4",
+        "meta_csv": "fold/5kfold/biomedclip/folds/fold_4/val.csv",
+        "embedding_pkl": "fold/5kfold/biomedclip/folds/fold_4/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/biomedclip/folds/fold_4/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/biomedclip/folds/fold_4/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_5",
+        "meta_csv": "fold/5kfold/biomedclip/folds/fold_5/val.csv",
+        "embedding_pkl": "fold/5kfold/biomedclip/folds/fold_5/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/biomedclip/folds/fold_5/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/biomedclip/folds/fold_5/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      }
+    ],
+    "vit": [
+      {
+        "fold": "fold_1",
+        "meta_csv": "fold/5kfold/vit/folds/fold_1/val.csv",
+        "embedding_pkl": "fold/5kfold/vit/folds/fold_1/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/vit/folds/fold_1/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/vit/folds/fold_1/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_2",
+        "meta_csv": "fold/5kfold/vit/folds/fold_2/val.csv",
+        "embedding_pkl": "fold/5kfold/vit/folds/fold_2/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/vit/folds/fold_2/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/vit/folds/fold_2/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_3",
+        "meta_csv": "fold/5kfold/vit/folds/fold_3/val.csv",
+        "embedding_pkl": "fold/5kfold/vit/folds/fold_3/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/vit/folds/fold_3/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/vit/folds/fold_3/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_4",
+        "meta_csv": "fold/5kfold/vit/folds/fold_4/val.csv",
+        "embedding_pkl": "fold/5kfold/vit/folds/fold_4/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/vit/folds/fold_4/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/vit/folds/fold_4/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_5",
+        "meta_csv": "fold/5kfold/vit/folds/fold_5/val.csv",
+        "embedding_pkl": "fold/5kfold/vit/folds/fold_5/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/vit/folds/fold_5/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/vit/folds/fold_5/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      }
+    ],
+    "resnet101": [
+      {
+        "fold": "fold_1",
+        "meta_csv": "fold/5kfold/resnet101/folds/fold_1/val.csv",
+        "embedding_pkl": "fold/5kfold/resnet101/folds/fold_1/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/resnet101/folds/fold_1/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/resnet101/folds/fold_1/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_2",
+        "meta_csv": "fold/5kfold/resnet101/folds/fold_2/val.csv",
+        "embedding_pkl": "fold/5kfold/resnet101/folds/fold_2/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/resnet101/folds/fold_2/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/resnet101/folds/fold_2/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_3",
+        "meta_csv": "fold/5kfold/resnet101/folds/fold_3/val.csv",
+        "embedding_pkl": "fold/5kfold/resnet101/folds/fold_3/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/resnet101/folds/fold_3/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/resnet101/folds/fold_3/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_4",
+        "meta_csv": "fold/5kfold/resnet101/folds/fold_4/val.csv",
+        "embedding_pkl": "fold/5kfold/resnet101/folds/fold_4/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/resnet101/folds/fold_4/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/resnet101/folds/fold_4/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_5",
+        "meta_csv": "fold/5kfold/resnet101/folds/fold_5/val.csv",
+        "embedding_pkl": "fold/5kfold/resnet101/folds/fold_5/data/val.pkl",
+        "tokens_pkl": "fold/5kfold/resnet101/folds/fold_5/data/val_tokens.pkl",
+        "predictions_csv": "fold/5kfold/resnet101/folds/fold_5/inference/val_predictions.csv",
+        "rows_meta_csv": 2280,
+        "rows_embeddings": 2280,
+        "rows_used": 2280
+      }
+    ]
+  },
+  "code_sources": [
+    {
+      "type": "stored_pre_gpt2_embeddings",
+      "file": "parse_colono_biomed.py",
+      "line_encode_image": 180,
+      "line_pickle_dump": 207,
+      "note": "BioMedCLIP embeddings se guardan en PKL con keys clip_embedding y captions."
+    },
+    {
+      "type": "stored_pre_gpt2_embeddings",
+      "file": "parse_colono.py",
+      "line_encode_image": 43,
+      "line_pickle_dump": 67,
+      "note": "OpenAI CLIP embeddings se guardan en PKL con keys clip_embedding y captions."
+    },
+    {
+      "type": "stored_gpt2_tokens_cache",
+      "file": "train.py",
+      "line_load_pkl": 64,
+      "line_create_tokens": 80,
+      "line_save_tokens": 85,
+      "note": "El cache val_tokens.pkl se crea en dataset de train.py antes de alimentar GPT-2."
+    },
+    {
+      "type": "in_memory_logits_not_persisted",
+      "file": "train.py",
+      "line_logits": 525,
+      "note": "Logits de entrenamiento se calculan en memoria para loss y no se guardan a disco."
+    },
+    {
+      "type": "in_memory_generation_logits_not_persisted",
+      "file": "predict.py",
+      "line_logits": 162,
+      "line_softmax": 164,
+      "note": "Logits/probabilidades de generacion se usan en memoria en predict.py y no se serializan."
+    },
+    {
+      "type": "fold_pipeline_pre_gpt2_to_gpt2",
+      "file": "fold/folds_configuration/stratifiedfolds.py",
+      "line_load_val_pkl": 305,
+      "line_read_embeddings": 307,
+      "line_project_before_gpt2": 325,
+      "note": "Pipeline de inferencia por fold: carga embeddings de val.pkl y proyecta antes de GPT-2."
+    }
+  ],
+  "warnings": []
+}

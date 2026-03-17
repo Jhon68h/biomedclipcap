@@ -1,0 +1,40 @@
+{
+  "task_name": "positive_vs_negative",
+  "fold_dir": "/workspace/fold/5kfold",
+  "output_dir": "/workspace/fold/5kfold/biomedclip",
+  "runtime": {
+    "python_exec": "/opt/conda/bin/python3",
+    "gpu": "3",
+    "cuda_visible_devices": "3"
+  },
+  "parser": {
+    "script": "/workspace/parse_colono_biomed.py",
+    "weights_path": "/workspace/clip_weights/biomedclip_weights.pt",
+    "model_id": "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+    "parse_batch_size": 64,
+    "reuse_pkls": false
+  },
+  "training": {
+    "script": "/workspace/train.py",
+    "epochs": 12,
+    "train_bs": 4,
+    "eval_bs": 4,
+    "prefix_length": 10,
+    "prefix_length_clip": 10,
+    "mapping_type": "transformer",
+    "num_layers": 8,
+    "is_rn": false,
+    "only_prefix": true,
+    "normalize_prefix": true,
+    "reuse_training": false
+  },
+  "inference": {
+    "skip_inference": false,
+    "beam_search": false,
+    "entry_length": 67,
+    "top_p": 0.8,
+    "temperature": 1.0,
+    "stop_token": ".",
+    "max_val_samples": 0
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "used_prediction_csvs": {
+    "biomedclip": [
+      "fold/5kfold/biomedclip/folds/fold_1/inference/val_predictions.csv",
+      "fold/5kfold/biomedclip/folds/fold_2/inference/val_predictions.csv",
+      "fold/5kfold/biomedclip/folds/fold_3/inference/val_predictions.csv",
+      "fold/5kfold/biomedclip/folds/fold_4/inference/val_predictions.csv",
+      "fold/5kfold/biomedclip/folds/fold_5/inference/val_predictions.csv"
+    ],
+    "vit": [
+      "fold/5kfold/vit/folds/fold_1/inference/val_predictions.csv",
+      "fold/5kfold/vit/folds/fold_2/inference/val_predictions.csv",
+      "fold/5kfold/vit/folds/fold_3/inference/val_predictions.csv",
+      "fold/5kfold/vit/folds/fold_4/inference/val_predictions.csv",
+      "fold/5kfold/vit/folds/fold_5/inference/val_predictions.csv"
+    ],
+    "resnet101": [
+      "fold/5kfold/resnet101/folds/fold_1/inference/val_predictions.csv",
+      "fold/5kfold/resnet101/folds/fold_2/inference/val_predictions.csv",
+      "fold/5kfold/resnet101/folds/fold_3/inference/val_predictions.csv",
+      "fold/5kfold/resnet101/folds/fold_4/inference/val_predictions.csv",
+      "fold/5kfold/resnet101/folds/fold_5/inference/val_predictions.csv"
+    ]
+  },
+  "score_source_by_fold": {
+    "biomedclip": [
+      {
+        "fold": "fold_1",
+        "prediction_csv": "fold/5kfold/biomedclip/folds/fold_1/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_2",
+        "prediction_csv": "fold/5kfold/biomedclip/folds/fold_2/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_3",
+        "prediction_csv": "fold/5kfold/biomedclip/folds/fold_3/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_4",
+        "prediction_csv": "fold/5kfold/biomedclip/folds/fold_4/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_5",
+        "prediction_csv": "fold/5kfold/biomedclip/folds/fold_5/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      }
+    ],
+    "vit": [
+      {
+        "fold": "fold_1",
+        "prediction_csv": "fold/5kfold/vit/folds/fold_1/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_2",
+        "prediction_csv": "fold/5kfold/vit/folds/fold_2/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_3",
+        "prediction_csv": "fold/5kfold/vit/folds/fold_3/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_4",
+        "prediction_csv": "fold/5kfold/vit/folds/fold_4/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_5",
+        "prediction_csv": "fold/5kfold/vit/folds/fold_5/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      }
+    ],
+    "resnet101": [
+      {
+        "fold": "fold_1",
+        "prediction_csv": "fold/5kfold/resnet101/folds/fold_1/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_2",
+        "prediction_csv": "fold/5kfold/resnet101/folds/fold_2/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_3",
+        "prediction_csv": "fold/5kfold/resnet101/folds/fold_3/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_4",
+        "prediction_csv": "fold/5kfold/resnet101/folds/fold_4/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      },
+      {
+        "fold": "fold_5",
+        "prediction_csv": "fold/5kfold/resnet101/folds/fold_5/inference/val_predictions.csv",
+        "score_mode": "predicted_label_binary",
+        "score_column": null,
+        "rows_total": 2280,
+        "rows_used": 2280
+      }
+    ]
+  },
+  "metric_definition": "Si existe columna de probabilidad/score de polyp, se usa esa; si no, score binario derivado de label_pred (polyp=1, no_polyp=0).",
+  "grouping": "media por paciente, separado por clase real (label_true).",
+  "plot_path": "fold/5kfold/plots/violin_predictions_patient_mean_polyp_score.png",
+  "table_path": "fold/5kfold/plots/violin_predictions_patient_mean_polyp_score.csv"
+}

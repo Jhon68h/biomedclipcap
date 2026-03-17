@@ -1,0 +1,78 @@
+{
+  "model": "biomedclip",
+  "requested_model": "biomedclip",
+  "output_subdir": "biomedclip",
+  "gpu": null,
+  "total_samples": 11400,
+  "label_distribution": {
+    "positive": 5700,
+    "negative": 5700
+  },
+  "folds": [
+    {
+      "fold": "fold_1",
+      "train_samples": 5700,
+      "val_samples": 5700,
+      "train_label_distribution": {
+        "positive": 2850,
+        "negative": 2850
+      },
+      "val_label_distribution": {
+        "positive": 2850,
+        "negative": 2850
+      },
+      "artifacts": {
+        "fold_dir": "fold/2fold/biomedclip/folds/fold_1",
+        "train_csv": "fold/2fold/biomedclip/folds/fold_1/train.csv",
+        "val_csv": "fold/2fold/biomedclip/folds/fold_1/val.csv",
+        "train_pkl": "fold/2fold/biomedclip/folds/fold_1/data/train.pkl",
+        "val_pkl": "fold/2fold/biomedclip/folds/fold_1/data/val.pkl",
+        "train_dir": "fold/2fold/biomedclip/folds/fold_1/train",
+        "inference_dir": "fold/2fold/biomedclip/folds/fold_1/inference",
+        "val_predictions_raw_csv": "fold/2fold/biomedclip/folds/fold_1/inference/val_predictions_raw.csv",
+        "val_predictions_csv": "fold/2fold/biomedclip/folds/fold_1/inference/val_predictions.csv",
+        "val_manifest_csv": "fold/2fold/biomedclip/folds/fold_1/inference/val_manifest.csv",
+        "train_clip_embeddings_pt": "fold/2fold/biomedclip/folds/fold_1/embeddings/train_clip_embeddings.pt",
+        "val_clip_embeddings_pt": "fold/2fold/biomedclip/folds/fold_1/embeddings/val_clip_embeddings.pt",
+        "val_pre_gpt_embeddings_pt": "fold/2fold/biomedclip/folds/fold_1/embeddings/val_pre_gpt_embeddings.pt",
+        "val_post_gpt_embeddings_pt": "fold/2fold/biomedclip/folds/fold_1/embeddings/val_post_gpt_embeddings.pt",
+        "val_loss_csv": "fold/2fold/biomedclip/folds/fold_1/inference/val_loss_per_batch.csv",
+        "val_loss_summary_json": "fold/2fold/biomedclip/folds/fold_1/inference/val_loss_summary.json",
+        "val_loss_per_epoch_csv": "fold/2fold/biomedclip/folds/fold_1/val_loss_per_epoch.csv"
+      }
+    },
+    {
+      "fold": "fold_2",
+      "train_samples": 5700,
+      "val_samples": 5700,
+      "train_label_distribution": {
+        "positive": 2850,
+        "negative": 2850
+      },
+      "val_label_distribution": {
+        "positive": 2850,
+        "negative": 2850
+      },
+      "artifacts": {
+        "fold_dir": "fold/2fold/biomedclip/folds/fold_2",
+        "train_csv": "fold/2fold/biomedclip/folds/fold_2/train.csv",
+        "val_csv": "fold/2fold/biomedclip/folds/fold_2/val.csv",
+        "train_pkl": "fold/2fold/biomedclip/folds/fold_2/data/train.pkl",
+        "val_pkl": "fold/2fold/biomedclip/folds/fold_2/data/val.pkl",
+        "train_dir": "fold/2fold/biomedclip/folds/fold_2/train",
+        "inference_dir": "fold/2fold/biomedclip/folds/fold_2/inference",
+        "val_predictions_raw_csv": "fold/2fold/biomedclip/folds/fold_2/inference/val_predictions_raw.csv",
+        "val_predictions_csv": "fold/2fold/biomedclip/folds/fold_2/inference/val_predictions.csv",
+        "val_manifest_csv": "fold/2fold/biomedclip/folds/fold_2/inference/val_manifest.csv",
+        "train_clip_embeddings_pt": "fold/2fold/biomedclip/folds/fold_2/embeddings/train_clip_embeddings.pt",
+        "val_clip_embeddings_pt": "fold/2fold/biomedclip/folds/fold_2/embeddings/val_clip_embeddings.pt",
+        "val_pre_gpt_embeddings_pt": "fold/2fold/biomedclip/folds/fold_2/embeddings/val_pre_gpt_embeddings.pt",
+        "val_post_gpt_embeddings_pt": "fold/2fold/biomedclip/folds/fold_2/embeddings/val_post_gpt_embeddings.pt",
+        "val_loss_csv": "fold/2fold/biomedclip/folds/fold_2/inference/val_loss_per_batch.csv",
+        "val_loss_summary_json": "fold/2fold/biomedclip/folds/fold_2/inference/val_loss_summary.json",
+        "val_loss_per_epoch_csv": "fold/2fold/biomedclip/folds/fold_2/val_loss_per_epoch.csv"
+      }
+    }
+  ],
+  "executed": true
+}

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="540">
+<rect x="0" y="0" width="100%" height="100%" fill="#f8fafc"/>
+<text x="490.0" y="34" text-anchor="middle" font-size="22" fill="#0f172a">positive_vs_negative - fold_4 - Train vs Validation Loss</text>
+<text x="490.0" y="524" text-anchor="middle" font-size="16" fill="#334155">Epoch</text>
+<text transform="translate(24,270.0) rotate(-90)" text-anchor="middle" font-size="16" fill="#334155">Loss</text>
+<rect x="80" y="70" width="860" height="380" fill="#ffffff" stroke="#cbd5e1"/>
+<line x1="80" y1="450.00" x2="940" y2="450.00" stroke="#e2e8f0"/>
+<text x="72" y="455.00" text-anchor="end" font-size="12" fill="#475569">0.0004</text>
+<line x1="80" y1="374.00" x2="940" y2="374.00" stroke="#e2e8f0"/>
+<text x="72" y="379.00" text-anchor="end" font-size="12" fill="#475569">0.2339</text>
+<line x1="80" y1="298.00" x2="940" y2="298.00" stroke="#e2e8f0"/>
+<text x="72" y="303.00" text-anchor="end" font-size="12" fill="#475569">0.4675</text>
+<line x1="80" y1="222.00" x2="940" y2="222.00" stroke="#e2e8f0"/>
+<text x="72" y="227.00" text-anchor="end" font-size="12" fill="#475569">0.7010</text>
+<line x1="80" y1="146.00" x2="940" y2="146.00" stroke="#e2e8f0"/>
+<text x="72" y="151.00" text-anchor="end" font-size="12" fill="#475569">0.9345</text>
+<line x1="80" y1="70.00" x2="940" y2="70.00" stroke="#e2e8f0"/>
+<text x="72" y="75.00" text-anchor="end" font-size="12" fill="#475569">1.1680</text>
+<line x1="80.00" y1="70" x2="80.00" y2="450" stroke="#eef2f7"/>
+<text x="80.00" y="472" text-anchor="middle" font-size="12" fill="#475569">0</text>
+<line x1="158.18" y1="70" x2="158.18" y2="450" stroke="#eef2f7"/>
+<text x="158.18" y="472" text-anchor="middle" font-size="12" fill="#475569">1</text>
+<line x1="236.36" y1="70" x2="236.36" y2="450" stroke="#eef2f7"/>
+<text x="236.36" y="472" text-anchor="middle" font-size="12" fill="#475569">2</text>
+<line x1="314.55" y1="70" x2="314.55" y2="450" stroke="#eef2f7"/>
+<text x="314.55" y="472" text-anchor="middle" font-size="12" fill="#475569">3</text>
+<line x1="392.73" y1="70" x2="392.73" y2="450" stroke="#eef2f7"/>
+<text x="392.73" y="472" text-anchor="middle" font-size="12" fill="#475569">4</text>
+<line x1="549.09" y1="70" x2="549.09" y2="450" stroke="#eef2f7"/>
+<text x="549.09" y="472" text-anchor="middle" font-size="12" fill="#475569">6</text>
+<line x1="627.27" y1="70" x2="627.27" y2="450" stroke="#eef2f7"/>
+<text x="627.27" y="472" text-anchor="middle" font-size="12" fill="#475569">7</text>
+<line x1="705.45" y1="70" x2="705.45" y2="450" stroke="#eef2f7"/>
+<text x="705.45" y="472" text-anchor="middle" font-size="12" fill="#475569">8</text>
+<line x1="783.64" y1="70" x2="783.64" y2="450" stroke="#eef2f7"/>
+<text x="783.64" y="472" text-anchor="middle" font-size="12" fill="#475569">9</text>
+<line x1="940.00" y1="70" x2="940.00" y2="450" stroke="#eef2f7"/>
+<text x="940.00" y="472" text-anchor="middle" font-size="12" fill="#475569">11</text>
+<polyline fill="none" stroke="#0ea5e9" stroke-width="3" points="80.00,70.00 158.18,409.94 236.36,421.34 314.55,432.20 392.73,438.90 470.91,442.86 549.09,445.11 627.27,447.01 705.45,448.15 783.64,449.12 861.82,449.73 940.00,450.00"/>
+<polyline fill="none" stroke="#ef4444" stroke-width="3" points="80.00,381.26 158.18,385.85 236.36,376.89 314.55,364.50 392.73,367.97 470.91,363.37 549.09,352.79 627.27,347.96 705.45,338.63 783.64,334.15 861.82,330.80 940.00,327.60"/>
+<line x1="90" y1="86" x2="116" y2="86" stroke="#0ea5e9" stroke-width="3"/>
+<text x="124" y="90" font-size="13" fill="#0f172a">train</text>
+<line x1="200" y1="86" x2="226" y2="86" stroke="#ef4444" stroke-width="3"/>
+<text x="234" y="90" font-size="13" fill="#0f172a">validation</text>
+</svg>

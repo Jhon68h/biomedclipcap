@@ -1,0 +1,1192 @@
+{
+  "task_name": "positive_vs_negative",
+  "inputs": {
+    "fold_dir": "/workspace/fold/5kfold",
+    "fold_files": [
+      "/workspace/fold/5kfold/fold_1_train.csv",
+      "/workspace/fold/5kfold/fold_2_train.csv",
+      "/workspace/fold/5kfold/fold_3_train.csv",
+      "/workspace/fold/5kfold/fold_4_train.csv",
+      "/workspace/fold/5kfold/fold_5_train.csv",
+      "/workspace/fold/5kfold/fold_1_val.csv",
+      "/workspace/fold/5kfold/fold_2_val.csv",
+      "/workspace/fold/5kfold/fold_3_val.csv",
+      "/workspace/fold/5kfold/fold_4_val.csv",
+      "/workspace/fold/5kfold/fold_5_val.csv"
+    ]
+  },
+  "config": {
+    "task_name": "positive_vs_negative",
+    "fold_dir": "/workspace/fold/5kfold",
+    "output_dir": "/workspace/fold/5kfold/resnet101",
+    "runtime": {
+      "python_exec": "/opt/conda/bin/python3",
+      "gpu": "3",
+      "cuda_visible_devices": "3"
+    },
+    "parser": {
+      "backend": "openai",
+      "script": "/workspace/parse_colono.py",
+      "weights_path": null,
+      "model_id": null,
+      "parse_batch_size": 64,
+      "openai_clip_model": "RN101",
+      "reuse_pkls": false
+    },
+    "training": {
+      "script": "/workspace/train.py",
+      "epochs": 12,
+      "train_bs": 4,
+      "eval_bs": 4,
+      "prefix_length": 10,
+      "prefix_length_clip": 10,
+      "mapping_type": "transformer",
+      "num_layers": 8,
+      "is_rn": false,
+      "only_prefix": true,
+      "normalize_prefix": true,
+      "reuse_training": false
+    },
+    "inference": {
+      "skip_inference": false,
+      "beam_search": false,
+      "entry_length": 67,
+      "top_p": 0.8,
+      "temperature": 1.0,
+      "stop_token": ".",
+      "max_val_samples": 0
+    }
+  },
+  "folds": [
+    {
+      "fold": "fold_1",
+      "num_train_rows": 9120,
+      "num_val_rows": 2280,
+      "train_label_distribution": {
+        "no_polyp": 4560,
+        "polyp": 4560
+      },
+      "val_label_distribution": {
+        "no_polyp": 1140,
+        "polyp": 1140
+      },
+      "train_cases": [
+        "case1",
+        "case2",
+        "case4",
+        "case5",
+        "case7",
+        "case8",
+        "case9",
+        "case10",
+        "case11",
+        "case12",
+        "case13",
+        "case16",
+        "case18",
+        "case19",
+        "case20",
+        "case21",
+        "case24",
+        "case26",
+        "case27",
+        "case29",
+        "case31",
+        "case33",
+        "case34",
+        "case35",
+        "case36",
+        "case37",
+        "case38",
+        "case42",
+        "case43",
+        "case44",
+        "case46",
+        "case50",
+        "case51",
+        "case54",
+        "case55",
+        "case56",
+        "case60",
+        "case61",
+        "case64",
+        "case65",
+        "case66",
+        "case69",
+        "case70",
+        "case72",
+        "case73",
+        "case75",
+        "case76",
+        "case77",
+        "case78",
+        "case80",
+        "case81",
+        "case85",
+        "case86",
+        "case87",
+        "case88",
+        "case93",
+        "case94",
+        "case95",
+        "case96",
+        "case98",
+        "case99"
+      ],
+      "val_cases": [
+        "case3",
+        "case6",
+        "case14",
+        "case17",
+        "case28",
+        "case30",
+        "case39",
+        "case41",
+        "case45",
+        "case47",
+        "case48",
+        "case49",
+        "case52",
+        "case62",
+        "case74",
+        "case89"
+      ],
+      "artifacts": {
+        "fold_dir": "/workspace/fold/5kfold/resnet101/folds/fold_1",
+        "train_csv": "/workspace/fold/5kfold/resnet101/folds/fold_1/train.csv",
+        "val_csv": "/workspace/fold/5kfold/resnet101/folds/fold_1/val.csv",
+        "train_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_1/data/train.pkl",
+        "val_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_1/data/val.pkl",
+        "model_dir": "/workspace/fold/5kfold/resnet101/folds/fold_1/train",
+        "best_checkpoint": "/workspace/fold/5kfold/resnet101/folds/fold_1/train/positive_vs_negative_fold_1-001.pt",
+        "train_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_1/train/positive_vs_negative_fold_1_loss_per_epoch.csv",
+        "val_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_1/val_loss_per_epoch.csv",
+        "loss_plot_svg": "/workspace/fold/5kfold/resnet101/folds/fold_1/train_vs_val_loss.svg"
+      },
+      "training": {
+        "epochs": 12,
+        "train_bs": 4,
+        "eval_bs": 4,
+        "prefix_length": 10,
+        "prefix_length_clip": 10,
+        "mapping_type": "transformer",
+        "num_layers": 8,
+        "is_rn": false,
+        "only_prefix": true,
+        "normalize_prefix": true,
+        "gpu_visible": "3"
+      },
+      "loss": {
+        "best_epoch": 1,
+        "best_val_loss": 0.12235076626917968,
+        "train_loss_at_best_epoch": 0.15061014168201373,
+        "epochs": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "train_loss": [
+          1.1701175319516965,
+          0.15061014168201373,
+          0.13115703127849357,
+          0.09451446918211061,
+          0.06116417324616729,
+          0.040867922290035816,
+          0.026787695437113207,
+          0.018670310358720597,
+          0.011989457978052087,
+          0.007208900440823447,
+          0.0038624229995548377,
+          0.0016768246134026348
+        ],
+        "val_loss": [
+          0.15233836987774754,
+          0.12235076626917968,
+          0.13481442402668395,
+          0.15141933190211523,
+          0.15384837052306943,
+          0.16931098905931177,
+          0.18547438338359107,
+          0.20856513540143568,
+          0.21273796488033106,
+          0.23146023587885378,
+          0.2419733161371895,
+          0.2554511973084006
+        ]
+      },
+      "classification": {
+        "num_samples": 2280,
+        "accuracy": 0.6824561403508772,
+        "macro_f1": 0.6702883179574941,
+        "true_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "pred_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "confusion_matrix": [
+          [
+            997,
+            143
+          ],
+          [
+            581,
+            559
+          ]
+        ],
+        "per_class": {
+          "no_polyp": {
+            "tp": 997,
+            "fp": 581,
+            "fn": 143,
+            "tn": 559,
+            "precision": 0.6318124207858048,
+            "recall": 0.874561403508772,
+            "f1": 0.7336276674025018,
+            "specificity": 0.4903508771929825
+          },
+          "polyp": {
+            "tp": 559,
+            "fp": 143,
+            "fn": 581,
+            "tn": 997,
+            "precision": 0.7962962962962963,
+            "recall": 0.4903508771929825,
+            "f1": 0.6069489685124865,
+            "specificity": 0.874561403508772
+          }
+        }
+      },
+      "data_prep": {
+        "train": {
+          "input_rows": 9120,
+          "resolved_paths": 9120,
+          "filtered_missing_paths": 0
+        },
+        "val": {
+          "input_rows": 2280,
+          "resolved_paths": 2280,
+          "filtered_missing_paths": 0
+        }
+      }
+    },
+    {
+      "fold": "fold_2",
+      "num_train_rows": 9120,
+      "num_val_rows": 2280,
+      "train_label_distribution": {
+        "no_polyp": 4560,
+        "polyp": 4560
+      },
+      "val_label_distribution": {
+        "no_polyp": 1140,
+        "polyp": 1140
+      },
+      "train_cases": [
+        "case1",
+        "case3",
+        "case4",
+        "case5",
+        "case6",
+        "case8",
+        "case9",
+        "case11",
+        "case12",
+        "case13",
+        "case14",
+        "case17",
+        "case18",
+        "case19",
+        "case20",
+        "case27",
+        "case28",
+        "case29",
+        "case30",
+        "case34",
+        "case35",
+        "case36",
+        "case37",
+        "case38",
+        "case39",
+        "case41",
+        "case42",
+        "case43",
+        "case44",
+        "case45",
+        "case46",
+        "case47",
+        "case48",
+        "case49",
+        "case50",
+        "case51",
+        "case52",
+        "case54",
+        "case55",
+        "case56",
+        "case60",
+        "case62",
+        "case65",
+        "case66",
+        "case69",
+        "case70",
+        "case72",
+        "case74",
+        "case75",
+        "case77",
+        "case78",
+        "case80",
+        "case81",
+        "case86",
+        "case87",
+        "case89",
+        "case93",
+        "case95",
+        "case96",
+        "case98",
+        "case99"
+      ],
+      "val_cases": [
+        "case2",
+        "case7",
+        "case10",
+        "case16",
+        "case21",
+        "case24",
+        "case26",
+        "case31",
+        "case33",
+        "case61",
+        "case64",
+        "case73",
+        "case76",
+        "case85",
+        "case88",
+        "case94"
+      ],
+      "artifacts": {
+        "fold_dir": "/workspace/fold/5kfold/resnet101/folds/fold_2",
+        "train_csv": "/workspace/fold/5kfold/resnet101/folds/fold_2/train.csv",
+        "val_csv": "/workspace/fold/5kfold/resnet101/folds/fold_2/val.csv",
+        "train_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_2/data/train.pkl",
+        "val_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_2/data/val.pkl",
+        "model_dir": "/workspace/fold/5kfold/resnet101/folds/fold_2/train",
+        "best_checkpoint": "/workspace/fold/5kfold/resnet101/folds/fold_2/train/positive_vs_negative_fold_2-000.pt",
+        "train_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_2/train/positive_vs_negative_fold_2_loss_per_epoch.csv",
+        "val_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_2/val_loss_per_epoch.csv",
+        "loss_plot_svg": "/workspace/fold/5kfold/resnet101/folds/fold_2/train_vs_val_loss.svg"
+      },
+      "training": {
+        "epochs": 12,
+        "train_bs": 4,
+        "eval_bs": 4,
+        "prefix_length": 10,
+        "prefix_length_clip": 10,
+        "mapping_type": "transformer",
+        "num_layers": 8,
+        "is_rn": false,
+        "only_prefix": true,
+        "normalize_prefix": true,
+        "gpu_visible": "3"
+      },
+      "loss": {
+        "best_epoch": 0,
+        "best_val_loss": 0.13203612639111253,
+        "train_loss_at_best_epoch": 1.394629863251548,
+        "epochs": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "train_loss": [
+          1.394629863251548,
+          0.14324110559659617,
+          0.11418662328046354,
+          0.08014128841960133,
+          0.05313701113479686,
+          0.03543884711908871,
+          0.024649818416538325,
+          0.016327299831142516,
+          0.010597854582195858,
+          0.006648021915782266,
+          0.00324699279107447,
+          0.0013805305989735006
+        ],
+        "val_loss": [
+          0.13203612639111253,
+          0.1365685606175184,
+          0.15568319931279118,
+          0.16131182235584945,
+          0.1885201181556719,
+          0.20182542451276964,
+          0.2164659480288065,
+          0.22035759988113504,
+          0.23678915918582086,
+          0.24540389066840584,
+          0.261101660633945,
+          0.26399131146476734
+        ]
+      },
+      "classification": {
+        "num_samples": 2280,
+        "accuracy": 0.8368421052631579,
+        "macro_f1": 0.8367697594501717,
+        "true_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "pred_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "confusion_matrix": [
+          [
+            978,
+            162
+          ],
+          [
+            210,
+            930
+          ]
+        ],
+        "per_class": {
+          "no_polyp": {
+            "tp": 978,
+            "fp": 210,
+            "fn": 162,
+            "tn": 930,
+            "precision": 0.8232323232323232,
+            "recall": 0.8578947368421053,
+            "f1": 0.8402061855670103,
+            "specificity": 0.8157894736842105
+          },
+          "polyp": {
+            "tp": 930,
+            "fp": 162,
+            "fn": 210,
+            "tn": 978,
+            "precision": 0.8516483516483516,
+            "recall": 0.8157894736842105,
+            "f1": 0.8333333333333333,
+            "specificity": 0.8578947368421053
+          }
+        }
+      },
+      "data_prep": {
+        "train": {
+          "input_rows": 9120,
+          "resolved_paths": 9120,
+          "filtered_missing_paths": 0
+        },
+        "val": {
+          "input_rows": 2280,
+          "resolved_paths": 2280,
+          "filtered_missing_paths": 0
+        }
+      }
+    },
+    {
+      "fold": "fold_3",
+      "num_train_rows": 9120,
+      "num_val_rows": 2280,
+      "train_label_distribution": {
+        "no_polyp": 4560,
+        "polyp": 4560
+      },
+      "val_label_distribution": {
+        "no_polyp": 1140,
+        "polyp": 1140
+      },
+      "train_cases": [
+        "case1",
+        "case2",
+        "case3",
+        "case4",
+        "case6",
+        "case7",
+        "case8",
+        "case9",
+        "case10",
+        "case12",
+        "case13",
+        "case14",
+        "case16",
+        "case17",
+        "case19",
+        "case20",
+        "case21",
+        "case24",
+        "case26",
+        "case28",
+        "case30",
+        "case31",
+        "case33",
+        "case35",
+        "case36",
+        "case39",
+        "case41",
+        "case42",
+        "case43",
+        "case44",
+        "case45",
+        "case46",
+        "case47",
+        "case48",
+        "case49",
+        "case50",
+        "case51",
+        "case52",
+        "case56",
+        "case60",
+        "case61",
+        "case62",
+        "case64",
+        "case65",
+        "case66",
+        "case69",
+        "case70",
+        "case73",
+        "case74",
+        "case75",
+        "case76",
+        "case77",
+        "case81",
+        "case85",
+        "case86",
+        "case87",
+        "case88",
+        "case89",
+        "case93",
+        "case94",
+        "case95",
+        "case99"
+      ],
+      "val_cases": [
+        "case5",
+        "case11",
+        "case18",
+        "case27",
+        "case29",
+        "case34",
+        "case37",
+        "case38",
+        "case54",
+        "case55",
+        "case72",
+        "case78",
+        "case80",
+        "case96",
+        "case98"
+      ],
+      "artifacts": {
+        "fold_dir": "/workspace/fold/5kfold/resnet101/folds/fold_3",
+        "train_csv": "/workspace/fold/5kfold/resnet101/folds/fold_3/train.csv",
+        "val_csv": "/workspace/fold/5kfold/resnet101/folds/fold_3/val.csv",
+        "train_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_3/data/train.pkl",
+        "val_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_3/data/val.pkl",
+        "model_dir": "/workspace/fold/5kfold/resnet101/folds/fold_3/train",
+        "best_checkpoint": "/workspace/fold/5kfold/resnet101/folds/fold_3/train/positive_vs_negative_fold_3-002.pt",
+        "train_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_3/train/positive_vs_negative_fold_3_loss_per_epoch.csv",
+        "val_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_3/val_loss_per_epoch.csv",
+        "loss_plot_svg": "/workspace/fold/5kfold/resnet101/folds/fold_3/train_vs_val_loss.svg"
+      },
+      "training": {
+        "epochs": 12,
+        "train_bs": 4,
+        "eval_bs": 4,
+        "prefix_length": 10,
+        "prefix_length_clip": 10,
+        "mapping_type": "transformer",
+        "num_layers": 8,
+        "is_rn": false,
+        "only_prefix": true,
+        "normalize_prefix": true,
+        "gpu_visible": "3"
+      },
+      "loss": {
+        "best_epoch": 2,
+        "best_val_loss": 0.15939555025430754,
+        "train_loss_at_best_epoch": 0.11348376855649372,
+        "epochs": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "train_loss": [
+          1.265857142487361,
+          0.1453231097698383,
+          0.11348376855649372,
+          0.07994710176697066,
+          0.0532174619729503,
+          0.03536448572564966,
+          0.02355151836927051,
+          0.014982283504561341,
+          0.009535972726853128,
+          0.0054606543250899945,
+          0.002997669507591414,
+          0.001128479090592711
+        ],
+        "val_loss": [
+          0.20066391912272624,
+          0.19763711722314423,
+          0.15939555025430754,
+          0.19657013784826471,
+          0.22069114396652909,
+          0.25412874553508835,
+          0.2588134144230903,
+          0.23725547677554698,
+          0.2629523604039334,
+          0.293980502328716,
+          0.30132358306293194,
+          0.312068768099836
+        ]
+      },
+      "classification": {
+        "num_samples": 2280,
+        "accuracy": 0.7640350877192983,
+        "macro_f1": 0.757723520711929,
+        "true_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "pred_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "confusion_matrix": [
+          [
+            687,
+            453
+          ],
+          [
+            85,
+            1055
+          ]
+        ],
+        "per_class": {
+          "no_polyp": {
+            "tp": 687,
+            "fp": 85,
+            "fn": 453,
+            "tn": 1055,
+            "precision": 0.8898963730569949,
+            "recall": 0.6026315789473684,
+            "f1": 0.7186192468619247,
+            "specificity": 0.9254385964912281
+          },
+          "polyp": {
+            "tp": 1055,
+            "fp": 453,
+            "fn": 85,
+            "tn": 687,
+            "precision": 0.6996021220159151,
+            "recall": 0.9254385964912281,
+            "f1": 0.7968277945619335,
+            "specificity": 0.6026315789473684
+          }
+        }
+      },
+      "data_prep": {
+        "train": {
+          "input_rows": 9120,
+          "resolved_paths": 9120,
+          "filtered_missing_paths": 0
+        },
+        "val": {
+          "input_rows": 2280,
+          "resolved_paths": 2280,
+          "filtered_missing_paths": 0
+        }
+      }
+    },
+    {
+      "fold": "fold_4",
+      "num_train_rows": 9120,
+      "num_val_rows": 2280,
+      "train_label_distribution": {
+        "no_polyp": 4560,
+        "polyp": 4560
+      },
+      "val_label_distribution": {
+        "no_polyp": 1140,
+        "polyp": 1140
+      },
+      "train_cases": [
+        "case2",
+        "case3",
+        "case5",
+        "case6",
+        "case7",
+        "case8",
+        "case10",
+        "case11",
+        "case12",
+        "case14",
+        "case16",
+        "case17",
+        "case18",
+        "case19",
+        "case20",
+        "case21",
+        "case24",
+        "case26",
+        "case27",
+        "case28",
+        "case29",
+        "case30",
+        "case31",
+        "case33",
+        "case34",
+        "case35",
+        "case36",
+        "case37",
+        "case38",
+        "case39",
+        "case41",
+        "case43",
+        "case45",
+        "case47",
+        "case48",
+        "case49",
+        "case50",
+        "case52",
+        "case54",
+        "case55",
+        "case56",
+        "case60",
+        "case61",
+        "case62",
+        "case64",
+        "case69",
+        "case72",
+        "case73",
+        "case74",
+        "case76",
+        "case78",
+        "case80",
+        "case81",
+        "case85",
+        "case88",
+        "case89",
+        "case93",
+        "case94",
+        "case95",
+        "case96",
+        "case98",
+        "case99"
+      ],
+      "val_cases": [
+        "case1",
+        "case4",
+        "case9",
+        "case13",
+        "case42",
+        "case44",
+        "case46",
+        "case51",
+        "case65",
+        "case66",
+        "case70",
+        "case75",
+        "case77",
+        "case86",
+        "case87"
+      ],
+      "artifacts": {
+        "fold_dir": "/workspace/fold/5kfold/resnet101/folds/fold_4",
+        "train_csv": "/workspace/fold/5kfold/resnet101/folds/fold_4/train.csv",
+        "val_csv": "/workspace/fold/5kfold/resnet101/folds/fold_4/val.csv",
+        "train_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_4/data/train.pkl",
+        "val_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_4/data/val.pkl",
+        "model_dir": "/workspace/fold/5kfold/resnet101/folds/fold_4/train",
+        "best_checkpoint": "/workspace/fold/5kfold/resnet101/folds/fold_4/train/positive_vs_negative_fold_4-000.pt",
+        "train_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_4/train/positive_vs_negative_fold_4_loss_per_epoch.csv",
+        "val_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_4/val_loss_per_epoch.csv",
+        "loss_plot_svg": "/workspace/fold/5kfold/resnet101/folds/fold_4/train_vs_val_loss.svg"
+      },
+      "training": {
+        "epochs": 12,
+        "train_bs": 4,
+        "eval_bs": 4,
+        "prefix_length": 10,
+        "prefix_length_clip": 10,
+        "mapping_type": "transformer",
+        "num_layers": 8,
+        "is_rn": false,
+        "only_prefix": true,
+        "normalize_prefix": true,
+        "gpu_visible": "3"
+      },
+      "loss": {
+        "best_epoch": 0,
+        "best_val_loss": 0.18370441822825292,
+        "train_loss_at_best_epoch": 1.0372545524059158,
+        "epochs": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "train_loss": [
+          1.0372545524059158,
+          0.14473169620114118,
+          0.1125878714305847,
+          0.07785001476841627,
+          0.0505931126371459,
+          0.03392757739232988,
+          0.023897478845269927,
+          0.015132827845937164,
+          0.009744361683573387,
+          0.006204066325010085,
+          0.002975536159029664,
+          0.0011263542558178111
+        ],
+        "val_loss": [
+          0.18370441822825292,
+          0.1869537662142855,
+          0.22401476128510886,
+          0.23654454276752004,
+          0.2501108723055886,
+          0.2900892864069503,
+          0.27436041396045896,
+          0.3243812908554805,
+          0.32055512382881207,
+          0.33226281871452157,
+          0.3407446058747857,
+          0.35637337402658886
+        ]
+      },
+      "classification": {
+        "num_samples": 2280,
+        "accuracy": 0.8293859649122807,
+        "macro_f1": 0.8293071265025262,
+        "true_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "pred_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "confusion_matrix": [
+          [
+            921,
+            219
+          ],
+          [
+            170,
+            970
+          ]
+        ],
+        "per_class": {
+          "no_polyp": {
+            "tp": 921,
+            "fp": 170,
+            "fn": 219,
+            "tn": 970,
+            "precision": 0.844179651695692,
+            "recall": 0.8078947368421052,
+            "f1": 0.8256387270282384,
+            "specificity": 0.8508771929824561
+          },
+          "polyp": {
+            "tp": 970,
+            "fp": 219,
+            "fn": 170,
+            "tn": 921,
+            "precision": 0.815811606391926,
+            "recall": 0.8508771929824561,
+            "f1": 0.8329755259768141,
+            "specificity": 0.8078947368421052
+          }
+        }
+      },
+      "data_prep": {
+        "train": {
+          "input_rows": 9120,
+          "resolved_paths": 9120,
+          "filtered_missing_paths": 0
+        },
+        "val": {
+          "input_rows": 2280,
+          "resolved_paths": 2280,
+          "filtered_missing_paths": 0
+        }
+      }
+    },
+    {
+      "fold": "fold_5",
+      "num_train_rows": 9120,
+      "num_val_rows": 2280,
+      "train_label_distribution": {
+        "no_polyp": 4560,
+        "polyp": 4560
+      },
+      "val_label_distribution": {
+        "no_polyp": 1140,
+        "polyp": 1140
+      },
+      "train_cases": [
+        "case1",
+        "case2",
+        "case3",
+        "case4",
+        "case5",
+        "case6",
+        "case7",
+        "case9",
+        "case10",
+        "case11",
+        "case13",
+        "case14",
+        "case16",
+        "case17",
+        "case18",
+        "case21",
+        "case24",
+        "case26",
+        "case27",
+        "case28",
+        "case29",
+        "case30",
+        "case31",
+        "case33",
+        "case34",
+        "case37",
+        "case38",
+        "case39",
+        "case41",
+        "case42",
+        "case44",
+        "case45",
+        "case46",
+        "case47",
+        "case48",
+        "case49",
+        "case51",
+        "case52",
+        "case54",
+        "case55",
+        "case61",
+        "case62",
+        "case64",
+        "case65",
+        "case66",
+        "case70",
+        "case72",
+        "case73",
+        "case74",
+        "case75",
+        "case76",
+        "case77",
+        "case78",
+        "case80",
+        "case85",
+        "case86",
+        "case87",
+        "case88",
+        "case89",
+        "case94",
+        "case96",
+        "case98"
+      ],
+      "val_cases": [
+        "case8",
+        "case12",
+        "case19",
+        "case20",
+        "case35",
+        "case36",
+        "case43",
+        "case50",
+        "case56",
+        "case60",
+        "case69",
+        "case81",
+        "case93",
+        "case95",
+        "case99"
+      ],
+      "artifacts": {
+        "fold_dir": "/workspace/fold/5kfold/resnet101/folds/fold_5",
+        "train_csv": "/workspace/fold/5kfold/resnet101/folds/fold_5/train.csv",
+        "val_csv": "/workspace/fold/5kfold/resnet101/folds/fold_5/val.csv",
+        "train_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_5/data/train.pkl",
+        "val_pkl": "/workspace/fold/5kfold/resnet101/folds/fold_5/data/val.pkl",
+        "model_dir": "/workspace/fold/5kfold/resnet101/folds/fold_5/train",
+        "best_checkpoint": "/workspace/fold/5kfold/resnet101/folds/fold_5/train/positive_vs_negative_fold_5-002.pt",
+        "train_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_5/train/positive_vs_negative_fold_5_loss_per_epoch.csv",
+        "val_loss_csv": "/workspace/fold/5kfold/resnet101/folds/fold_5/val_loss_per_epoch.csv",
+        "loss_plot_svg": "/workspace/fold/5kfold/resnet101/folds/fold_5/train_vs_val_loss.svg"
+      },
+      "training": {
+        "epochs": 12,
+        "train_bs": 4,
+        "eval_bs": 4,
+        "prefix_length": 10,
+        "prefix_length_clip": 10,
+        "mapping_type": "transformer",
+        "num_layers": 8,
+        "is_rn": false,
+        "only_prefix": true,
+        "normalize_prefix": true,
+        "gpu_visible": "3"
+      },
+      "loss": {
+        "best_epoch": 2,
+        "best_val_loss": 0.1366795188816787,
+        "train_loss_at_best_epoch": 0.15758597677361155,
+        "epochs": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "train_loss": [
+          1.1000152938490684,
+          0.14387531170995269,
+          0.15758597677361155,
+          0.09979607085442056,
+          0.06959443835035097,
+          0.04409126298269257,
+          0.029495524275989737,
+          0.020029154435376353,
+          0.013210211142225155,
+          0.008114645763114886,
+          0.004089748784625906,
+          0.001987864645423287
+        ],
+        "val_loss": [
+          0.15962407247473795,
+          0.1547189099779516,
+          0.1366795188816787,
+          0.17856699528362552,
+          0.17476630233301732,
+          0.23460335130415236,
+          0.27133284682625486,
+          0.24697733637652147,
+          0.26170601939858834,
+          0.28384672162073754,
+          0.2844125920118626,
+          0.3029597124167068
+        ]
+      },
+      "classification": {
+        "num_samples": 2280,
+        "accuracy": 0.7416666666666667,
+        "macro_f1": 0.7414015714400979,
+        "true_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "pred_labels": [
+          "no_polyp",
+          "polyp"
+        ],
+        "confusion_matrix": [
+          [
+            809,
+            331
+          ],
+          [
+            258,
+            882
+          ]
+        ],
+        "per_class": {
+          "no_polyp": {
+            "tp": 809,
+            "fp": 258,
+            "fn": 331,
+            "tn": 882,
+            "precision": 0.7582005623242737,
+            "recall": 0.7096491228070175,
+            "f1": 0.7331218849116449,
+            "specificity": 0.7736842105263158
+          },
+          "polyp": {
+            "tp": 882,
+            "fp": 331,
+            "fn": 258,
+            "tn": 809,
+            "precision": 0.7271228359439407,
+            "recall": 0.7736842105263158,
+            "f1": 0.7496812579685508,
+            "specificity": 0.7096491228070175
+          }
+        }
+      },
+      "data_prep": {
+        "train": {
+          "input_rows": 9120,
+          "resolved_paths": 9120,
+          "filtered_missing_paths": 0
+        },
+        "val": {
+          "input_rows": 2280,
+          "resolved_paths": 2280,
+          "filtered_missing_paths": 0
+        }
+      }
+    }
+  ],
+  "aggregate": {
+    "num_folds": 5,
+    "num_rows_unique": 11400,
+    "num_cases": 77,
+    "label_distribution": {
+      "no_polyp": 5700,
+      "polyp": 5700
+    },
+    "best_val_loss_mean": 0.14683327600490628,
+    "best_val_loss_std": 0.022085015583158934,
+    "val_classification_accuracy_mean": 0.7708771929824562,
+    "val_classification_accuracy_std": 0.057433435985479606,
+    "val_classification_macro_f1_mean": 0.7670980592124438,
+    "val_classification_macro_f1_std": 0.061391255606804605
+  }
+}

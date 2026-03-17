@@ -1,0 +1,18 @@
+
+[2026-03-16T16:28:34.222556+00:00] /opt/conda/bin/python /workspace/parse_colono_biomed.py --csv_path /workspace/fold/2fold/biomedclip/folds/fold_1/train.csv --images_root . --out_path /workspace/fold/2fold/biomedclip/folds/fold_1/data/train.pkl --weights_path /workspace/clip_weights/biomedclip_weights.pt
+
+[2026-03-16T16:34:35.709939+00:00] /opt/conda/bin/python /workspace/parse_colono_biomed.py --csv_path /workspace/fold/2fold/biomedclip/folds/fold_1/val.csv --images_root . --out_path /workspace/fold/2fold/biomedclip/folds/fold_1/data/val.pkl --weights_path /workspace/clip_weights/biomedclip_weights.pt
+
+[2026-03-16T16:40:35.203166+00:00] /opt/conda/bin/python /workspace/train.py --data /workspace/fold/2fold/biomedclip/folds/fold_1/data/train.pkl --out_dir /workspace/fold/2fold/biomedclip/folds/fold_1/train --prefix positive_vs_negative_fold_1 --epochs 15 --save_every 5 --prefix_length 10 --prefix_length_clip 10 --bs 8 --mapping_type transformer --num_layers 8 --only_prefix --normalize_prefix
+
+[2026-03-16T16:54:30.979386+00:00] /opt/conda/bin/python /workspace/test.py --images_root /workspace/fold/2fold/biomedclip/folds/fold_1/inference/val_images_20260316T162834Z --checkpoint /workspace/fold/2fold/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-014.pt --output_csv /workspace/fold/2fold/biomedclip/folds/fold_1/inference/val_predictions_raw.csv --prefix_length 10 --mapping_type transformer --num_layers 8 --beam_search --encoder biomedclip --biomedclip_model_id hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224
+
+[2026-03-16T17:44:32.679127+00:00] /opt/conda/bin/python /workspace/parse_colono_biomed.py --csv_path /workspace/fold/2fold/biomedclip/folds/fold_2/train.csv --images_root . --out_path /workspace/fold/2fold/biomedclip/folds/fold_2/data/train.pkl --weights_path /workspace/clip_weights/biomedclip_weights.pt
+
+[2026-03-16T17:49:33.532442+00:00] /opt/conda/bin/python /workspace/parse_colono_biomed.py --csv_path /workspace/fold/2fold/biomedclip/folds/fold_2/val.csv --images_root . --out_path /workspace/fold/2fold/biomedclip/folds/fold_2/data/val.pkl --weights_path /workspace/clip_weights/biomedclip_weights.pt
+
+[2026-03-16T17:54:34.699229+00:00] /opt/conda/bin/python /workspace/train.py --data /workspace/fold/2fold/biomedclip/folds/fold_2/data/train.pkl --out_dir /workspace/fold/2fold/biomedclip/folds/fold_2/train --prefix positive_vs_negative_fold_2 --epochs 15 --save_every 5 --prefix_length 10 --prefix_length_clip 10 --bs 8 --mapping_type transformer --num_layers 8 --only_prefix --normalize_prefix
+
+[2026-03-16T18:07:13.217329+00:00] /opt/conda/bin/python /workspace/test.py --images_root /workspace/fold/2fold/biomedclip/folds/fold_2/inference/val_images_20260316T162834Z --checkpoint /workspace/fold/2fold/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-014.pt --output_csv /workspace/fold/2fold/biomedclip/folds/fold_2/inference/val_predictions_raw.csv --prefix_length 10 --mapping_type transformer --num_layers 8 --beam_search --encoder biomedclip --biomedclip_model_id hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224
+
+[2026-03-17T11:55:50.759902+00:00] /opt/conda/bin/python3 /workspace/parse_colono_biomed.py --csv_path /workspace/fold/2fold/biomedclip/folds/fold_1/train.csv --images_root . --out_path /workspace/fold/2fold/biomedclip/folds/fold_1/data/train.pkl --weights_path /workspace/clip_weights/biomedclip_weights.pt
