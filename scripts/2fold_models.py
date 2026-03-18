@@ -9,8 +9,8 @@ import json
 import os
 import pickle
 import random
-import re
 import shlex
+import shutil
 import subprocess
 import sys
 from collections import Counter
@@ -29,6 +29,8 @@ TRAIN_SCRIPT = REPO_ROOT / "train.py"
 TEST_SCRIPT = REPO_ROOT / "test.py"
 PARSE_BIOMED_SCRIPT = REPO_ROOT / "parse_colono_biomed.py"
 PARSE_OPENAI_SCRIPT = REPO_ROOT / "parse_colono.py"
+VALIDATION_SCRIPT = REPO_ROOT / "scripts" / "validation.py"
+GRAFICAS_SCRIPT = REPO_ROOT / "scripts" / "graphics" / "graficas.py"
 
 MODEL_CONFIG = {
     "biomedclip": {
@@ -66,6 +68,9 @@ MODEL_OUTPUT_DIR = {
     "resnet": "resnet",
 }
 
+MODEL_ALL_KEY = "all"
+MODEL_ALL_ORDER = ["biomedclip", "vit", "resnet101"]
+
 ROW_COLUMNS = [
     "sample_id",
     "image_path",
@@ -85,20 +90,6 @@ MANIFEST_COLUMNS = [
     "resolved_image_path",
     "linked_image_path",
     "caption_gt",
-]
-
-VAL_LOSS_COLUMNS = [
-    "batch",
-    "num_samples",
-    "val_loss",
-]
-
-VAL_LOSS_PER_EPOCH_COLUMNS = [
-    "epoch",
-    "checkpoint",
-    "val_loss",
-    "val_batches",
-    "val_samples",
 ]
 
 VAL_PRED_COLUMNS = [
@@ -123,8 +114,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model",
         required=True,
-        choices=sorted(MODEL_ALIAS.keys()),
-        help="Modelo: biomedclip, vit, resnet101 o resnet.",
+        choices=sorted([*MODEL_ALIAS.keys(), MODEL_ALL_KEY]),
+        help="Modelo: biomedclip, vit, resnet101, resnet o all.",
     )
     parser.add_argument("--negative_csv", default=DEFAULT_NEGATIVE_CSV)
     parser.add_argument("--positive_csv", default=DEFAULT_POSITIVE_CSV)
@@ -140,7 +131,7 @@ def parse_args() -> argparse.Namespace:
         "--save_every",
         type=int,
         default=5,
-        help="Frecuencia de checkpoints. Usa 1 para evaluar val_loss en todas las epocas.",
+        help="Frecuencia de checkpoints.",
     )
     parser.add_argument("--bs", type=int, default=4)
     parser.add_argument("--prefix_length", type=int, default=10)
@@ -167,6 +158,15 @@ def to_repo_relative(path: Path) -> str:
         return path.resolve().relative_to(REPO_ROOT).as_posix()
     except ValueError:
         return path.resolve().as_posix()
+
+
+def remove_existing_path(path: Path) -> None:
+    if not path.exists():
+        return
+    if path.is_dir():
+        shutil.rmtree(path)
+        return
+    path.unlink()
 
 
 def read_csv_rows(path: Path) -> List[Dict[str, str]]:
@@ -397,262 +397,6 @@ def ensure_clip_embeddings_snapshot(parsed_pkl_path: Path, out_path: Path) -> Di
         "embedding_dim": int(clip_embedding.shape[-1]) if clip_embedding.ndim >= 2 else 0,
     }
 
-
-def compute_and_save_validation_artifacts(
-    val_pkl: Path,
-    checkpoint_path: Path,
-    val_loss_csv_path: Path,
-    val_loss_summary_path: Path,
-    pre_gpt_embeddings_path: Path,
-    post_gpt_embeddings_path: Path,
-    prefix_length: int,
-    mapping_type: str,
-    num_layers: int,
-    batch_size: int,
-) -> Dict[str, object]:
-    metrics = evaluate_validation_checkpoint(
-        val_pkl=val_pkl,
-        checkpoint_path=checkpoint_path,
-        prefix_length=prefix_length,
-        mapping_type=mapping_type,
-        num_layers=num_layers,
-        batch_size=batch_size,
-        include_batch_rows=True,
-        include_embeddings=True,
-    )
-
-    step_rows = metrics["step_rows"]
-    pre_gpt_tensor = metrics["pre_gpt_tensor"]
-    post_gpt_tensor = metrics["post_gpt_tensor"]
-    image_ids = metrics["image_ids"]
-
-    write_csv(val_loss_csv_path, step_rows, VAL_LOSS_COLUMNS)
-
-    import torch
-
-    pre_gpt_embeddings_path.parent.mkdir(parents=True, exist_ok=True)
-    post_gpt_embeddings_path.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(
-        {
-            "embeddings": pre_gpt_tensor,
-            "image_ids": image_ids,
-            "source_val_pkl": to_repo_relative(val_pkl),
-            "checkpoint": to_repo_relative(checkpoint_path),
-        },
-        pre_gpt_embeddings_path,
-    )
-    torch.save(
-        {
-            "embeddings": post_gpt_tensor,
-            "image_ids": image_ids,
-            "source_val_pkl": to_repo_relative(val_pkl),
-            "checkpoint": to_repo_relative(checkpoint_path),
-        },
-        post_gpt_embeddings_path,
-    )
-
-    summary = {
-        "val_batches": metrics["val_batches"],
-        "val_samples": metrics["val_samples"],
-        "mean_val_loss": metrics["mean_val_loss"],
-        "val_loss_csv": to_repo_relative(val_loss_csv_path),
-        "pre_gpt_embeddings_path": to_repo_relative(pre_gpt_embeddings_path),
-        "post_gpt_embeddings_path": to_repo_relative(post_gpt_embeddings_path),
-        "pre_gpt_embeddings_shape": list(pre_gpt_tensor.shape),
-        "post_gpt_embeddings_shape": list(post_gpt_tensor.shape),
-    }
-    val_loss_summary_path.parent.mkdir(parents=True, exist_ok=True)
-    val_loss_summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    return summary
-
-
-def evaluate_validation_checkpoint(
-    val_pkl: Path,
-    checkpoint_path: Path,
-    prefix_length: int,
-    mapping_type: str,
-    num_layers: int,
-    batch_size: int,
-    include_batch_rows: bool,
-    include_embeddings: bool,
-) -> Dict[str, object]:
-    import torch
-    from torch.nn import functional as nnf
-    from torch.utils.data import DataLoader
-
-    if str(REPO_ROOT) not in sys.path:
-        sys.path.insert(0, str(REPO_ROOT))
-    from train import ClipCocoDataset, ClipCaptionPrefix, MappingType
-
-    dataset = ClipCocoDataset(str(val_pkl), prefix_length, normalize_prefix=True)
-    if hasattr(dataset.prefixes, "shape") and len(dataset.prefixes.shape) >= 2:
-        prefix_size = int(dataset.prefixes.shape[-1])
-    else:
-        sample_prefix = dataset[0][2]
-        prefix_size = int(sample_prefix.shape[-1])
-
-    mapping = MappingType.Transformer if mapping_type.lower() == "transformer" else MappingType.MLP
-    model = ClipCaptionPrefix(
-        prefix_length=prefix_length,
-        clip_length=prefix_length,
-        prefix_size=prefix_size,
-        num_layers=num_layers,
-        mapping_type=mapping,
-    )
-
-    state_dict = torch.load(str(checkpoint_path), map_location="cpu")
-    if isinstance(state_dict, dict) and "state_dict" in state_dict:
-        state_dict = state_dict["state_dict"]
-    model.load_state_dict(state_dict, strict=True)
-
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = model.to(device).eval()
-
-    val_loader = DataLoader(dataset, batch_size=max(1, int(batch_size)), shuffle=False, drop_last=False)
-    step_rows: List[Dict[str, object]] = []
-    pre_gpt_chunks = []
-    post_gpt_chunks = []
-    total_samples = 0
-    weighted_loss = 0.0
-    total_batches = 0
-
-    with torch.no_grad():
-        for batch_idx, (tokens, mask, prefix) in enumerate(val_loader, start=1):
-            total_batches += 1
-            tokens = tokens.to(device)
-            mask = mask.to(device)
-            prefix = prefix.to(device, dtype=torch.float32)
-
-            prefix_projections = model.clip_project(prefix).view(-1, prefix_length, model.gpt_embedding_size)
-            embedding_text = model.gpt.transformer.wte(tokens)
-            embedding_cat = torch.cat((prefix_projections, embedding_text), dim=1)
-
-            outputs = model.gpt(
-                inputs_embeds=embedding_cat,
-                attention_mask=mask,
-                output_hidden_states=True,
-                return_dict=True,
-            )
-            logits = outputs.logits[:, prefix_length - 1 : -1]
-            loss = nnf.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
-            loss_value = float(loss.item())
-
-            n_items = int(tokens.shape[0])
-            total_samples += n_items
-            weighted_loss += loss_value * n_items
-
-            if include_batch_rows:
-                step_rows.append(
-                    {
-                        "batch": batch_idx,
-                        "num_samples": n_items,
-                        "val_loss": loss_value,
-                    }
-                )
-            if include_embeddings:
-                pre_gpt_chunks.append(prefix_projections.detach().cpu())
-                post_gpt_chunks.append(outputs.hidden_states[-1][:, :prefix_length, :].detach().cpu())
-
-    mean_val_loss = (weighted_loss / total_samples) if total_samples else 0.0
-
-    summary: Dict[str, object] = {
-        "val_batches": total_batches,
-        "val_samples": total_samples,
-        "mean_val_loss": mean_val_loss,
-    }
-
-    if include_batch_rows:
-        summary["step_rows"] = step_rows
-
-    if include_embeddings:
-        pre_gpt_tensor = (
-            torch.cat(pre_gpt_chunks, dim=0)
-            if pre_gpt_chunks
-            else torch.empty((0, prefix_length, model.gpt_embedding_size), dtype=torch.float32)
-        )
-        post_gpt_tensor = (
-            torch.cat(post_gpt_chunks, dim=0)
-            if post_gpt_chunks
-            else torch.empty((0, prefix_length, model.gpt_embedding_size), dtype=torch.float32)
-        )
-        summary["pre_gpt_tensor"] = pre_gpt_tensor
-        summary["post_gpt_tensor"] = post_gpt_tensor
-        summary["image_ids"] = list(getattr(dataset, "image_ids", []))
-
-    return summary
-
-
-def extract_epoch_from_checkpoint(checkpoint_path: Path, prefix: str) -> Optional[int]:
-    pattern = rf"^{re.escape(prefix)}-(\d+)\.pt$"
-    match = re.match(pattern, checkpoint_path.name)
-    if not match:
-        return None
-    return int(match.group(1))
-
-
-def list_checkpoints_by_epoch(train_dir: Path, prefix: str) -> List[Path]:
-    candidates = sorted(train_dir.glob(f"{prefix}-*.pt"))
-    parsed: List[Tuple[int, Path]] = []
-    for checkpoint in candidates:
-        epoch = extract_epoch_from_checkpoint(checkpoint, prefix)
-        if epoch is None:
-            continue
-        parsed.append((epoch, checkpoint))
-    parsed.sort(key=lambda item: item[0])
-    return [path for _, path in parsed]
-
-
-def find_checkpoint(train_dir: Path, prefix: str, epoch_hint: int) -> Path:
-    preferred = train_dir / f"{prefix}-{epoch_hint:03d}.pt"
-    if preferred.exists():
-        return preferred
-    candidates = list_checkpoints_by_epoch(train_dir, prefix)
-    if not candidates:
-        raise FileNotFoundError(f"No se encontraron checkpoints en {train_dir}")
-    return candidates[-1]
-
-
-def compute_and_save_val_loss_per_epoch(
-    val_pkl: Path,
-    checkpoints: Sequence[Path],
-    out_csv_path: Path,
-    prefix: str,
-    prefix_length: int,
-    mapping_type: str,
-    num_layers: int,
-    batch_size: int,
-) -> List[Dict[str, object]]:
-    rows: List[Dict[str, object]] = []
-
-    for checkpoint_path in checkpoints:
-        epoch = extract_epoch_from_checkpoint(checkpoint_path, prefix)
-        if epoch is None:
-            continue
-        metrics = evaluate_validation_checkpoint(
-            val_pkl=val_pkl,
-            checkpoint_path=checkpoint_path,
-            prefix_length=prefix_length,
-            mapping_type=mapping_type,
-            num_layers=num_layers,
-            batch_size=batch_size,
-            include_batch_rows=False,
-            include_embeddings=False,
-        )
-        rows.append(
-            {
-                "epoch": epoch,
-                "checkpoint": to_repo_relative(checkpoint_path),
-                "val_loss": metrics["mean_val_loss"],
-                "val_batches": metrics["val_batches"],
-                "val_samples": metrics["val_samples"],
-            }
-        )
-
-    rows.sort(key=lambda item: int(item["epoch"]))
-    write_csv(out_csv_path, rows, VAL_LOSS_PER_EPOCH_COLUMNS)
-    return rows
-
-
 def build_run_commands(
     model: str,
     model_root: Path,
@@ -666,6 +410,8 @@ def build_run_commands(
     parse_openai = shlex.quote(str(PARSE_OPENAI_SCRIPT))
     train_script = shlex.quote(str(TRAIN_SCRIPT))
     test_script = shlex.quote(str(TEST_SCRIPT))
+    validation_script = shlex.quote(str(VALIDATION_SCRIPT))
+    graficas_script = shlex.quote(str(GRAFICAS_SCRIPT))
 
     lines = [
         "#!/usr/bin/env bash",
@@ -674,7 +420,7 @@ def build_run_commands(
         f"# Modelo: {model}",
         f"# GPU: {gpu if gpu else 'no_forzada'}",
         "# Comandos de referencia equivalentes al flujo automático.",
-        "# Nota: scripts/2fold_models.py calcula ademas val_loss y guarda embeddings pre/post-GPT por fold.",
+        "# Nota: la validacion/val_loss se calcula via scripts/validation.py.",
         "",
     ]
 
@@ -752,11 +498,95 @@ def build_run_commands(
             )
         lines.append("")
 
+    lines.append("# ===== Post-proceso =====")
+    lines.append(
+        f"{env_prefix}{py} {validation_script} "
+        f"--model {shlex.quote(model)} "
+        f"--output_root {shlex.quote(str(model_root.parent))} "
+        f"--start_epoch 0 --end_epoch {max(0, int(args.epochs) - 1)}"
+    )
+    lines.append(
+        f"{env_prefix}{py} {graficas_script} "
+        f"--input_root {shlex.quote(str(model_root.parent))} "
+        f"--output_root {shlex.quote(str(model_root.parent / 'plots'))} "
+        f"--models {shlex.quote(model_root.name)}"
+    )
+
     return "\n".join(lines).rstrip() + "\n"
 
 
 def main() -> None:
     args = parse_args()
+
+    if args.model == MODEL_ALL_KEY:
+        models_to_run = list(MODEL_ALL_ORDER)
+        output_root = resolve_repo_path(args.output_root)
+        output_root.mkdir(parents=True, exist_ok=True)
+        log_path = output_root / "pipeline_all.log"
+        remove_existing_path(log_path)
+
+        env = build_env(args.gpu)
+        python_exec = sys.executable
+        script_path = Path(__file__).resolve()
+        print(f"Modo --model all activado. Se ejecutaran: {', '.join(models_to_run)}")
+
+        for requested_model in models_to_run:
+            print(f"\n========== Ejecutando modelo {requested_model} ==========")
+            cmd = [
+                python_exec,
+                str(script_path),
+                "--model",
+                requested_model,
+                "--negative_csv",
+                str(args.negative_csv),
+                "--positive_csv",
+                str(args.positive_csv),
+                "--output_root",
+                str(args.output_root),
+                "--seed",
+                str(args.seed),
+                "--epochs",
+                str(args.epochs),
+                "--save_every",
+                str(args.save_every),
+                "--bs",
+                str(args.bs),
+                "--prefix_length",
+                str(args.prefix_length),
+                "--prefix_length_clip",
+                str(args.prefix_length_clip),
+                "--mapping_type",
+                str(args.mapping_type),
+                "--num_layers",
+                str(args.num_layers),
+            ]
+
+            if args.gpu is not None:
+                cmd.extend(["--gpu", str(args.gpu)])
+            if args.prepare_only:
+                cmd.append("--prepare_only")
+
+            run_step(cmd, env, log_path)
+
+        if not args.prepare_only:
+            plot_cmd = [
+                python_exec,
+                str(GRAFICAS_SCRIPT),
+                "--input_root",
+                str(output_root),
+                "--output_root",
+                str(output_root / "plots"),
+                "--models",
+                "biomedclip",
+                "vit",
+                "resnet",
+            ]
+            run_step(plot_cmd, env, log_path)
+
+        print(
+            f"\nEjecucion completa para --model all. Log global: {to_repo_relative(log_path)}"
+        )
+        return
 
     canonical_model = MODEL_ALIAS[args.model]
     output_subdir = MODEL_OUTPUT_DIR[args.model]
@@ -768,7 +598,7 @@ def main() -> None:
     model_root = output_root / output_subdir
     weight_path = resolve_repo_path(model_cfg["weights_path"])
 
-    for required in [positive_csv_path, negative_csv_path, TRAIN_SCRIPT, TEST_SCRIPT]:
+    for required in [positive_csv_path, negative_csv_path, TRAIN_SCRIPT, TEST_SCRIPT, VALIDATION_SCRIPT, GRAFICAS_SCRIPT]:
         if not required.exists():
             raise FileNotFoundError(f"No existe archivo requerido: {required}")
     if canonical_model == "biomedclip" and not PARSE_BIOMED_SCRIPT.exists():
@@ -777,6 +607,10 @@ def main() -> None:
         raise FileNotFoundError(f"No existe: {PARSE_OPENAI_SCRIPT}")
     if not weight_path.exists():
         raise FileNotFoundError(f"No existe archivo de pesos: {weight_path}")
+
+    if model_root.exists():
+        print(f"Reemplazando salida previa en: {to_repo_relative(model_root)}")
+        remove_existing_path(model_root)
 
     positive_rows = read_csv_rows(positive_csv_path)
     negative_rows = read_csv_rows(negative_csv_path)
@@ -835,7 +669,7 @@ def main() -> None:
             "val_clip_embeddings_pt": to_repo_relative(fold_dir / "embeddings" / "val_clip_embeddings.pt"),
             "val_pre_gpt_embeddings_pt": to_repo_relative(fold_dir / "embeddings" / "val_pre_gpt_embeddings.pt"),
             "val_post_gpt_embeddings_pt": to_repo_relative(fold_dir / "embeddings" / "val_post_gpt_embeddings.pt"),
-            "val_loss_csv": to_repo_relative(fold_dir / "inference" / "val_loss_per_batch.csv"),
+            "val_loss_csv": to_repo_relative(fold_dir / "val_loss_per_epoch.csv"),
             "val_loss_summary_json": to_repo_relative(fold_dir / "inference" / "val_loss_summary.json"),
             "val_loss_per_epoch_csv": to_repo_relative(fold_dir / "val_loss_per_epoch.csv"),
         }
@@ -870,6 +704,8 @@ def main() -> None:
             "parse_colono": to_repo_relative(PARSE_OPENAI_SCRIPT),
             "train": to_repo_relative(TRAIN_SCRIPT),
             "test": to_repo_relative(TEST_SCRIPT),
+            "validation": to_repo_relative(VALIDATION_SCRIPT),
+            "graficas": to_repo_relative(GRAFICAS_SCRIPT),
         },
         "training": {
             "epochs": args.epochs,
@@ -928,6 +764,12 @@ def main() -> None:
         print("Modo prepare_only: no se ejecutaron parse/train/test.")
         return
 
+    from validation import (  # noqa: WPS433
+        compute_and_save_val_loss_per_epoch,
+        compute_and_save_validation_artifacts,
+        find_checkpoint_for_epoch,
+    )
+
     env = build_env(args.gpu)
     python_exec = sys.executable
     all_generated_rows: List[Dict[str, str]] = []
@@ -950,7 +792,6 @@ def main() -> None:
         val_clip_embeddings_pt = resolve_repo_path(fold_artifacts[fold_name]["val_clip_embeddings_pt"])
         val_pre_gpt_embeddings_pt = resolve_repo_path(fold_artifacts[fold_name]["val_pre_gpt_embeddings_pt"])
         val_post_gpt_embeddings_pt = resolve_repo_path(fold_artifacts[fold_name]["val_post_gpt_embeddings_pt"])
-        val_loss_csv = resolve_repo_path(fold_artifacts[fold_name]["val_loss_csv"])
         val_loss_summary_json = resolve_repo_path(fold_artifacts[fold_name]["val_loss_summary_json"])
         val_loss_per_epoch_csv = resolve_repo_path(fold_artifacts[fold_name]["val_loss_per_epoch_csv"])
 
@@ -1041,26 +882,29 @@ def main() -> None:
         val_clip_info = ensure_clip_embeddings_snapshot(val_pkl, val_clip_embeddings_pt)
         run_step(train_cmd, env, log_path)
 
-        checkpoint_candidates = list_checkpoints_by_epoch(train_dir, train_prefix)
-        if not checkpoint_candidates:
-            raise FileNotFoundError(f"No se encontraron checkpoints en {train_dir}")
-
         val_loss_per_epoch_rows = compute_and_save_val_loss_per_epoch(
             val_pkl=val_pkl,
-            checkpoints=checkpoint_candidates,
+            train_dir=train_dir,
+            checkpoint_prefix=train_prefix,
+            start_epoch=0,
+            end_epoch=max(0, int(args.epochs) - 1),
             out_csv_path=val_loss_per_epoch_csv,
-            prefix=train_prefix,
             prefix_length=args.prefix_length,
             mapping_type=str(args.mapping_type),
             num_layers=args.num_layers,
             batch_size=args.bs,
+            allow_missing_checkpoints=False,
         )
+        if not val_loss_per_epoch_rows:
+            raise RuntimeError(
+                f"No se evaluo ninguna epoca para {fold_name}; revisa checkpoints en {train_dir}."
+            )
 
-        checkpoint_path = find_checkpoint(train_dir, train_prefix, args.epochs - 1)
+        checkpoint_path = find_checkpoint_for_epoch(train_dir, train_prefix, args.epochs - 1)
         val_eval_summary = compute_and_save_validation_artifacts(
             val_pkl=val_pkl,
             checkpoint_path=checkpoint_path,
-            val_loss_csv_path=val_loss_csv,
+            val_loss_per_epoch_csv_path=val_loss_per_epoch_csv,
             val_loss_summary_path=val_loss_summary_json,
             pre_gpt_embeddings_path=val_pre_gpt_embeddings_pt,
             post_gpt_embeddings_path=val_post_gpt_embeddings_pt,
@@ -1153,6 +997,18 @@ def main() -> None:
     summary["generated_captions_rows"] = len(all_generated_rows)
     run_config_path.write_text(json.dumps(run_config, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    plot_cmd = [
+        python_exec,
+        str(GRAFICAS_SCRIPT),
+        "--input_root",
+        str(output_root),
+        "--output_root",
+        str(output_root / "plots"),
+        "--models",
+        output_subdir,
+    ]
+    run_step(plot_cmd, env, log_path)
 
     print(f"\nPipeline completo. Captions generados guardados en: {to_repo_relative(captions_generated_path)}")
 

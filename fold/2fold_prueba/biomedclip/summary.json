@@ -1,0 +1,300 @@
+{
+  "model": "biomedclip",
+  "requested_model": "biomedclip",
+  "output_subdir": "biomedclip",
+  "gpu": null,
+  "total_samples": 11400,
+  "label_distribution": {
+    "positive": 5700,
+    "negative": 5700
+  },
+  "folds": [
+    {
+      "fold": "fold_1",
+      "train_samples": 5700,
+      "val_samples": 5700,
+      "train_label_distribution": {
+        "positive": 2850,
+        "negative": 2850
+      },
+      "val_label_distribution": {
+        "positive": 2850,
+        "negative": 2850
+      },
+      "artifacts": {
+        "fold_dir": "fold/2fold/biomedclip/folds/fold_1",
+        "train_csv": "fold/2fold/biomedclip/folds/fold_1/train.csv",
+        "val_csv": "fold/2fold/biomedclip/folds/fold_1/val.csv",
+        "train_pkl": "fold/2fold/biomedclip/folds/fold_1/data/train.pkl",
+        "val_pkl": "fold/2fold/biomedclip/folds/fold_1/data/val.pkl",
+        "train_dir": "fold/2fold/biomedclip/folds/fold_1/train",
+        "inference_dir": "fold/2fold/biomedclip/folds/fold_1/inference",
+        "val_predictions_raw_csv": "fold/2fold/biomedclip/folds/fold_1/inference/val_predictions_raw.csv",
+        "val_predictions_csv": "fold/2fold/biomedclip/folds/fold_1/inference/val_predictions.csv",
+        "val_manifest_csv": "fold/2fold/biomedclip/folds/fold_1/inference/val_manifest.csv",
+        "train_clip_embeddings_pt": "fold/2fold/biomedclip/folds/fold_1/embeddings/train_clip_embeddings.pt",
+        "val_clip_embeddings_pt": "fold/2fold/biomedclip/folds/fold_1/embeddings/val_clip_embeddings.pt",
+        "val_pre_gpt_embeddings_pt": "fold/2fold/biomedclip/folds/fold_1/embeddings/val_pre_gpt_embeddings.pt",
+        "val_post_gpt_embeddings_pt": "fold/2fold/biomedclip/folds/fold_1/embeddings/val_post_gpt_embeddings.pt",
+        "val_loss_csv": "fold/2fold/biomedclip/folds/fold_1/inference/val_loss_per_batch.csv",
+        "val_loss_summary_json": "fold/2fold/biomedclip/folds/fold_1/inference/val_loss_summary.json",
+        "val_loss_per_epoch_csv": "fold/2fold/biomedclip/folds/fold_1/val_loss_per_epoch.csv"
+      }
+    },
+    {
+      "fold": "fold_2",
+      "train_samples": 5700,
+      "val_samples": 5700,
+      "train_label_distribution": {
+        "positive": 2850,
+        "negative": 2850
+      },
+      "val_label_distribution": {
+        "positive": 2850,
+        "negative": 2850
+      },
+      "artifacts": {
+        "fold_dir": "fold/2fold/biomedclip/folds/fold_2",
+        "train_csv": "fold/2fold/biomedclip/folds/fold_2/train.csv",
+        "val_csv": "fold/2fold/biomedclip/folds/fold_2/val.csv",
+        "train_pkl": "fold/2fold/biomedclip/folds/fold_2/data/train.pkl",
+        "val_pkl": "fold/2fold/biomedclip/folds/fold_2/data/val.pkl",
+        "train_dir": "fold/2fold/biomedclip/folds/fold_2/train",
+        "inference_dir": "fold/2fold/biomedclip/folds/fold_2/inference",
+        "val_predictions_raw_csv": "fold/2fold/biomedclip/folds/fold_2/inference/val_predictions_raw.csv",
+        "val_predictions_csv": "fold/2fold/biomedclip/folds/fold_2/inference/val_predictions.csv",
+        "val_manifest_csv": "fold/2fold/biomedclip/folds/fold_2/inference/val_manifest.csv",
+        "train_clip_embeddings_pt": "fold/2fold/biomedclip/folds/fold_2/embeddings/train_clip_embeddings.pt",
+        "val_clip_embeddings_pt": "fold/2fold/biomedclip/folds/fold_2/embeddings/val_clip_embeddings.pt",
+        "val_pre_gpt_embeddings_pt": "fold/2fold/biomedclip/folds/fold_2/embeddings/val_pre_gpt_embeddings.pt",
+        "val_post_gpt_embeddings_pt": "fold/2fold/biomedclip/folds/fold_2/embeddings/val_post_gpt_embeddings.pt",
+        "val_loss_csv": "fold/2fold/biomedclip/folds/fold_2/inference/val_loss_per_batch.csv",
+        "val_loss_summary_json": "fold/2fold/biomedclip/folds/fold_2/inference/val_loss_summary.json",
+        "val_loss_per_epoch_csv": "fold/2fold/biomedclip/folds/fold_2/val_loss_per_epoch.csv"
+      }
+    }
+  ],
+  "executed": true,
+  "execution_report": [
+    {
+      "fold": "fold_1",
+      "checkpoint": "fold/2fold/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-014.pt",
+      "val_images_dir": "fold/2fold/biomedclip/folds/fold_1/inference/val_images_validation",
+      "val_manifest_rows": 5700,
+      "val_missing_images": 0,
+      "raw_predictions_rows": 5700,
+      "matched_predictions_rows": 5700,
+      "val_loss_per_epoch_csv": "fold/2fold/biomedclip/folds/fold_1/val_loss_per_epoch.csv",
+      "val_loss_per_epoch_points": 15,
+      "mean_val_loss_final_checkpoint": 0.020346306709995446,
+      "val_batches_final_checkpoint": 1425,
+      "val_samples_final_checkpoint": 5700,
+      "train_clip_embeddings": {
+        "path": "fold/2fold/biomedclip/folds/fold_1/embeddings/train_clip_embeddings.pt",
+        "num_embeddings": 5700,
+        "embedding_dim": 512
+      },
+      "val_clip_embeddings": {
+        "path": "fold/2fold/biomedclip/folds/fold_1/embeddings/val_clip_embeddings.pt",
+        "num_embeddings": 5700,
+        "embedding_dim": 512
+      },
+      "pre_gpt_embeddings_shape": [
+        5700,
+        10,
+        768
+      ],
+      "post_gpt_embeddings_shape": [
+        5700,
+        10,
+        768
+      ],
+      "epochs_evaluated": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "fold": "fold_2",
+      "checkpoint": "fold/2fold/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-014.pt",
+      "val_images_dir": "fold/2fold/biomedclip/folds/fold_2/inference/val_images_validation",
+      "val_manifest_rows": 5700,
+      "val_missing_images": 0,
+      "raw_predictions_rows": 5700,
+      "matched_predictions_rows": 5700,
+      "val_loss_per_epoch_csv": "fold/2fold/biomedclip/folds/fold_2/val_loss_per_epoch.csv",
+      "val_loss_per_epoch_points": 15,
+      "mean_val_loss_final_checkpoint": 0.02110449728913393,
+      "val_batches_final_checkpoint": 1425,
+      "val_samples_final_checkpoint": 5700,
+      "train_clip_embeddings": {
+        "path": "fold/2fold/biomedclip/folds/fold_2/embeddings/train_clip_embeddings.pt",
+        "num_embeddings": 5700,
+        "embedding_dim": 512
+      },
+      "val_clip_embeddings": {
+        "path": "fold/2fold/biomedclip/folds/fold_2/embeddings/val_clip_embeddings.pt",
+        "num_embeddings": 5700,
+        "embedding_dim": 512
+      },
+      "pre_gpt_embeddings_shape": [
+        5700,
+        10,
+        768
+      ],
+      "post_gpt_embeddings_shape": [
+        5700,
+        10,
+        768
+      ],
+      "epochs_evaluated": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ]
+    }
+  ],
+  "generated_captions_rows": 11400,
+  "validation": {
+    "validated_at_utc": "2026-03-17T23:24:19.552997+00:00",
+    "epochs_requested": {
+      "start": 0,
+      "end": 14
+    },
+    "allow_missing_checkpoints": false,
+    "beam_search": true,
+    "entry_length": 67,
+    "top_p": 0.8,
+    "temperature": 1.0,
+    "generated_captions_rows": 11400,
+    "execution_report": [
+      {
+        "fold": "fold_1",
+        "checkpoint": "fold/2fold/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-014.pt",
+        "val_images_dir": "fold/2fold/biomedclip/folds/fold_1/inference/val_images_validation",
+        "val_manifest_rows": 5700,
+        "val_missing_images": 0,
+        "raw_predictions_rows": 5700,
+        "matched_predictions_rows": 5700,
+        "val_loss_per_epoch_csv": "fold/2fold/biomedclip/folds/fold_1/val_loss_per_epoch.csv",
+        "val_loss_per_epoch_points": 15,
+        "mean_val_loss_final_checkpoint": 0.020346306709995446,
+        "val_batches_final_checkpoint": 1425,
+        "val_samples_final_checkpoint": 5700,
+        "train_clip_embeddings": {
+          "path": "fold/2fold/biomedclip/folds/fold_1/embeddings/train_clip_embeddings.pt",
+          "num_embeddings": 5700,
+          "embedding_dim": 512
+        },
+        "val_clip_embeddings": {
+          "path": "fold/2fold/biomedclip/folds/fold_1/embeddings/val_clip_embeddings.pt",
+          "num_embeddings": 5700,
+          "embedding_dim": 512
+        },
+        "pre_gpt_embeddings_shape": [
+          5700,
+          10,
+          768
+        ],
+        "post_gpt_embeddings_shape": [
+          5700,
+          10,
+          768
+        ],
+        "epochs_evaluated": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      {
+        "fold": "fold_2",
+        "checkpoint": "fold/2fold/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-014.pt",
+        "val_images_dir": "fold/2fold/biomedclip/folds/fold_2/inference/val_images_validation",
+        "val_manifest_rows": 5700,
+        "val_missing_images": 0,
+        "raw_predictions_rows": 5700,
+        "matched_predictions_rows": 5700,
+        "val_loss_per_epoch_csv": "fold/2fold/biomedclip/folds/fold_2/val_loss_per_epoch.csv",
+        "val_loss_per_epoch_points": 15,
+        "mean_val_loss_final_checkpoint": 0.02110449728913393,
+        "val_batches_final_checkpoint": 1425,
+        "val_samples_final_checkpoint": 5700,
+        "train_clip_embeddings": {
+          "path": "fold/2fold/biomedclip/folds/fold_2/embeddings/train_clip_embeddings.pt",
+          "num_embeddings": 5700,
+          "embedding_dim": 512
+        },
+        "val_clip_embeddings": {
+          "path": "fold/2fold/biomedclip/folds/fold_2/embeddings/val_clip_embeddings.pt",
+          "num_embeddings": 5700,
+          "embedding_dim": 512
+        },
+        "pre_gpt_embeddings_shape": [
+          5700,
+          10,
+          768
+        ],
+        "post_gpt_embeddings_shape": [
+          5700,
+          10,
+          768
+        ],
+        "epochs_evaluated": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      }
+    ]
+  }
+}

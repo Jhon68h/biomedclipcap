@@ -1,0 +1,2 @@
+
+[2026-03-18T14:09:42.526928+00:00] /opt/conda/bin/python3 /workspace/scripts/2fold_models.py --model biomedclip --negative_csv experiments_colono/experiments_colono/clipclap_train_labeled_negative.csv --positive_csv experiments_colono/experiments_colono/clipclap_train_labeled_positive.csv --output_root fold/2fold --seed 42 --epochs 15 --save_every 1 --bs 8 --prefix_length 10 --prefix_length_clip 10 --mapping_type transformer --num_layers 8 --gpu 3

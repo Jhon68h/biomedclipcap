@@ -32,7 +32,7 @@ class ClipCocoDataset(Dataset):
     def __len__(self) -> int:
         return len(self.captions_tokens)
 
-    def pad_tokens(self, item: int): #--> ajusta la longitud de los tokens para que tengan el mismo tamano
+    def pad_tokens(self, item: int):
         tokens = self.captions_tokens[item]
         padding = self.max_seq_len - tokens.shape[0]
         if padding > 0:
@@ -48,7 +48,6 @@ class ClipCocoDataset(Dataset):
         return tokens, mask
 
     def __getitem__(self, item: int) -> Tuple[torch.Tensor, ...]:
-        #devuelve datos a un indice para ser usados en un dataloader
         tokens, mask = self.pad_tokens(item)
         prefix = self.prefixes[self.caption2embedding[item]]
         if self.normalize_prefix:
@@ -112,14 +111,15 @@ class MlpTransformer(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        x = self.fc1(x) #capa linear 
-        x = self.act(x) #activacion
-        x = self.dropout(x) #regularizacion
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.dropout(x)
         x = self.fc2(x)
         x = self.dropout(x)
         return x
 
 class MultiHeadAttention(nn.Module):
+
     def __init__(self, dim_self, dim_ref, num_heads, bias=True, dropout=0.):
         super().__init__()
         self.num_heads = num_heads
@@ -179,12 +179,12 @@ class Transformer(nn.Module):
         for layer in self.layers:
             x, att = layer.forward_with_attention(x, y, mask)
             attentions.append(att)
-        return x, attentions #guarda los mapas de atencion
+        return x, attentions
 
     def forward(self, x, y=None, mask=None):
         for i, layer in enumerate(self.layers):
             if i % 2 == 0 and self.enc_dec: # cross
-                x = layer(x, y) #x -> queries, y-> keys/values
+                x = layer(x, y)
             elif self.enc_dec:  # self
                 x = layer(x, x, mask)
             else:  # self or cross
