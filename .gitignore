@@ -25,6 +25,7 @@ experiments_colono/
 checkpoints/
 logs/
 runs/
+dataset_real_colon/
 
 # Datasets, media, and local assets
 data/

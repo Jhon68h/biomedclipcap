@@ -1,0 +1,154 @@
+{
+  "model": "vit",
+  "requested_model": "vit",
+  "output_subdir": "vit",
+  "gpu": "3",
+  "total_samples": 11400,
+  "label_distribution": {
+    "positive": 5700,
+    "negative": 5700
+  },
+  "total_cases": 77,
+  "folds": [
+    {
+      "fold": "fold_1",
+      "train_samples": 5662,
+      "val_samples": 5738,
+      "train_label_distribution": {
+        "positive": 2812,
+        "negative": 2850
+      },
+      "val_label_distribution": {
+        "positive": 2888,
+        "negative": 2850
+      },
+      "train_cases": 38,
+      "val_cases": 39,
+      "train_val_case_overlap": 0,
+      "artifacts": {
+        "fold_dir": "fold/2fold/vit/folds/fold_1",
+        "train_csv": "fold/2fold/vit/folds/fold_1/train.csv",
+        "val_csv": "fold/2fold/vit/folds/fold_1/val.csv",
+        "train_pkl": "fold/2fold/vit/folds/fold_1/data/train.pkl",
+        "val_pkl": "fold/2fold/vit/folds/fold_1/data/val.pkl",
+        "train_dir": "fold/2fold/vit/folds/fold_1/train",
+        "inference_dir": "fold/2fold/vit/folds/fold_1/inference",
+        "val_predictions_raw_csv": "fold/2fold/vit/folds/fold_1/inference/val_predictions_raw.csv",
+        "val_predictions_csv": "fold/2fold/vit/folds/fold_1/inference/val_predictions.csv",
+        "val_manifest_csv": "fold/2fold/vit/folds/fold_1/inference/val_manifest.csv",
+        "train_clip_embeddings_pt": "fold/2fold/vit/folds/fold_1/embeddings/train_clip_embeddings.pt",
+        "val_clip_embeddings_pt": "fold/2fold/vit/folds/fold_1/embeddings/val_clip_embeddings.pt",
+        "val_pre_gpt_embeddings_pt": "fold/2fold/vit/folds/fold_1/embeddings/val_pre_gpt_embeddings.pt",
+        "val_post_gpt_embeddings_pt": "fold/2fold/vit/folds/fold_1/embeddings/val_post_gpt_embeddings.pt",
+        "val_loss_csv": "fold/2fold/vit/folds/fold_1/inference/val_loss_per_batch.csv",
+        "val_loss_summary_json": "fold/2fold/vit/folds/fold_1/inference/val_loss_summary.json",
+        "val_loss_per_epoch_csv": "fold/2fold/vit/folds/fold_1/val_loss_per_epoch.csv"
+      }
+    },
+    {
+      "fold": "fold_2",
+      "train_samples": 5738,
+      "val_samples": 5662,
+      "train_label_distribution": {
+        "positive": 2888,
+        "negative": 2850
+      },
+      "val_label_distribution": {
+        "positive": 2812,
+        "negative": 2850
+      },
+      "train_cases": 39,
+      "val_cases": 38,
+      "train_val_case_overlap": 0,
+      "artifacts": {
+        "fold_dir": "fold/2fold/vit/folds/fold_2",
+        "train_csv": "fold/2fold/vit/folds/fold_2/train.csv",
+        "val_csv": "fold/2fold/vit/folds/fold_2/val.csv",
+        "train_pkl": "fold/2fold/vit/folds/fold_2/data/train.pkl",
+        "val_pkl": "fold/2fold/vit/folds/fold_2/data/val.pkl",
+        "train_dir": "fold/2fold/vit/folds/fold_2/train",
+        "inference_dir": "fold/2fold/vit/folds/fold_2/inference",
+        "val_predictions_raw_csv": "fold/2fold/vit/folds/fold_2/inference/val_predictions_raw.csv",
+        "val_predictions_csv": "fold/2fold/vit/folds/fold_2/inference/val_predictions.csv",
+        "val_manifest_csv": "fold/2fold/vit/folds/fold_2/inference/val_manifest.csv",
+        "train_clip_embeddings_pt": "fold/2fold/vit/folds/fold_2/embeddings/train_clip_embeddings.pt",
+        "val_clip_embeddings_pt": "fold/2fold/vit/folds/fold_2/embeddings/val_clip_embeddings.pt",
+        "val_pre_gpt_embeddings_pt": "fold/2fold/vit/folds/fold_2/embeddings/val_pre_gpt_embeddings.pt",
+        "val_post_gpt_embeddings_pt": "fold/2fold/vit/folds/fold_2/embeddings/val_post_gpt_embeddings.pt",
+        "val_loss_csv": "fold/2fold/vit/folds/fold_2/inference/val_loss_per_batch.csv",
+        "val_loss_summary_json": "fold/2fold/vit/folds/fold_2/inference/val_loss_summary.json",
+        "val_loss_per_epoch_csv": "fold/2fold/vit/folds/fold_2/val_loss_per_epoch.csv"
+      }
+    }
+  ],
+  "executed": true,
+  "execution_report": [
+    {
+      "fold": "fold_1",
+      "checkpoint": "fold/2fold/vit/folds/fold_1/train/positive_vs_negative_fold_1-014.pt",
+      "val_manifest_rows": 5738,
+      "val_missing_images": 0,
+      "raw_predictions_rows": 5738,
+      "matched_predictions_rows": 5738,
+      "val_images_dir": "fold/2fold/vit/folds/fold_1/inference/val_images_20260327T214627Z",
+      "mean_val_loss": 0.30947525694578765,
+      "val_loss_batches": 1435,
+      "val_loss_per_epoch_csv": "fold/2fold/vit/folds/fold_1/val_loss_per_epoch.csv",
+      "val_loss_per_epoch_points": 15,
+      "train_clip_embeddings": {
+        "path": "fold/2fold/vit/folds/fold_1/embeddings/train_clip_embeddings.pt",
+        "num_embeddings": 5662,
+        "embedding_dim": 512
+      },
+      "val_clip_embeddings": {
+        "path": "fold/2fold/vit/folds/fold_1/embeddings/val_clip_embeddings.pt",
+        "num_embeddings": 5738,
+        "embedding_dim": 512
+      },
+      "pre_gpt_embeddings_shape": [
+        5738,
+        10,
+        768
+      ],
+      "post_gpt_embeddings_shape": [
+        5738,
+        10,
+        768
+      ]
+    },
+    {
+      "fold": "fold_2",
+      "checkpoint": "fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-014.pt",
+      "val_manifest_rows": 5662,
+      "val_missing_images": 0,
+      "raw_predictions_rows": 5662,
+      "matched_predictions_rows": 5662,
+      "val_images_dir": "fold/2fold/vit/folds/fold_2/inference/val_images_20260327T214627Z",
+      "mean_val_loss": 0.3330066325264931,
+      "val_loss_batches": 1416,
+      "val_loss_per_epoch_csv": "fold/2fold/vit/folds/fold_2/val_loss_per_epoch.csv",
+      "val_loss_per_epoch_points": 15,
+      "train_clip_embeddings": {
+        "path": "fold/2fold/vit/folds/fold_2/embeddings/train_clip_embeddings.pt",
+        "num_embeddings": 5738,
+        "embedding_dim": 512
+      },
+      "val_clip_embeddings": {
+        "path": "fold/2fold/vit/folds/fold_2/embeddings/val_clip_embeddings.pt",
+        "num_embeddings": 5662,
+        "embedding_dim": 512
+      },
+      "pre_gpt_embeddings_shape": [
+        5662,
+        10,
+        768
+      ],
+      "post_gpt_embeddings_shape": [
+        5662,
+        10,
+        768
+      ]
+    }
+  ],
+  "generated_captions_rows": 11400
+}

@@ -1,0 +1,19 @@
+{
+  "val_batches": 1416,
+  "val_samples": 5662,
+  "mean_val_loss": 0.3508018579365083,
+  "val_loss_csv": "fold/2fold/resnet/folds/fold_2/val_loss_per_epoch.csv",
+  "val_loss_per_epoch_csv": "fold/2fold/resnet/folds/fold_2/val_loss_per_epoch.csv",
+  "pre_gpt_embeddings_path": "fold/2fold/resnet/folds/fold_2/embeddings/val_pre_gpt_embeddings.pt",
+  "post_gpt_embeddings_path": "fold/2fold/resnet/folds/fold_2/embeddings/val_post_gpt_embeddings.pt",
+  "pre_gpt_embeddings_shape": [
+    5662,
+    10,
+    768
+  ],
+  "post_gpt_embeddings_shape": [
+    5662,
+    10,
+    768
+  ]
+}

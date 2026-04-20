@@ -1,0 +1,109 @@
+{
+  "input_root": "/workspace/fold/2fold",
+  "output_root": "/workspace/fold/2fold/plots",
+  "models_requested": [
+    "biomedclip",
+    "vit",
+    "resnet"
+  ],
+  "models_processed": {
+    "biomedclip": {
+      "model": "biomedclip",
+      "status": "ok",
+      "output_dir": "/workspace/fold/2fold/plots/biomedclip",
+      "prediction_rows_total": 11400,
+      "prediction_rows_used_in_cm": 11400,
+      "prediction_rows_skipped_in_cm": 0,
+      "confusion_matrix_counts": {
+        "true_negative_pred_negative": 5190,
+        "true_negative_pred_positive": 510,
+        "true_positive_pred_negative": 2627,
+        "true_positive_pred_positive": 3073
+      },
+      "n_frames_for_embeddings": 11400,
+      "embedding_dim": 512,
+      "pca_explained_variance_ratio": {
+        "pc1": 0.23397068802960264,
+        "pc2": 0.10810590825135022
+      },
+      "loss_curve_summary": {
+        "folds_used": 2,
+        "folds_total": 2,
+        "n_epochs": 15,
+        "final_epoch": 14,
+        "final_train_loss_mean": 0.0003780225395333078,
+        "final_val_loss_mean": 0.3314980937191041
+      },
+      "exports": {
+        "pca_points_csv": "/workspace/fold/2fold/plots/biomedclip/pca_points_pre_gpt2.csv"
+      }
+    },
+    "vit": {
+      "model": "vit",
+      "status": "ok",
+      "output_dir": "/workspace/fold/2fold/plots/vit",
+      "prediction_rows_total": 11400,
+      "prediction_rows_used_in_cm": 11400,
+      "prediction_rows_skipped_in_cm": 0,
+      "confusion_matrix_counts": {
+        "true_negative_pred_negative": 4947,
+        "true_negative_pred_positive": 753,
+        "true_positive_pred_negative": 2501,
+        "true_positive_pred_positive": 3199
+      },
+      "n_frames_for_embeddings": 11400,
+      "embedding_dim": 512,
+      "pca_explained_variance_ratio": {
+        "pc1": 0.43019268937005156,
+        "pc2": 0.06623615002304453
+      },
+      "loss_curve_summary": {
+        "folds_used": 2,
+        "folds_total": 2,
+        "n_epochs": 15,
+        "final_epoch": 14,
+        "final_train_loss_mean": 0.0007696028593378154,
+        "final_val_loss_mean": 0.3212409447361404
+      },
+      "exports": {
+        "pca_points_csv": "/workspace/fold/2fold/plots/vit/pca_points_pre_gpt2.csv"
+      }
+    },
+    "resnet": {
+      "model": "resnet",
+      "status": "ok",
+      "output_dir": "/workspace/fold/2fold/plots/resnet",
+      "prediction_rows_total": 11400,
+      "prediction_rows_used_in_cm": 11400,
+      "prediction_rows_skipped_in_cm": 0,
+      "confusion_matrix_counts": {
+        "true_negative_pred_negative": 4859,
+        "true_negative_pred_positive": 841,
+        "true_positive_pred_negative": 2580,
+        "true_positive_pred_positive": 3120
+      },
+      "n_frames_for_embeddings": 11400,
+      "embedding_dim": 512,
+      "pca_explained_variance_ratio": {
+        "pc1": 0.401864096171771,
+        "pc2": 0.0920703832592086
+      },
+      "loss_curve_summary": {
+        "folds_used": 2,
+        "folds_total": 2,
+        "n_epochs": 15,
+        "final_epoch": 14,
+        "final_train_loss_mean": 0.0005765397605904588,
+        "final_val_loss_mean": 0.32692904579350923
+      },
+      "exports": {
+        "pca_points_csv": "/workspace/fold/2fold/plots/resnet/pca_points_pre_gpt2.csv"
+      }
+    }
+  },
+  "combined_plots": {
+    "confusion_matrices": "/workspace/fold/2fold/plots/confusion_matrices_all_models.png",
+    "pca_frames": "/workspace/fold/2fold/plots/pca_frames_all_models.png",
+    "train_val_loss": "/workspace/fold/2fold/plots/train_val_loss_all_models.png"
+  }
+}

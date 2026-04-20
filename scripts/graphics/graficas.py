@@ -4,6 +4,7 @@
 Salida:
 1) Una sola imagen con matrices de confusion de todos los modelos.
 2) Una sola imagen con PCA por frame de todos los modelos.
+3) Una sola imagen con loss de entrenamiento/validacion por epoca.
 """
 
 from __future__ import annotations
@@ -149,6 +150,15 @@ def _safe_int(value: Any, default: int) -> int:
         return default
 
 
+def _safe_float(value: Any, default: Optional[float]) -> Optional[float]:
+    try:
+        if value is None or value == "":
+            return default
+        return float(value)
+    except Exception:
+        return default
+
+
 def _row_to_meta(row: Dict[str, str]) -> Dict[str, str]:
     return {
         "sample_id": str(row.get("sample_id", "")),
@@ -289,6 +299,84 @@ def gather_prediction_rows(model_root: Path) -> List[Dict[str, str]]:
     return rows
 
 
+def _read_loss_series(path: Path, value_key: str) -> Dict[int, float]:
+    series: Dict[int, float] = {}
+    for row in read_csv_rows(path):
+        epoch = _safe_int(row.get("epoch"), -1)
+        value = _safe_float(row.get(value_key), None)
+        if epoch < 0 or value is None:
+            continue
+        series[epoch] = value
+    return series
+
+
+def collect_model_loss_data(model_root: Path) -> Dict[str, Any]:
+    fold_dirs = sorted((model_root / "folds").glob("fold_*"))
+    if not fold_dirs:
+        raise FileNotFoundError(f"No se encontraron folds en {model_root / 'folds'}")
+
+    fold_curves: List[Dict[str, Any]] = []
+    train_values_by_epoch: Dict[int, List[float]] = {}
+    val_values_by_epoch: Dict[int, List[float]] = {}
+
+    for fold_dir in fold_dirs:
+        val_loss_csv = fold_dir / "val_loss_per_epoch.csv"
+        train_csv_candidates = sorted((fold_dir / "train").glob("*_loss_per_epoch.csv"))
+        train_loss_csv = train_csv_candidates[0] if train_csv_candidates else None
+
+        if train_loss_csv is None or not val_loss_csv.exists():
+            print(f"[WARN] {model_root.name}/{fold_dir.name}: falta train_loss o val_loss por epoca")
+            continue
+
+        train_series = _read_loss_series(train_loss_csv, "mean_loss")
+        val_series = _read_loss_series(val_loss_csv, "val_loss")
+        common_epochs = sorted(set(train_series).intersection(val_series))
+
+        if not common_epochs:
+            print(f"[WARN] {model_root.name}/{fold_dir.name}: sin epocas comunes train/val")
+            continue
+
+        epochs = np.asarray(common_epochs, dtype=np.int64)
+        train_loss = np.asarray([train_series[e] for e in common_epochs], dtype=np.float64)
+        val_loss = np.asarray([val_series[e] for e in common_epochs], dtype=np.float64)
+        fold_curves.append(
+            {
+                "fold": fold_dir.name,
+                "epochs": epochs,
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+            }
+        )
+
+        for e in common_epochs:
+            train_values_by_epoch.setdefault(e, []).append(train_series[e])
+            val_values_by_epoch.setdefault(e, []).append(val_series[e])
+
+    if not fold_curves:
+        raise RuntimeError(f"No hubo curvas de loss validas para {model_root.name}")
+
+    epochs_common = sorted(set(train_values_by_epoch).intersection(val_values_by_epoch))
+    if not epochs_common:
+        raise RuntimeError(f"No hubo epocas comunes para agregar curvas de loss en {model_root.name}")
+
+    epochs = np.asarray(epochs_common, dtype=np.int64)
+    train_mean = np.asarray([np.mean(train_values_by_epoch[e]) for e in epochs_common], dtype=np.float64)
+    val_mean = np.asarray([np.mean(val_values_by_epoch[e]) for e in epochs_common], dtype=np.float64)
+    train_std = np.asarray([np.std(train_values_by_epoch[e]) for e in epochs_common], dtype=np.float64)
+    val_std = np.asarray([np.std(val_values_by_epoch[e]) for e in epochs_common], dtype=np.float64)
+
+    return {
+        "epochs": epochs,
+        "train_mean": train_mean,
+        "val_mean": val_mean,
+        "train_std": train_std,
+        "val_std": val_std,
+        "fold_curves": fold_curves,
+        "folds_used": len(fold_curves),
+        "folds_total": len(fold_dirs),
+    }
+
+
 def _build_model_data(
     model_name: str,
     model_root: Path,
@@ -303,6 +391,7 @@ def _build_model_data(
 
     embeddings, meta = collect_model_embeddings(model_root)
     points_2d, explained = pca_2d(embeddings)
+    loss_data = collect_model_loss_data(model_root)
 
     pca_rows: List[Dict[str, Any]] = []
     for idx, (item, point) in enumerate(zip(meta, points_2d)):
@@ -343,6 +432,14 @@ def _build_model_data(
         "points_2d": points_2d,
         "explained": explained,
         "meta": meta,
+        "loss_epochs": loss_data["epochs"],
+        "loss_train_mean": loss_data["train_mean"],
+        "loss_val_mean": loss_data["val_mean"],
+        "loss_train_std": loss_data["train_std"],
+        "loss_val_std": loss_data["val_std"],
+        "loss_fold_curves": loss_data["fold_curves"],
+        "loss_folds_used": int(loss_data["folds_used"]),
+        "loss_folds_total": int(loss_data["folds_total"]),
     }
 
     summary_payload = {
@@ -363,6 +460,18 @@ def _build_model_data(
         "pca_explained_variance_ratio": {
             "pc1": float(explained[0]),
             "pc2": float(explained[1]),
+        },
+        "loss_curve_summary": {
+            "folds_used": int(loss_data["folds_used"]),
+            "folds_total": int(loss_data["folds_total"]),
+            "n_epochs": int(len(loss_data["epochs"])),
+            "final_epoch": int(loss_data["epochs"][-1]) if len(loss_data["epochs"]) else None,
+            "final_train_loss_mean": (
+                float(loss_data["train_mean"][-1]) if len(loss_data["train_mean"]) else None
+            ),
+            "final_val_loss_mean": (
+                float(loss_data["val_mean"][-1]) if len(loss_data["val_mean"]) else None
+            ),
         },
         "exports": {
             "pca_points_csv": str(pca_csv),
@@ -386,7 +495,13 @@ def plot_confusion_matrices_combined(
         return
 
     n = len(plot_items)
-    fig, axes = plt.subplots(1, n, figsize=(5.1 * n, 4.9), squeeze=False)
+    # Para 3 modelos, forzamos layout 2x2 y usamos la 4ta celda para la barra.
+    if n == 3:
+        nrows, ncols = 2, 2
+    else:
+        ncols = max(1, int(np.ceil(np.sqrt(n))))
+        nrows = int(np.ceil(n / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5.2 * ncols, 4.8 * nrows), squeeze=False)
     ax_list = _as_axes_list(axes)
     vmax = max(max(int(item["cm"].max()), 1) for item in plot_items)
     images = []
@@ -416,7 +531,18 @@ def plot_confusion_matrices_combined(
         ax.set_title(f"{item['model']} (N={used_rows})")
 
     fig.suptitle("Matrices de confusion agregadas por modelo", fontsize=14, y=1.02)
-    fig.colorbar(images[0], ax=ax_list, fraction=0.025, pad=0.02)
+    extra_axes = ax_list[n:]
+    if extra_axes:
+        colorbar_slot_ax = extra_axes[0]
+        colorbar_slot_ax.axis("off")
+        for ax in extra_axes[1:]:
+            ax.axis("off")
+        # Dibujar una barra vertical angosta dentro de la 4ta celda.
+        cax = colorbar_slot_ax.inset_axes([0.42, 0.08, 0.16, 0.84])
+        cbar = fig.colorbar(images[0], cax=cax, orientation="vertical")
+        cbar.ax.set_title("Conteo", fontsize=9, pad=6)
+    else:
+        fig.colorbar(images[0], ax=ax_list[:n], fraction=0.025, pad=0.02)
     fig.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=dpi, bbox_inches="tight")
@@ -469,6 +595,81 @@ def plot_pca_combined(
         ax.legend(loc="best", fontsize=8, frameon=True)
 
     fig.suptitle("PCA por frame (tokens/embeddings pre-GPT-2) por modelo", fontsize=14, y=1.02)
+    fig.tight_layout()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_loss_curves_grid_combined(
+    plot_items: Sequence[Dict[str, Any]],
+    out_path: Path,
+    dpi: int,
+) -> None:
+    if not plot_items:
+        return
+
+    n = len(plot_items)
+    ncols = max(1, int(np.ceil(np.sqrt(n))))
+    nrows = int(np.ceil(n / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5.8 * ncols, 4.7 * nrows), squeeze=False)
+    ax_list = _as_axes_list(axes)
+
+    train_color = "#1d3557"
+    val_color = "#d62828"
+
+    for ax, item in zip(ax_list, plot_items):
+        epochs = np.asarray(item["loss_epochs"])
+        train_mean = np.asarray(item["loss_train_mean"])
+        val_mean = np.asarray(item["loss_val_mean"])
+        train_std = np.asarray(item["loss_train_std"])
+        val_std = np.asarray(item["loss_val_std"])
+        fold_curves = item.get("loss_fold_curves", [])
+
+        for fold_curve in fold_curves:
+            fold_epochs = np.asarray(fold_curve.get("epochs", []))
+            fold_train = np.asarray(fold_curve.get("train_loss", []))
+            fold_val = np.asarray(fold_curve.get("val_loss", []))
+            if fold_epochs.size > 0 and fold_train.size == fold_epochs.size:
+                ax.plot(fold_epochs, fold_train, color=train_color, alpha=0.20, linewidth=1.0)
+            if fold_epochs.size > 0 and fold_val.size == fold_epochs.size:
+                ax.plot(fold_epochs, fold_val, color=val_color, alpha=0.20, linewidth=1.0)
+
+        if epochs.size > 0:
+            ax.plot(epochs, train_mean, color=train_color, linewidth=2.3, marker="o", markersize=3.5, label="Train")
+            ax.plot(epochs, val_mean, color=val_color, linewidth=2.3, marker="o", markersize=3.5, label="Validation")
+
+            if train_std.size == epochs.size:
+                ax.fill_between(
+                    epochs,
+                    train_mean - train_std,
+                    train_mean + train_std,
+                    color=train_color,
+                    alpha=0.12,
+                    linewidth=0,
+                )
+            if val_std.size == epochs.size:
+                ax.fill_between(
+                    epochs,
+                    val_mean - val_std,
+                    val_mean + val_std,
+                    color=val_color,
+                    alpha=0.12,
+                    linewidth=0,
+                )
+        else:
+            ax.text(0.5, 0.5, "Sin datos de loss", ha="center", va="center", transform=ax.transAxes, fontsize=10)
+
+        ax.set_title(f"{item['model']} (folds={int(item['loss_folds_used'])})")
+        ax.set_xlabel("Epoca")
+        ax.set_ylabel("Loss")
+        ax.grid(alpha=0.25, linestyle="--", linewidth=0.6)
+        ax.legend(loc="best", fontsize=8, frameon=True)
+
+    for ax in ax_list[n:]:
+        ax.axis("off")
+
+    fig.suptitle("Loss de entrenamiento y validacion por epoca (agregada por modelo)", fontsize=14, y=1.02)
     fig.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=dpi, bbox_inches="tight")
@@ -529,13 +730,16 @@ def main() -> None:
     if plot_items:
         confusion_path = output_root / "confusion_matrices_all_models.png"
         pca_path = output_root / "pca_frames_all_models.png"
+        loss_path = output_root / "train_val_loss_all_models.png"
 
         plot_confusion_matrices_combined(plot_items, confusion_path, args.dpi)
         plot_pca_combined(plot_items, pca_path, args.dpi)
+        plot_loss_curves_grid_combined(plot_items, loss_path, args.dpi)
 
         summary["combined_plots"] = {
             "confusion_matrices": str(confusion_path),
             "pca_frames": str(pca_path),
+            "train_val_loss": str(loss_path),
         }
     else:
         summary["combined_plots"] = {

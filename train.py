@@ -571,7 +571,7 @@ def main():
     parser.add_argument('--out_dir', default='outputs/train')
     parser.add_argument('--prefix', default='colono_vit_prefix', help='prefix for saved filenames')
     parser.add_argument('--epochs', type=int, default=15)
-    parser.add_argument('--save_every', type=int, default=5)
+    parser.add_argument('--save_every', type=int, default=1)
     parser.add_argument('--prefix_length', type=int, default=10)
     parser.add_argument('--prefix_length_clip', type=int, default=10)
     parser.add_argument('--bs', type=int, default=4)

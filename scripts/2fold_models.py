@@ -107,7 +107,7 @@ VAL_PRED_COLUMNS = [
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Prepara 2-fold estratificado y ejecuta parse/train/test por fold "
+            "Prepara 2-fold estratificado por caso y ejecuta parse/train/test por fold "
             "usando train.py, parse_colono*.py y test.py."
         )
     )
@@ -130,7 +130,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--save_every",
         type=int,
-        default=5,
+        default=1,
         help="Frecuencia de checkpoints.",
     )
     parser.add_argument("--bs", type=int, default=4)
@@ -184,6 +184,9 @@ def write_csv(path: Path, rows: Sequence[Dict[str, object]], fieldnames: Sequenc
             writer.writerow({key: row.get(key, "") for key in fieldnames})
 
 
+    parser.add_argument("--prefix_length_clip", type=int, default=10)
+    parser.add_argument("--mapping_type", type=str, default="transformer", choices=["mlp", "transformer"])
+    parser.add_argument("--num_layers", type=int, default=8)
 def build_rows(
     positive_rows: Sequence[Dict[str, str]],
     negative_rows: Sequence[Dict[str, str]],
@@ -231,30 +234,92 @@ def label_counts(rows: Sequence[Dict[str, str]]) -> Dict[str, int]:
     return {"positive": counter.get("positive", 0), "negative": counter.get("negative", 0)}
 
 
-def stratified_two_fold(
+def resolve_case_key(row: Dict[str, str]) -> str:
+    case_raw = str(row.get("case", "")).strip()
+    if case_raw:
+        return case_raw
+
+    image_path = str(row.get("image_path", "")).strip().replace("\\", "/")
+    if image_path:
+        filename = image_path.split("/")[-1]
+        if "_img_" in filename:
+            prefix = filename.split("_img_")[0].strip()
+            if prefix:
+                return prefix
+        stem = Path(filename).stem.strip()
+        if stem:
+            return stem
+
+    return f"__sample_{row.get('sample_id', '')}"
+
+
+def case_counts(rows: Sequence[Dict[str, str]]) -> int:
+    return len({resolve_case_key(row) for row in rows})
+
+
+def stratified_two_fold_by_case(
     rows: Sequence[Dict[str, str]],
     seed: int,
 ) -> List[Tuple[List[Dict[str, str]], List[Dict[str, str]]]]:
-    by_label: Dict[str, List[Dict[str, str]]] = {"positive": [], "negative": []}
+    case_rows: Dict[str, List[Dict[str, str]]] = {}
     for row in rows:
-        by_label[row["label"]].append(row)
+        case_key = resolve_case_key(row)
+        case_rows.setdefault(case_key, []).append(row)
+
+    by_case_type: Dict[str, List[Tuple[str, List[Dict[str, str]]]]] = {
+        "positive": [],
+        "negative": [],
+        "mixed": [],
+    }
+    for case_key, items in case_rows.items():
+        labels = {str(item.get("label", "")).strip() for item in items}
+        if labels == {"positive"}:
+            by_case_type["positive"].append((case_key, items))
+        elif labels == {"negative"}:
+            by_case_type["negative"].append((case_key, items))
+        else:
+            by_case_type["mixed"].append((case_key, items))
 
     rng = random.Random(seed)
-    val_by_fold: Dict[int, List[Dict[str, str]]] = {1: [], 2: []}
-    for label_rows in by_label.values():
-        shuffled = list(label_rows)
-        rng.shuffle(shuffled)
-        split_index = len(shuffled) // 2
-        val_by_fold[1].extend(shuffled[:split_index])
-        val_by_fold[2].extend(shuffled[split_index:])
+    val_case_keys_by_fold: Dict[int, set[str]] = {1: set(), 2: set()}
+    val_row_counts_by_fold: Dict[str, Dict[int, int]] = {
+        "positive": {1: 0, 2: 0},
+        "negative": {1: 0, 2: 0},
+        "mixed": {1: 0, 2: 0},
+    }
+    val_case_counts_by_fold: Dict[str, Dict[int, int]] = {
+        "positive": {1: 0, 2: 0},
+        "negative": {1: 0, 2: 0},
+        "mixed": {1: 0, 2: 0},
+    }
+    for case_type in ("positive", "negative", "mixed"):
+        bucket = list(by_case_type[case_type])
+        rng.shuffle(bucket)
+        bucket.sort(key=lambda item: len(item[1]), reverse=True)
+
+        for case_key, case_items in bucket:
+            fold_candidates = [1, 2]
+            fold_candidates.sort(
+                key=lambda fold_id: (
+                    val_row_counts_by_fold[case_type][fold_id],
+                    val_case_counts_by_fold[case_type][fold_id],
+                )
+            )
+            chosen_fold = fold_candidates[0]
+            val_case_keys_by_fold[chosen_fold].add(case_key)
+            val_row_counts_by_fold[case_type][chosen_fold] += len(case_items)
+            val_case_counts_by_fold[case_type][chosen_fold] += 1
 
     all_rows = list(rows)
     output: List[Tuple[List[Dict[str, str]], List[Dict[str, str]]]] = []
     for fold_id in (1, 2):
-        val_rows = sorted(val_by_fold[fold_id], key=lambda x: int(x["sample_id"]))
-        val_ids = {int(r["sample_id"]) for r in val_rows}
+        val_case_keys = val_case_keys_by_fold[fold_id]
+        val_rows = sorted(
+            [r for r in all_rows if resolve_case_key(r) in val_case_keys],
+            key=lambda x: int(x["sample_id"]),
+        )
         train_rows = sorted(
-            [r for r in all_rows if int(r["sample_id"]) not in val_ids],
+            [r for r in all_rows if resolve_case_key(r) not in val_case_keys],
             key=lambda x: int(x["sample_id"]),
         )
         output.append((train_rows, val_rows))
@@ -620,7 +685,7 @@ def main() -> None:
         positive_csv_path=positive_csv_path,
         negative_csv_path=negative_csv_path,
     )
-    fold_splits = stratified_two_fold(merged_rows, args.seed)
+    fold_splits = stratified_two_fold_by_case(merged_rows, args.seed)
 
     data_dir = model_root / "data"
     folds_dir = model_root / "folds"
@@ -669,7 +734,7 @@ def main() -> None:
             "val_clip_embeddings_pt": to_repo_relative(fold_dir / "embeddings" / "val_clip_embeddings.pt"),
             "val_pre_gpt_embeddings_pt": to_repo_relative(fold_dir / "embeddings" / "val_pre_gpt_embeddings.pt"),
             "val_post_gpt_embeddings_pt": to_repo_relative(fold_dir / "embeddings" / "val_post_gpt_embeddings.pt"),
-            "val_loss_csv": to_repo_relative(fold_dir / "val_loss_per_epoch.csv"),
+            "val_loss_csv": to_repo_relative(fold_dir / "inference" / "val_loss_per_batch.csv"),
             "val_loss_summary_json": to_repo_relative(fold_dir / "inference" / "val_loss_summary.json"),
             "val_loss_per_epoch_csv": to_repo_relative(fold_dir / "val_loss_per_epoch.csv"),
         }
@@ -682,6 +747,12 @@ def main() -> None:
                 "val_samples": len(val_rows),
                 "train_label_distribution": label_counts(train_rows),
                 "val_label_distribution": label_counts(val_rows),
+                "train_cases": case_counts(train_rows),
+                "val_cases": case_counts(val_rows),
+                "train_val_case_overlap": len(
+                    {resolve_case_key(row) for row in train_rows}
+                    & {resolve_case_key(row) for row in val_rows}
+                ),
                 "artifacts": fold_artifacts[fold_name],
             }
         )
@@ -729,6 +800,7 @@ def main() -> None:
         "dataset": {
             "total_samples": len(merged_rows),
             "label_distribution": label_counts(merged_rows),
+            "total_cases": case_counts(merged_rows),
         },
         "prepare_only": bool(args.prepare_only),
     }
@@ -737,9 +809,10 @@ def main() -> None:
         "model": canonical_model,
         "requested_model": args.model,
         "output_subdir": output_subdir,
-        "gpu": args.gpu,
+z        "gpu": args.gpu,
         "total_samples": len(merged_rows),
         "label_distribution": label_counts(merged_rows),
+        "total_cases": case_counts(merged_rows),
         "folds": summary_folds,
         "executed": not args.prepare_only,
     }
@@ -758,6 +831,7 @@ def main() -> None:
     print(f"Modelo seleccionado: {args.model} (interno: {canonical_model})")
     print(f"GPU: {args.gpu if args.gpu else 'no_forzada'}")
     print(f"Total muestras: {len(merged_rows)} | Distribucion: {label_counts(merged_rows)}")
+    print(f"Total casos: {case_counts(merged_rows)}")
     print(f"Estructura base guardada en: {to_repo_relative(model_root)}")
 
     if args.prepare_only:
@@ -894,6 +968,7 @@ def main() -> None:
             num_layers=args.num_layers,
             batch_size=args.bs,
             allow_missing_checkpoints=False,
+            prefix_length_clip=args.prefix_length_clip,
         )
         if not val_loss_per_epoch_rows:
             raise RuntimeError(
@@ -912,6 +987,7 @@ def main() -> None:
             mapping_type=str(args.mapping_type),
             num_layers=args.num_layers,
             batch_size=args.bs,
+            prefix_length_clip=args.prefix_length_clip,
         )
 
         _, val_rows = fold_rows_map[fold_name]

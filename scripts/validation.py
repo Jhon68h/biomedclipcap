@@ -538,6 +538,7 @@ def evaluate_validation_checkpoint(
     batch_size: int,
     include_batch_rows: bool,
     include_embeddings: bool = False,
+    prefix_length_clip: Optional[int] = None,
 ) -> Dict[str, object]:
     from torch.utils.data import DataLoader
 
@@ -553,10 +554,14 @@ def evaluate_validation_checkpoint(
         sample_prefix = dataset[0][2]
         prefix_size = int(sample_prefix.shape[-1])
 
+    effective_prefix_length_clip = int(prefix_length if prefix_length_clip is None else prefix_length_clip)
+    if effective_prefix_length_clip <= 0:
+        raise ValueError(f"prefix_length_clip invalido: {effective_prefix_length_clip}")
+
     mapping_enum = MappingType.Transformer if mapping_type == "transformer" else MappingType.MLP
     model = ClipCaptionPrefix(
         prefix_length=prefix_length,
-        clip_length=prefix_length,
+        clip_length=effective_prefix_length_clip,
         prefix_size=prefix_size,
         num_layers=num_layers,
         mapping_type=mapping_enum,
@@ -657,6 +662,7 @@ def compute_and_save_val_loss_per_epoch(
     num_layers: int,
     batch_size: int,
     allow_missing_checkpoints: bool,
+    prefix_length_clip: Optional[int] = None,
 ) -> List[Dict[str, object]]:
     rows: List[Dict[str, object]] = []
     available_epochs = sorted(list_available_epochs(train_dir, checkpoint_prefix))
@@ -692,6 +698,7 @@ def compute_and_save_val_loss_per_epoch(
             num_layers=num_layers,
             batch_size=batch_size,
             include_batch_rows=False,
+            prefix_length_clip=prefix_length_clip,
         )
         rows.append(
             {
@@ -731,6 +738,7 @@ def compute_and_save_validation_artifacts(
     mapping_type: str,
     num_layers: int,
     batch_size: int,
+    prefix_length_clip: Optional[int] = None,
 ) -> Dict[str, object]:
     metrics = evaluate_validation_checkpoint(
         val_pkl=val_pkl,
@@ -741,6 +749,7 @@ def compute_and_save_validation_artifacts(
         batch_size=batch_size,
         include_batch_rows=False,
         include_embeddings=True,
+        prefix_length_clip=prefix_length_clip,
     )
 
     pre_gpt_tensor = metrics["pre_gpt_tensor"]
@@ -851,6 +860,7 @@ def main() -> None:
         training_cfg = run_config.get("training", {})
         mapping_type = normalize_mapping_type(training_cfg.get("mapping_type", "transformer"))
         prefix_length = int(training_cfg.get("prefix_length", 10))
+        prefix_length_clip = int(training_cfg.get("prefix_length_clip", prefix_length))
         num_layers = int(training_cfg.get("num_layers", 8))
         batch_size = int(training_cfg.get("bs", 4))
 
@@ -900,6 +910,8 @@ def main() -> None:
                 fold_artifacts.get("val_loss_per_epoch_csv"),
                 fold_dir / "val_loss_per_epoch.csv",
             )
+            if val_loss_csv.resolve() == val_loss_per_epoch_csv.resolve():
+                val_loss_csv = (inference_dir / "val_loss_per_batch.csv").resolve()
 
             for required in (train_dir, val_csv, val_pkl):
                 if not required.exists():
@@ -929,6 +941,7 @@ def main() -> None:
                 num_layers=num_layers,
                 batch_size=batch_size,
                 allow_missing_checkpoints=args.allow_missing_checkpoints,
+                prefix_length_clip=prefix_length_clip,
             )
 
             if not val_loss_per_epoch_rows:
@@ -950,6 +963,7 @@ def main() -> None:
                 num_layers=num_layers,
                 batch_size=batch_size,
                 include_batch_rows=True,
+                prefix_length_clip=prefix_length_clip,
             )
             write_csv(val_loss_csv, final_metrics.get("step_rows", []), VAL_LOSS_COLUMNS)
             write_json(

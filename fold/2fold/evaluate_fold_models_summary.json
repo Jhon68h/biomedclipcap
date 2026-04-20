@@ -1,0 +1,161 @@
+{
+  "fold_root": "/workspace/fold/2fold",
+  "models": [
+    {
+      "model": "biomedclip",
+      "model_dir": "biomedclip",
+      "source_files": [
+        "/workspace/fold/2fold/biomedclip/folds/fold_1/inference/val_predictions.csv",
+        "/workspace/fold/2fold/biomedclip/folds/fold_2/inference/val_predictions.csv"
+      ],
+      "num_rows": 11400,
+      "num_folds": 2,
+      "binary": {
+        "num_rows_used": 11400,
+        "tp": 5291,
+        "tn": 5344,
+        "fp": 356,
+        "fn": 409,
+        "accuracy": 0.9328947368421052,
+        "precision": 0.936957676642465,
+        "recall": 0.9282456140350878,
+        "f1": 0.9325812990217678,
+        "specificity": 0.9375438596491228
+      },
+      "report": {
+        "num_rows_used": 11400,
+        "bleu_1": 0.9211888138961659,
+        "bleu_4": 0.8893601402879164,
+        "malignancy_accuracy": 0.9240350877192982,
+        "location_accuracy": 0.9035964912280702,
+        "paris_accuracy": 0.8840350877192983,
+        "size_mae_mm": 0.2596862596862597,
+        "supports": {
+          "malignancy": 5700,
+          "location": 11400,
+          "paris": 5700,
+          "size_mae_mm": 5291
+        }
+      },
+      "binary_std": {
+        "accuracy": 0.0030701754385965008,
+        "precision": 0.004724009231260928,
+        "recall": 0.0012280701754386336,
+        "f1": 0.0029597534423171368,
+        "specificity": 0.0049122807017544234
+      },
+      "report_std": {
+        "bleu_1": 0.005426531436259874,
+        "bleu_4": 0.006401154474651061,
+        "malignancy_accuracy": 0.0015789473684210686,
+        "location_accuracy": 0.0037719298245614263,
+        "paris_accuracy": 0.003333333333333355,
+        "size_mae_mm": 0.0026804424505383895
+      }
+    },
+    {
+      "model": "resnet101",
+      "model_dir": "resnet",
+      "source_files": [
+        "/workspace/fold/2fold/resnet/folds/fold_1/inference/val_predictions.csv",
+        "/workspace/fold/2fold/resnet/folds/fold_2/inference/val_predictions.csv"
+      ],
+      "num_rows": 11400,
+      "num_folds": 2,
+      "binary": {
+        "num_rows_used": 11400,
+        "tp": 5135,
+        "tn": 5306,
+        "fp": 394,
+        "fn": 565,
+        "accuracy": 0.9158771929824562,
+        "precision": 0.9287393742087177,
+        "recall": 0.9008771929824562,
+        "f1": 0.9145961350075698,
+        "specificity": 0.9308771929824562
+      },
+      "report": {
+        "num_rows_used": 11400,
+        "bleu_1": 0.9027174197601968,
+        "bleu_4": 0.8560966983585412,
+        "malignancy_accuracy": 0.8898245614035087,
+        "location_accuracy": 0.8795614035087719,
+        "paris_accuracy": 0.8350877192982457,
+        "size_mae_mm": 0.41557935735150925,
+        "supports": {
+          "malignancy": 5700,
+          "location": 11400,
+          "paris": 5700,
+          "size_mae_mm": 5135
+        }
+      },
+      "binary_std": {
+        "accuracy": 0.004649122807017514,
+        "precision": 0.007507242068139464,
+        "recall": 0.0015789473684210686,
+        "f1": 0.0044537670850455235,
+        "specificity": 0.00771929824561407
+      },
+      "report_std": {
+        "bleu_1": 0.006304001810780446,
+        "bleu_4": 0.007822988767117345,
+        "malignancy_accuracy": 0.002105263157894721,
+        "location_accuracy": 0.006578947368421073,
+        "paris_accuracy": 0.0014035087719297956,
+        "size_mae_mm": 0.0008295616104038173
+      }
+    },
+    {
+      "model": "vit",
+      "model_dir": "vit",
+      "source_files": [
+        "/workspace/fold/2fold/vit/folds/fold_1/inference/val_predictions.csv",
+        "/workspace/fold/2fold/vit/folds/fold_2/inference/val_predictions.csv"
+      ],
+      "num_rows": 11400,
+      "num_folds": 2,
+      "binary": {
+        "num_rows_used": 11400,
+        "tp": 5212,
+        "tn": 5310,
+        "fp": 390,
+        "fn": 488,
+        "accuracy": 0.9229824561403509,
+        "precision": 0.9303820064262763,
+        "recall": 0.9143859649122807,
+        "f1": 0.9223146345779508,
+        "specificity": 0.9315789473684211
+      },
+      "report": {
+        "num_rows_used": 11400,
+        "bleu_1": 0.9077357805775911,
+        "bleu_4": 0.8649940507939113,
+        "malignancy_accuracy": 0.9040350877192982,
+        "location_accuracy": 0.8871929824561403,
+        "paris_accuracy": 0.857719298245614,
+        "size_mae_mm": 0.33461243284727554,
+        "supports": {
+          "malignancy": 5700,
+          "location": 11400,
+          "paris": 5700,
+          "size_mae_mm": 5212
+        }
+      },
+      "binary_std": {
+        "accuracy": 0.0026315789473684292,
+        "precision": 0.007749239213350689,
+        "recall": 0.0031578947368420818,
+        "f1": 0.0022008152642970513,
+        "specificity": 0.00842105263157894
+      },
+      "report_std": {
+        "bleu_1": 0.006974118154513598,
+        "bleu_4": 0.010201108737328879,
+        "malignancy_accuracy": 0.003333333333333355,
+        "location_accuracy": 0.00473684210526315,
+        "paris_accuracy": 0.00368421052631579,
+        "size_mae_mm": 0.008437739972066594
+      }
+    }
+  ]
+}
