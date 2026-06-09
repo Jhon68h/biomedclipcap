@@ -1,0 +1,66 @@
+{
+  "generated_at_utc": "2026-05-27T04:16:58.374603+00:00",
+  "mode": "inference_only",
+  "images_root": "igho/cut_frames/2025-05-28_110348_321",
+  "dataset_root": "igho/video_321",
+  "selected_images_root": "igho/video_321/frames_selected",
+  "checkpoints_root": "fold/2fold",
+  "output_root": "igho/video_321",
+  "model": "all",
+  "fold": "all",
+  "gpu": "3",
+  "dry_run": false,
+  "frame_windows": [],
+  "selected_frames_count": 17990,
+  "consolidated_frame_report_csv": "igho/video_321/frame_reporte.csv",
+  "runs": [
+    {
+      "model": "biomedclip",
+      "fold": "fold_1",
+      "checkpoint": "fold/2fold/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-014.pt",
+      "images_root": "igho/video_321/frames_selected",
+      "output_csv": "igho/video_321/biomedclip/fold_1/predictions.csv",
+      "command": "/opt/conda/bin/python /workspace/test.py --images_root /workspace/igho/video_321/frames_selected --checkpoint /workspace/fold/2fold/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-014.pt --output_csv /workspace/igho/video_321/biomedclip/fold_1/predictions.csv --prefix_length 10 --mapping_type transformer --num_layers 8 --entry_length 67 --top_p 0.8 --temperature 1.0 --stop_token . --beam_search --encoder biomedclip --biomedclip_model_id hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224"
+    },
+    {
+      "model": "biomedclip",
+      "fold": "fold_2",
+      "checkpoint": "fold/2fold/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-014.pt",
+      "images_root": "igho/video_321/frames_selected",
+      "output_csv": "igho/video_321/biomedclip/fold_2/predictions.csv",
+      "command": "/opt/conda/bin/python /workspace/test.py --images_root /workspace/igho/video_321/frames_selected --checkpoint /workspace/fold/2fold/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-014.pt --output_csv /workspace/igho/video_321/biomedclip/fold_2/predictions.csv --prefix_length 10 --mapping_type transformer --num_layers 8 --entry_length 67 --top_p 0.8 --temperature 1.0 --stop_token . --beam_search --encoder biomedclip --biomedclip_model_id hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224"
+    },
+    {
+      "model": "vit",
+      "fold": "fold_1",
+      "checkpoint": "fold/2fold/vit/folds/fold_1/train/positive_vs_negative_fold_1-014.pt",
+      "images_root": "igho/video_321/frames_selected",
+      "output_csv": "igho/video_321/vit/fold_1/predictions.csv",
+      "command": "/opt/conda/bin/python /workspace/test.py --images_root /workspace/igho/video_321/frames_selected --checkpoint /workspace/fold/2fold/vit/folds/fold_1/train/positive_vs_negative_fold_1-014.pt --output_csv /workspace/igho/video_321/vit/fold_1/predictions.csv --prefix_length 10 --mapping_type transformer --num_layers 8 --entry_length 67 --top_p 0.8 --temperature 1.0 --stop_token . --beam_search --encoder vit --openai_clip_name ViT-B/32"
+    },
+    {
+      "model": "vit",
+      "fold": "fold_2",
+      "checkpoint": "fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-014.pt",
+      "images_root": "igho/video_321/frames_selected",
+      "output_csv": "igho/video_321/vit/fold_2/predictions.csv",
+      "command": "/opt/conda/bin/python /workspace/test.py --images_root /workspace/igho/video_321/frames_selected --checkpoint /workspace/fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-014.pt --output_csv /workspace/igho/video_321/vit/fold_2/predictions.csv --prefix_length 10 --mapping_type transformer --num_layers 8 --entry_length 67 --top_p 0.8 --temperature 1.0 --stop_token . --beam_search --encoder vit --openai_clip_name ViT-B/32"
+    },
+    {
+      "model": "resnet101",
+      "fold": "fold_1",
+      "checkpoint": "fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-014.pt",
+      "images_root": "igho/video_321/frames_selected",
+      "output_csv": "igho/video_321/resnet/fold_1/predictions.csv",
+      "command": "/opt/conda/bin/python /workspace/test.py --images_root /workspace/igho/video_321/frames_selected --checkpoint /workspace/fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-014.pt --output_csv /workspace/igho/video_321/resnet/fold_1/predictions.csv --prefix_length 10 --mapping_type transformer --num_layers 8 --entry_length 67 --top_p 0.8 --temperature 1.0 --stop_token . --beam_search --encoder rn101 --openai_clip_name RN101"
+    },
+    {
+      "model": "resnet101",
+      "fold": "fold_2",
+      "checkpoint": "fold/2fold/resnet/folds/fold_2/train/positive_vs_negative_fold_2-014.pt",
+      "images_root": "igho/video_321/frames_selected",
+      "output_csv": "igho/video_321/resnet/fold_2/predictions.csv",
+      "command": "/opt/conda/bin/python /workspace/test.py --images_root /workspace/igho/video_321/frames_selected --checkpoint /workspace/fold/2fold/resnet/folds/fold_2/train/positive_vs_negative_fold_2-014.pt --output_csv /workspace/igho/video_321/resnet/fold_2/predictions.csv --prefix_length 10 --mapping_type transformer --num_layers 8 --entry_length 67 --top_p 0.8 --temperature 1.0 --stop_token . --beam_search --encoder rn101 --openai_clip_name RN101"
+    }
+  ]
+}

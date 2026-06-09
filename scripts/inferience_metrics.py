@@ -18,8 +18,8 @@ DEFAULT_SUMMARY_CSV = "outputs/real_colon_inference/video_001-001/metricas_evalu
 DEFAULT_CLINICAL_METRICS_CSV = "outputs/real_colon_inference/video_001-001/metricas_generacion.csv"
 
 
-POSITIVE_MARKS = {"si", "sí", "yes", "true", "1", "lesion", "lesión"}
-NEGATIVE_MARKS = {"no", "false", "0"}
+POSITIVE_MARKS = {"This is a colonoscopy frame from a patient with a"}
+NEGATIVE_MARKS = {"This is a colonoscopy frame from a patient with no"}
 
 
 def parse_args() -> argparse.Namespace:

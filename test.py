@@ -203,7 +203,7 @@ def load_mapper(
 
     model = ClipCaptionPrefix(
         prefix_length=prefix_length,
-        clip_length=prefix_length,   # en tu repo suelen usar clip_length=prefix_length
+        clip_length=prefix_length,
         prefix_size=prefix_size,     # DEBE coincidir con el embedding dim del encoder usado al entrenar
         num_layers=num_layers,
         mapping_type=m_type,

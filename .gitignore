@@ -31,7 +31,6 @@ dataset_real_colon/
 data/
 Sun_Multimodal/
 Images/
-*.csv
 *.tsv
 *.parquet
 *.feather
@@ -68,3 +67,5 @@ clip_weights/
 # Non-source auxiliary files
 *.txt
 *.pdf
+igho/etiquetas_urgentes/
+igho/cut_frames/

@@ -1,0 +1,4 @@
+source_video,video_dir,model,evaluated_frames,gt_frames_with_lesion,gt_frames_without_lesion,tp,fp,fn,tn,precision,recall,specificity,f1,accuracy,GT Positive Frames,Malignacy Acc.,Loc. Acc.,Paris Acc.,Size (mm)
+2025-03-20_133535_945,video_3,biomedclip,29918,0,29918,0,4711,0,25207,0.0,0.0,0.842536265793168,0.0,0.842536265793168,0,0.0,0.0,0.0,
+2025-03-20_133535_945,video_3,resnet,29918,0,29918,0,3216,0,26702,0.0,0.0,0.8925061835684204,0.0,0.8925061835684204,0,0.0,0.0,0.0,
+2025-03-20_133535_945,video_3,vit,29918,0,29918,0,14516,0,15402,0.0,0.0,0.5148071395146735,0.0,0.5148071395146735,0,0.0,0.0,0.0,

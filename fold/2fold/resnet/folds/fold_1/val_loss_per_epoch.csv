@@ -1,0 +1,16 @@
+epoch,checkpoint,val_loss,val_batches,val_samples
+0,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-000.pt,0.15401669239846721,1435,5738
+1,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-001.pt,0.13540042677969547,1435,5738
+2,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-002.pt,0.14408378885054565,1435,5738
+3,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-003.pt,0.15489781537064332,1435,5738
+4,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-004.pt,0.1958938340781274,1435,5738
+5,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-005.pt,0.20584858157013017,1435,5738
+6,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-006.pt,0.23167593216002277,1435,5738
+7,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-007.pt,0.22062153238380336,1435,5738
+8,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-008.pt,0.22939328182167393,1435,5738
+9,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-009.pt,0.24225247201291308,1435,5738
+10,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-010.pt,0.24730803415166633,1435,5738
+11,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-011.pt,0.2704353519844424,1435,5738
+12,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-012.pt,0.28820486092248154,1435,5738
+13,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-013.pt,0.3109851640652827,1435,5738
+14,fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-014.pt,0.3030562336505101,1435,5738

@@ -1,0 +1,16 @@
+epoch,checkpoint,val_loss,val_batches,val_samples
+0,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-000.pt,0.1643603652411712,1416,5662
+1,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-001.pt,0.18074788060861716,1416,5662
+2,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-002.pt,0.16371148283333797,1416,5662
+3,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-003.pt,0.19444920372486665,1416,5662
+4,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-004.pt,0.21215163348073218,1416,5662
+5,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-005.pt,0.22109206953857072,1416,5662
+6,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-006.pt,0.2381488680396453,1416,5662
+7,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-007.pt,0.2562915407409362,1416,5662
+8,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-008.pt,0.2699133548950967,1416,5662
+9,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-009.pt,0.27998228437834394,1416,5662
+10,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-010.pt,0.29588276766095767,1416,5662
+11,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-011.pt,0.3358313774083015,1416,5662
+12,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-012.pt,0.315782200475248,1416,5662
+13,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-013.pt,0.32882333092047056,1416,5662
+14,fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-014.pt,0.3330066325264931,1416,5662

@@ -20,8 +20,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEST_SCRIPT = REPO_ROOT / "test.py"
 
-DEFAULT_IMAGES_ROOT = "dataset_real_colon/001-001_frames"
-DEFAULT_DATASET_ROOT = "dataset_real_colon"
+DEFAULT_IMAGES_ROOT = "igho/frames/2025-03-17_094605_719"
+DEFAULT_DATASET_ROOT = "igho/video_1"
 DEFAULT_CHECKPOINTS_ROOT = "fold/2fold"
 DEFAULT_OUTPUT_ROOT = "inferiencia"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
@@ -75,8 +75,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output_root", default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--checkpoint", default=None, help="Checkpoint manual para un solo model/fold.")
     parser.add_argument("--gpu", default=None, help="CUDA_VISIBLE_DEVICES, por ejemplo 0 o 1.")
-    parser.add_argument("--frame_start", type=int, default=23703, help="Frame inicial (incluyente).")
-    parser.add_argument("--frame_end", type=int, default=23731, help="Frame final (incluyente).")
+    parser.add_argument("--frame_start", type=int, default=None, help="Frame inicial (incluyente).")
+    parser.add_argument("--frame_end", type=int, default=None, help="Frame final (incluyente).")
     parser.add_argument(
         "--frame_window",
         action="append",
@@ -141,6 +141,10 @@ def extract_prefix_and_frame(path: Path) -> Optional[Tuple[str, int]]:
 
 def parse_frame_windows(args: argparse.Namespace) -> List[Dict[str, object]]:
     if not args.frame_window:
+        if args.frame_start is None and args.frame_end is None:
+            return []
+        if args.frame_start is None or args.frame_end is None:
+            raise ValueError("--frame_start y --frame_end deben usarse juntos.")
         if args.frame_start > args.frame_end:
             raise ValueError("--frame_start no puede ser mayor que --frame_end.")
         return [{"prefix": None, "start": int(args.frame_start), "end": int(args.frame_end)}]
@@ -206,6 +210,36 @@ def select_frames_in_windows(images_root: Path, selected_root: Path, windows: Se
 
     if not selected:
         raise FileNotFoundError(f"No se encontraron frames para las ventanas dadas en {images_root}")
+    return selected
+
+
+def select_all_frames(images_root: Path, selected_root: Path) -> List[Path]:
+    if selected_root.exists():
+        shutil.rmtree(selected_root)
+    selected_root.mkdir(parents=True, exist_ok=True)
+
+    selected: List[Path] = []
+    selected_sources = set()
+    for image_path in sorted(images_root.rglob("*")):
+        if not image_path.is_file():
+            continue
+        if image_path.suffix.lower() not in IMAGE_EXTS:
+            continue
+
+        source = image_path.resolve()
+        if source in selected_sources:
+            continue
+        selected_sources.add(source)
+
+        dst = selected_root / image_path.name
+        try:
+            dst.symlink_to(source)
+        except Exception:
+            shutil.copy2(image_path, dst)
+        selected.append(dst)
+
+    if not selected:
+        raise FileNotFoundError(f"No se encontraron imagenes en {images_root}")
     return selected
 
 
@@ -416,8 +450,14 @@ def main() -> None:
             selected_root=selected_images_root,
             windows=windows,
         )
+    elif windows:
+        selected_frames = select_frames_in_windows(
+            images_root=images_root,
+            selected_root=selected_images_root,
+            windows=windows,
+        )
     else:
-        selected_frames = select_frames_in_windows(images_root=images_root, selected_root=selected_images_root, windows=windows)
+        selected_frames = select_all_frames(images_root=images_root, selected_root=selected_images_root)
 
     env = build_env(args.gpu)
     python_exec = sys.executable

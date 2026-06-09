@@ -17,8 +17,11 @@ import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+import matplotlib.pyplot as plt
 
 import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 try:
     import torch
@@ -28,15 +31,6 @@ except Exception as exc:  # pragma: no cover - entorno
 else:
     TORCH_IMPORT_ERROR = None
 
-try:
-    import matplotlib
-
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-except Exception as exc:  # pragma: no cover - entorno
-    print(f"[ERROR] No se pudo importar matplotlib: {exc}")
-    sys.exit(1)
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INPUT_ROOT = REPO_ROOT / "fold" / "2fold"
@@ -44,7 +38,6 @@ DEFAULT_OUTPUT_ROOT = DEFAULT_INPUT_ROOT / "plots"
 DEFAULT_MODELS = ("biomedclip", "resnet", "vit")
 
 LABELS_ORDER = ("negative", "positive")
-LABEL_TO_INDEX = {name: i for i, name in enumerate(LABELS_ORDER)}
 
 # Reglas para inferir etiqueta desde generated_caption.
 NEGATIVE_PATTERNS = (
@@ -125,20 +118,29 @@ def infer_pred_label_from_caption(generated_caption: str) -> Optional[str]:
 
 
 def compute_aggregated_confusion(pred_rows: Iterable[Dict[str, str]]) -> Dict[str, Any]:
-    cm = np.zeros((2, 2), dtype=np.int64)
-    used_rows = 0
+    true_labels: List[str] = []
+    pred_labels: List[str] = []
     skipped_rows = 0
 
     for row in pred_rows:
         true_label = normalize_label(row.get("label", ""))
         pred_label = infer_pred_label_from_caption(row.get("generated_caption", ""))
-        if true_label not in LABEL_TO_INDEX or pred_label not in LABEL_TO_INDEX:
+        if true_label not in LABELS_ORDER or pred_label not in LABELS_ORDER:
             skipped_rows += 1
             continue
-        cm[LABEL_TO_INDEX[true_label], LABEL_TO_INDEX[pred_label]] += 1
-        used_rows += 1
+        true_labels.append(true_label)
+        pred_labels.append(pred_label)
 
-    return {"cm": cm, "used_rows": used_rows, "skipped_rows": skipped_rows}
+    if true_labels:
+        cm = confusion_matrix(true_labels, pred_labels, labels=list(LABELS_ORDER))
+    else:
+        cm = np.zeros((len(LABELS_ORDER), len(LABELS_ORDER)), dtype=np.int64)
+
+    return {
+        "cm": np.asarray(cm, dtype=np.int64),
+        "used_rows": len(true_labels),
+        "skipped_rows": skipped_rows,
+    }
 
 
 def _safe_int(value: Any, default: int) -> int:
@@ -265,7 +267,7 @@ def collect_model_embeddings(model_root: Path) -> Tuple[np.ndarray, List[Dict[st
 def pca_2d(embeddings: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     x = np.asarray(embeddings, dtype=np.float64)
     if x.ndim != 2:
-        raise ValueError(f"PCA espera matriz 2D, pero recibio shape={x.shape}")
+        raise ValueError(f"PCA espera matriz 2D, pero  recibio shape={x.shape}")
     if x.shape[0] == 0:
         raise ValueError("No hay embeddings para PCA.")
 
@@ -274,19 +276,17 @@ def pca_2d(embeddings: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         points = np.hstack([x_centered, np.zeros((1, 1), dtype=np.float64)])
         return points[:, :2], np.array([1.0, 0.0], dtype=np.float64)
 
-    _, singular_values, vt = np.linalg.svd(x_centered, full_matrices=False)
-    projected = x_centered @ vt.T
+    n_components = min(2, x.shape[0], x.shape[1])
+    pca = PCA(n_components=n_components)
+    projected = pca.fit_transform(x)
     if projected.shape[1] < 2:
         projected = np.hstack([projected, np.zeros((projected.shape[0], 1), dtype=projected.dtype)])
 
-    variances = (singular_values ** 2) / max(x.shape[0] - 1, 1)
-    total_var = float(variances.sum()) if variances.size else 0.0
-    if total_var <= 0:
-        explained = np.array([0.0, 0.0], dtype=np.float64)
-    else:
-        r1 = float(variances[0] / total_var) if variances.size >= 1 else 0.0
-        r2 = float(variances[1] / total_var) if variances.size >= 2 else 0.0
-        explained = np.array([r1, r2], dtype=np.float64)
+    explained = np.zeros(2, dtype=np.float64)
+    ratios = np.asarray(getattr(pca, "explained_variance_ratio_", []), dtype=np.float64)
+    if ratios.size:
+        ratios = np.nan_to_num(ratios, nan=0.0, posinf=0.0, neginf=0.0)
+        explained[: min(2, ratios.size)] = ratios[:2]
 
     return projected[:, :2], explained
 
@@ -504,31 +504,29 @@ def plot_confusion_matrices_combined(
     fig, axes = plt.subplots(nrows, ncols, figsize=(5.2 * ncols, 4.8 * nrows), squeeze=False)
     ax_list = _as_axes_list(axes)
     vmax = max(max(int(item["cm"].max()), 1) for item in plot_items)
-    images = []
+    mappable = plt.cm.ScalarMappable(norm=plt.Normalize(vmin=0, vmax=vmax), cmap="Blues")
+    mappable.set_array([])
 
     for ax, item in zip(ax_list, plot_items):
-        cm = item["cm"]
+        cm = np.asarray(item["cm"], dtype=np.int64)
         used_rows = int(item["cm_used_rows"])
-        im = ax.imshow(cm, cmap="Blues", vmin=0, vmax=vmax)
-        images.append(im)
+        accuracy = float(np.trace(cm) / cm.sum()) if int(cm.sum()) else 0.0
 
-        row_sums = cm.sum(axis=1, keepdims=True)
-        cm_norm = np.divide(cm, row_sums, out=np.zeros_like(cm, dtype=np.float64), where=row_sums != 0)
-        for i in range(cm.shape[0]):
-            for j in range(cm.shape[1]):
-                count = int(cm[i, j])
-                ratio = cm_norm[i, j]
-                text = f"{count}\n({ratio:.1%})"
-                color = "white" if count > vmax * 0.5 else "black"
-                ax.text(j, i, text, ha="center", va="center", color=color, fontsize=10)
+        disp = ConfusionMatrixDisplay(
+            confusion_matrix=cm,
+            display_labels=[x.capitalize() for x in LABELS_ORDER],
+        )
+        disp.plot(
+            ax=ax,
+            cmap="Blues",
+            colorbar=False,
+            values_format="d",
+            im_kw={"vmin": 0, "vmax": vmax},
+        )
 
-        ax.set_xticks(range(len(LABELS_ORDER)))
-        ax.set_yticks(range(len(LABELS_ORDER)))
-        ax.set_xticklabels([x.capitalize() for x in LABELS_ORDER], fontsize=9)
-        ax.set_yticklabels([x.capitalize() for x in LABELS_ORDER], fontsize=9)
         ax.set_xlabel("Prediccion")
         ax.set_ylabel("Etiqueta real")
-        ax.set_title(f"{item['model']} (N={used_rows})")
+        ax.set_title(f"{item['model']} (N={used_rows}, acc={accuracy:.1%})")
 
     fig.suptitle("Matrices de confusion agregadas por modelo", fontsize=14, y=1.02)
     extra_axes = ax_list[n:]
@@ -539,10 +537,10 @@ def plot_confusion_matrices_combined(
             ax.axis("off")
         # Dibujar una barra vertical angosta dentro de la 4ta celda.
         cax = colorbar_slot_ax.inset_axes([0.42, 0.08, 0.16, 0.84])
-        cbar = fig.colorbar(images[0], cax=cax, orientation="vertical")
+        cbar = fig.colorbar(mappable, cax=cax, orientation="vertical")
         cbar.ax.set_title("Conteo", fontsize=9, pad=6)
     else:
-        fig.colorbar(images[0], ax=ax_list[:n], fraction=0.025, pad=0.02)
+        fig.colorbar(mappable, ax=ax_list[:n], fraction=0.025, pad=0.02)
     fig.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=dpi, bbox_inches="tight")
