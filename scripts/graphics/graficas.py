@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 
 import numpy as np
 from sklearn.decomposition import PCA
@@ -556,8 +557,17 @@ def plot_pca_combined(
         return
 
     n = len(plot_items)
-    fig, axes = plt.subplots(1, n, figsize=(5.8 * n, 5.1), squeeze=False)
-    ax_list = _as_axes_list(axes)
+    if n != 3:
+        raise ValueError(f"Se esperaban exactamente 3 elementos para este layout, pero se recibieron {n}.")
+    fig = plt.figure(figsize=(18, 5.5))
+    
+    gs = GridSpec(1, 3, figure=fig)
+
+    ax1 = fig.add_subplot(gs[0, 0])  
+    ax2 = fig.add_subplot(gs[0, 1])  
+    ax3 = fig.add_subplot(gs[0, 2])
+    
+    ax_list = [ax1, ax2, ax3]
 
     color_map = {
         "negative": "#2a9d8f",
@@ -569,6 +579,7 @@ def plot_pca_combined(
         points = np.asarray(item["points_2d"])
         meta = item["meta"]
         explained = item["explained"]
+        
         labels = [normalize_label(x.get("label", "")) or "unknown" for x in meta]
 
         for label in ("negative", "positive", "unknown"):
@@ -592,7 +603,7 @@ def plot_pca_combined(
         ax.grid(alpha=0.22, linestyle="--", linewidth=0.6)
         ax.legend(loc="best", fontsize=8, frameon=True)
 
-    fig.suptitle("PCA por frame (tokens/embeddings pre-GPT-2) por modelo", fontsize=14, y=1.02)
+    fig.suptitle("PCA of Frame-Level Pre-GPT-2 Token Embeddings by Model", fontsize=14, y=0.98)
     fig.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=dpi, bbox_inches="tight")

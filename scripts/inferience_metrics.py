@@ -1,96 +1,70 @@
-#!/usr/bin/env python3
-"""Compare lesion annotations vs. inference reports frame-by-frame."""
+#inferience_metrics.py
+"""Compare lesion annotations vs. inference reports frame-by-frame.
+
+Modified to iterate over:
+  dataset_real_colon/real_colon_inference/video_NNN-NNN/{biomedclip,resnet,vit}/fold_{0,1}/predictions.csv
+
+It averages the 2 folds per video/model, then averages across all videos
+to produce a single summary CSV per model and a global summary CSV.
+"""
 
 from __future__ import annotations
 
-import argparse
 import csv
+import math
 import re
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 
-DEFAULT_ANNOTATIONS_CSV = "dataset_real_colon/Anotaciones/lesiones_001-001.csv"
-DEFAULT_INFERENCE_CSV = "outputs/real_colon_inference/video_001-001/frame_reporte.csv"
-DEFAULT_GT_CSV = "dataset_real_colon/Datos real colon - lesion_info.csv"
-DEFAULT_OUTPUT_CSV = "outputs/real_colon_inference/video_001-001/frame_comparacion_metricas.csv"
-DEFAULT_SUMMARY_CSV = "outputs/real_colon_inference/video_001-001/metricas_evaluacion.csv"
-DEFAULT_CLINICAL_METRICS_CSV = "outputs/real_colon_inference/video_001-001/metricas_generacion.csv"
+# ── Paths ──────────────────────────────────────────────────────────────────────
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+INFERENCE_ROOT = BASE_DIR / "dataset_real_colon" / "real_colon_inference"
+ANNOTATIONS_DIR = BASE_DIR / "dataset_real_colon" / "Anotaciones"
+GT_CSV_PATH = BASE_DIR / "dataset_real_colon" / "Datos_real_colon-lesion_info.csv"
+OUTPUT_DIR = BASE_DIR / "dataset_real_colon" / "real_colon_inference"
+
+MODELS = ["biomedclip", "resnet", "vit"]
+FOLDS = ["fold_1", "fold_2"]
 
 
 POSITIVE_MARKS = {"This is a colonoscopy frame from a patient with a"}
 NEGATIVE_MARKS = {"This is a colonoscopy frame from a patient with no"}
 
+# ── Metrics keys ───────────────────────────────────────────────────────────────
+DETECTION_METRIC_KEYS = [
+    "evaluated_frames",
+    "gt_frames_with_lesion",
+    "gt_frames_without_lesion",
+    "tp",
+    "fp",
+    "fn",
+    "tn",
+    "precision",
+    "recall",
+    "specificity",
+    "f1",
+    "accuracy",
+    "tp_size_match_rate",
+    "tp_location_match_rate",
+    "tp_histology_match_rate",
+    "tp_all_fields_match_rate",
+]
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Compara anotaciones por frame con reportes de inferencia y genera "
-            "un CSV con TP/FP/FN/TN y comparación de atributos."
-        )
-    )
-    parser.add_argument("--annotations_csv", default=DEFAULT_ANNOTATIONS_CSV)
-    parser.add_argument("--inference_csv", default=DEFAULT_INFERENCE_CSV)
-    parser.add_argument("--gt_csv", default=DEFAULT_GT_CSV)
-    parser.add_argument("--output_csv", default=DEFAULT_OUTPUT_CSV)
-    parser.add_argument("--summary_csv", default=DEFAULT_SUMMARY_CSV)
-    parser.add_argument("--clinical_metrics_csv", default=DEFAULT_CLINICAL_METRICS_CSV)
-    parser.add_argument(
-        "--video_id",
-        default=None,
-        help=(
-            "ID del video para construir frame_id (ej. 001-001). "
-            "Si no se pasa, se infiere desde el nombre de annotations_csv."
-        ),
-    )
-    return parser.parse_args()
+CLINICAL_METRIC_KEYS = [
+    "GT Positive Frames",
+    "Malignacy Acc.",
+    "Loc. Acc.",
+    "Size (mm)",
+]
 
-
-def resolve_repo_path(path_str: str) -> Path:
-    path = Path(path_str)
-    if path.is_absolute():
-        return path
-    return (Path(__file__).resolve().parent.parent / path).resolve()
+ALL_METRIC_KEYS = DETECTION_METRIC_KEYS + CLINICAL_METRIC_KEYS
 
 
-def load_csv_rows(path: Path) -> List[Dict[str, str]]:
-    with path.open("r", encoding="utf-8-sig", newline="") as handle:
-        reader = csv.DictReader(handle)
-        return [dict(row) for row in reader]
-
-
-def write_csv(path: Path, rows: Sequence[Dict[str, object]], fieldnames: Sequence[str]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow({key: row.get(key, "") for key in fieldnames})
-
-
+# ── Helper utilities ───────────────────────────────────────────────────────────
 def normalize_spaces(text: str) -> str:
     return re.sub(r"\s+", " ", str(text).strip())
-
-
-def infer_video_id(annotation_path: Path, annotation_rows: Sequence[Dict[str, str]]) -> str:
-    by_name = re.search(r"lesiones_(\d{3}-\d{3})\.csv$", annotation_path.name)
-    if by_name:
-        return by_name.group(1)
-
-    for row in annotation_rows:
-        unique_id = normalize_spaces(row.get("unique_id", ""))
-        match = re.match(r"^(\d{3}-\d{3})_\d+$", unique_id)
-        if match:
-            return match.group(1)
-
-        xml_name = normalize_spaces(row.get("xml_file", ""))
-        match = re.match(r"^(\d{3}-\d{3})_\d+\.xml$", xml_name)
-        if match:
-            return match.group(1)
-
-    raise ValueError(
-        "No se pudo inferir video_id. Pásalo explícitamente con --video_id (ej. 001-001)."
-    )
 
 
 def parse_int(text: str) -> Optional[int]:
@@ -196,6 +170,23 @@ def normalize_histology(text: str) -> str:
     return lowered
 
 
+# ── CSV I/O ────────────────────────────────────────────────────────────────────
+def load_csv_rows(path: Path) -> List[Dict[str, str]]:
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        return [dict(row) for row in reader]
+
+
+def write_csv(path: Path, rows: Sequence[Dict[str, object]], fieldnames: Sequence[str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({key: row.get(key, "") for key in fieldnames})
+
+
+# ── Parsing ────────────────────────────────────────────────────────────────────
 def parse_caption(caption: str) -> Dict[str, object]:
     text = normalize_spaces(caption)
     lower = text.lower()
@@ -273,6 +264,28 @@ def parse_annotations(
     return frames
 
 
+def parse_predictions(rows: Sequence[Dict[str, str]], video_id: str) -> Dict[str, Dict[str, object]]:
+    """Parse predictions.csv with columns: image_path, generated_caption.
+
+    Extract frame_id from image_path (e.g. .../002-003_0.jpg -> 002-003_0)
+    and parse generated_caption the same way as reporte_medico.
+    """
+    result: Dict[str, Dict[str, object]] = {}
+    for row in rows:
+        image_path = normalize_spaces(row.get("image_path", ""))
+        if not image_path:
+            continue
+        # Extract frame id from the filename: e.g. "002-003_0.jpg" -> "002-003_0"
+        filename = Path(image_path).stem  # removes extension
+        # The frame id should be like NNN-NNN_N
+        frame = normalize_spaces(filename)
+        caption = normalize_spaces(row.get("generated_caption", ""))
+        parsed = parse_caption(caption)
+        parsed["reporte_medico"] = caption
+        result[frame] = parsed
+    return result
+
+
 def parse_inference(rows: Sequence[Dict[str, str]]) -> Dict[str, Dict[str, object]]:
     result: Dict[str, Dict[str, object]] = {}
     for row in rows:
@@ -336,6 +349,7 @@ def confusion_label(gt_has_lesion: bool, pred_has_lesion: bool) -> str:
     return "TN"
 
 
+# ── Core comparison logic ─────────────────────────────────────────────────────
 def build_comparison_rows(
     annotations_by_frame: Dict[str, Dict[str, object]],
     inference_by_frame: Dict[str, Dict[str, object]],
@@ -504,32 +518,10 @@ def build_comparison_rows(
     return rows, summary
 
 
-def write_summary_csv(path: Path, summary: Dict[str, object]) -> None:
-    fieldnames = [
-        "evaluated_frames",
-        "gt_frames_with_lesion",
-        "gt_frames_without_lesion",
-        "tp",
-        "fp",
-        "fn",
-        "tn",
-        "precision",
-        "recall",
-        "specificity",
-        "f1",
-        "accuracy",
-        "tp_size_match_rate",
-        "tp_location_match_rate",
-        "tp_histology_match_rate",
-        "tp_all_fields_match_rate",
-    ]
-    write_csv(path, [summary], fieldnames)
-
-
-def build_clinical_metrics_rows(
+def build_clinical_metrics(
     comparison_rows: Sequence[Dict[str, object]],
     video_id: str,
-) -> Tuple[List[Dict[str, object]], bool]:
+) -> Dict[str, object]:
     gt_positive_rows = [
         row
         for row in comparison_rows
@@ -541,7 +533,6 @@ def build_clinical_metrics_rows(
     malignancy_correct = 0
     location_correct = 0
     size_abs_errors: List[float] = []
-    paris_available = False
 
     for row in gt_positive_rows:
         if str(row.get("histology_match", "")) == "1":
@@ -555,113 +546,236 @@ def build_clinical_metrics_rows(
         if pred_size is not None and gt_sizes:
             size_abs_errors.append(min(abs(pred_size - gt_size) for gt_size in gt_sizes))
 
-    malignancy_acc = (malignancy_correct / denominator * 100.0) if denominator else 0.0
-    location_acc = (location_correct / denominator * 100.0) if denominator else 0.0
-    size_mae = (sum(size_abs_errors) / len(size_abs_errors)) if size_abs_errors else ""
+    malignancy_acc = (malignancy_correct / denominator) if denominator else 0.0
+    location_acc = (location_correct / denominator) if denominator else 0.0
+    size_mae = (sum(size_abs_errors) / len(size_abs_errors)) if size_abs_errors else 0.0
 
-    row = {
-        "video_id": video_id,
+    return {
         "GT Positive Frames": denominator,
-        "Malignacy Acc.": round(malignancy_acc / 100.0, 4),
-        "Loc. Acc.": round(location_acc / 100.0, 4),
-        "Size (mm)": round(size_mae, 4) if size_mae != "" else "",
+        "Malignacy Acc.": round(malignancy_acc, 4),
+        "Loc. Acc.": round(location_acc, 4),
+        "Size (mm)": round(size_mae, 4),
     }
-    if paris_available:
-        row["Paris Acc."] = ""
-
-    return [row], paris_available
 
 
-def write_clinical_metrics_csv(
-    path: Path,
-    rows: Sequence[Dict[str, object]],
-    include_paris: bool,
-) -> None:
-    fieldnames = [
-        "video_id",
-        "GT Positive Frames",
-        "Malignacy Acc.",
-        "Loc. Acc.",
-    ]
-    if include_paris:
-        fieldnames.append("Paris Acc.")
-    fieldnames.append("Size (mm)")
-    write_csv(path, rows, fieldnames)
+# ── Averaging utilities ───────────────────────────────────────────────────────
+def average_metrics(metrics_list: List[Dict[str, object]]) -> Dict[str, object]:
+    """Average a list of metric dictionaries.
+
+    For each key, computes the arithmetic mean across all dicts that have
+    a numeric value for that key.
+    """
+    if not metrics_list:
+        return {}
+
+    all_keys = []
+    seen = set()
+    for m in metrics_list:
+        for k in m:
+            if k not in seen:
+                all_keys.append(k)
+                seen.add(k)
+
+    averaged: Dict[str, object] = {}
+    for key in all_keys:
+        values = []
+        for m in metrics_list:
+            val = m.get(key)
+            if val is not None and val != "":
+                try:
+                    values.append(float(val))
+                except (TypeError, ValueError):
+                    pass
+        if values:
+            averaged[key] = round(sum(values) / len(values), 4)
+        else:
+            averaged[key] = ""
+    return averaged
 
 
-def main() -> None:
-    args = parse_args()
+def std_metrics(metrics_list: List[Dict[str, object]]) -> Dict[str, object]:
+    """Compute standard deviation for each metric across a list of metric dicts.
 
-    annotations_csv = resolve_repo_path(args.annotations_csv)
-    inference_csv = resolve_repo_path(args.inference_csv)
-    gt_csv = resolve_repo_path(args.gt_csv)
-    output_csv = resolve_repo_path(args.output_csv)
-    summary_csv = resolve_repo_path(args.summary_csv)
-    clinical_metrics_csv = resolve_repo_path(args.clinical_metrics_csv)
+    Returns a dict with the same keys but suffixed with '_std'.
+    Uses population std (ddof=0) when n=1, sample std (ddof=1) when n>1.
+    """
+    if not metrics_list:
+        return {}
 
-    annotation_rows = load_csv_rows(annotations_csv)
-    inference_rows = load_csv_rows(inference_csv)
-    gt_rows = load_csv_rows(gt_csv)
+    all_keys = []
+    seen = set()
+    for m in metrics_list:
+        for k in m:
+            if k not in seen:
+                all_keys.append(k)
+                seen.add(k)
 
-    video_id = str(args.video_id).strip() if args.video_id else infer_video_id(annotations_csv, annotation_rows)
+    std_dict: Dict[str, object] = {}
+    for key in all_keys:
+        values = []
+        for m in metrics_list:
+            val = m.get(key)
+            if val is not None and val != "":
+                try:
+                    values.append(float(val))
+                except (TypeError, ValueError):
+                    pass
+        if len(values) >= 2:
+            mean = sum(values) / len(values)
+            variance = sum((v - mean) ** 2 for v in values) / (len(values) - 1)
+            std_dict[f"{key}_std"] = round(math.sqrt(variance), 4)
+        elif len(values) == 1:
+            std_dict[f"{key}_std"] = 0.0
+        else:
+            std_dict[f"{key}_std"] = ""
+    return std_dict
 
-    annotations_by_frame = parse_annotations(annotation_rows, video_id=video_id)
-    inference_by_frame = parse_inference(inference_rows)
-    gt_by_unique_id = parse_gt(gt_rows)
 
-    comparison_rows, summary = build_comparison_rows(
+def merge_detection_and_clinical(
+    detection: Dict[str, object],
+    clinical: Dict[str, object],
+) -> Dict[str, object]:
+    """Merge detection and clinical metrics into a single dict."""
+    merged = {}
+    merged.update(detection)
+    merged.update(clinical)
+    return merged
+
+
+# ── Compute metrics for one fold ───────────────────────────────────────────────
+def compute_fold_metrics(
+    predictions_csv: Path,
+    annotations_by_frame: Dict[str, Dict[str, object]],
+    gt_by_unique_id: Dict[str, Dict[str, object]],
+    video_id: str,
+) -> Dict[str, object]:
+    """Compute all metrics (detection + clinical) for a single fold."""
+    pred_rows = load_csv_rows(predictions_csv)
+    inference_by_frame = parse_predictions(pred_rows, video_id)
+
+    comparison_rows, detection_summary = build_comparison_rows(
         annotations_by_frame=annotations_by_frame,
         inference_by_frame=inference_by_frame,
         gt_by_unique_id=gt_by_unique_id,
     )
-    clinical_metrics_rows, include_paris = build_clinical_metrics_rows(comparison_rows, video_id=video_id)
+    clinical = build_clinical_metrics(comparison_rows, video_id=video_id)
 
-    comparison_columns = [
-        "video_id",
-        "frame",
-        "frame_number",
-        "annotation_has_lesion",
-        "annotation_marca_lesion",
-        "annotation_lesion_count",
-        "annotation_unique_ids",
-        "gt_unique_ids_found",
-        "gt_unique_ids_missing",
-        "gt_size_mm_values",
-        "gt_site_values_raw",
-        "gt_site_values_norm",
-        "gt_histology_values_norm",
-        "pred_has_lesion",
-        "pred_size_mm",
-        "pred_location_raw",
-        "pred_location_norm",
-        "pred_histology_norm",
-        "confusion_label",
-        "size_match",
-        "location_match",
-        "histology_match",
-        "all_fields_match",
-        "in_scope_for_metrics",
-        "error_reason",
-        "reporte_medico",
-    ]
-    write_csv(output_csv, comparison_rows, comparison_columns)
-    write_summary_csv(summary_csv, summary)
-    write_clinical_metrics_csv(clinical_metrics_csv, clinical_metrics_rows, include_paris)
+    return merge_detection_and_clinical(detection_summary, clinical)
 
-    print(f"Video evaluado: {video_id}")
-    print(f"Comparacion por frame: {output_csv}")
-    print(f"Resumen de metricas: {summary_csv}")
-    print(f"Metricas clinicas: {clinical_metrics_csv}")
-    print(
-        "GT (anotaciones) | "
-        f"Frames con lesion={int(summary['gt_frames_with_lesion'])}, "
-        f"Frames sin lesion={int(summary['gt_frames_without_lesion'])}"
-    )
-    print(
-        "Confusion matrix | "
-        f"TP={int(summary['tp'])}, FP={int(summary['fp'])}, "
-        f"FN={int(summary['fn'])}, TN={int(summary['tn'])}"
-    )
+
+# ── Main ───────────────────────────────────────────────────────────────────────
+def main() -> None:
+    # Load ground truth (shared across all videos)
+    gt_rows = load_csv_rows(GT_CSV_PATH)
+    gt_by_unique_id = parse_gt(gt_rows)
+
+    # Discover video directories
+    video_dirs = sorted([
+        d for d in INFERENCE_ROOT.iterdir()
+        if d.is_dir() and re.match(r"^video_\d{3}-\d{3}$", d.name)
+    ])
+
+    if not video_dirs:
+        print(f"No se encontraron carpetas de video en: {INFERENCE_ROOT}")
+        return
+
+    print(f"Videos encontrados: {len(video_dirs)}")
+
+    # per-model accumulator: model_name -> list of per-video averaged metrics
+    model_all_video_metrics: Dict[str, List[Dict[str, object]]] = {m: [] for m in MODELS}
+
+    for video_dir in video_dirs:
+        # Extract video_id from folder name: "video_001-001" -> "001-001"
+        video_id = video_dir.name.replace("video_", "")
+        print(f"\n{'='*60}")
+        print(f"Procesando video: {video_id}")
+
+        # Load annotations for this video
+        annotation_csv = ANNOTATIONS_DIR / f"lesiones_{video_id}.csv"
+        if not annotation_csv.exists():
+            print(f"  [WARN] No se encontró archivo de anotaciones: {annotation_csv}")
+            print(f"  Saltando video {video_id}")
+            continue
+
+        annotation_rows = load_csv_rows(annotation_csv)
+        annotations_by_frame = parse_annotations(annotation_rows, video_id=video_id)
+
+        for model_name in MODELS:
+            model_dir = video_dir / model_name
+            if not model_dir.exists():
+                print(f"  [WARN] No existe carpeta del modelo: {model_dir}")
+                continue
+
+            fold_metrics_list: List[Dict[str, object]] = []
+
+            for fold_name in FOLDS:
+                fold_dir = model_dir / fold_name
+                predictions_csv = fold_dir / "predictions.csv"
+
+                if not predictions_csv.exists():
+                    print(f"  [WARN] No existe: {predictions_csv}")
+                    continue
+
+                fold_metrics = compute_fold_metrics(
+                    predictions_csv=predictions_csv,
+                    annotations_by_frame=annotations_by_frame,
+                    gt_by_unique_id=gt_by_unique_id,
+                    video_id=video_id,
+                )
+                fold_metrics_list.append(fold_metrics)
+                print(f"  {model_name}/{fold_name}: OK (F1={fold_metrics.get('f1', 'N/A')})")
+
+            if fold_metrics_list:
+                # Average across folds for this video/model
+                video_model_avg = average_metrics(fold_metrics_list)
+                model_all_video_metrics[model_name].append(video_model_avg)
+                print(
+                    f"  {model_name} promedio folds: "
+                    f"F1={video_model_avg.get('f1', 'N/A')}, "
+                    f"Precision={video_model_avg.get('precision', 'N/A')}, "
+                    f"Recall={video_model_avg.get('recall', 'N/A')}"
+                )
+
+    # ── Write final summary CSV (one row per model, averaged across all videos) ──
+    print(f"\n{'='*60}")
+    print("Generando resumen final...")
+
+    summary_rows: List[Dict[str, object]] = []
+
+    for model_name in MODELS:
+        video_metrics = model_all_video_metrics[model_name]
+        if not video_metrics:
+            print(f"  [WARN] Sin datos para modelo: {model_name}")
+            continue
+
+        global_avg = average_metrics(video_metrics)
+        global_std = std_metrics(video_metrics)
+        global_avg["model"] = model_name
+        global_avg["num_videos"] = len(video_metrics)
+        # Merge std values into the same row
+        global_avg.update(global_std)
+        summary_rows.append(global_avg)
+
+        print(
+            f"  {model_name} (n={len(video_metrics)} videos): "
+            f"F1={global_avg.get('f1', 'N/A')} ± {global_avg.get('f1_std', 'N/A')}, "
+            f"Precision={global_avg.get('precision', 'N/A')} ± {global_avg.get('precision_std', 'N/A')}, "
+            f"Recall={global_avg.get('recall', 'N/A')} ± {global_avg.get('recall_std', 'N/A')}, "
+            f"Accuracy={global_avg.get('accuracy', 'N/A')} ± {global_avg.get('accuracy_std', 'N/A')}, "
+            f"Malignacy Acc.={global_avg.get('Malignacy Acc.', 'N/A')} ± {global_avg.get('Malignacy Acc._std', 'N/A')}, "
+            f"Loc. Acc.={global_avg.get('Loc. Acc.', 'N/A')} ± {global_avg.get('Loc. Acc._std', 'N/A')}, "
+            f"Size (mm)={global_avg.get('Size (mm)', 'N/A')} ± {global_avg.get('Size (mm)_std', 'N/A')}"
+        )
+
+    # Write the final CSV — interleave mean and std columns
+    output_fieldnames = ["model", "num_videos"]
+    for key in ALL_METRIC_KEYS:
+        output_fieldnames.append(key)
+        output_fieldnames.append(f"{key}_std")
+    output_path = OUTPUT_DIR / "metricas_promedio_global.csv"
+    write_csv(output_path, summary_rows, output_fieldnames)
+
+    print(f"\nCSV resumen global guardado en: {output_path}")
 
 
 if __name__ == "__main__":

@@ -69,3 +69,5 @@ clip_weights/
 *.pdf
 igho/etiquetas_urgentes/
 igho/cut_frames/
+
+*.log

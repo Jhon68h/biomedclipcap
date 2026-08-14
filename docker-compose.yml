@@ -6,6 +6,7 @@ services:
     working_dir: /workspace
     volumes:
       - ./:/workspace
+      - /home/colon/Data/Datasets/igho_frames/frames:/frames 
     deploy:
       resources:
         reservations:

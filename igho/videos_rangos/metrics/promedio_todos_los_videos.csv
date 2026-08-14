@@ -1,0 +1,4 @@
+model,videos_evaluated,total_evaluated_frames,total_gt_frames_with_lesion,total_gt_frames_without_lesion,total_tp,total_fp,total_fn,total_tn,avg_precision,std_precision,avg_recall,std_recall,avg_specificity,std_specificity,avg_f1,std_f1,avg_accuracy,std_accuracy,GT Positive Frames,Malignacy Acc.,Loc. Acc.,Paris Acc.,Size (mm),BLEU-1,BLEU-4
+biomedclip_promedio,1,31110.0,11116.0,19994.0,6040.0,2763.0,5076.0,17231.0,0.6814,0.0,0.5434,0.0,0.8618,0.0,0.6045,0.0,0.748,0.0,11116.0,0.5416,0.0,0.1542,3.0896,0.6022,0.4537
+resnet_promedio,1,31110.0,11116.0,19994.0,9369.5,5724.5,1746.5,14269.5,0.6208,0.0,0.8429,0.0,0.7137,0.0,0.7148,0.0,0.7599,0.0,11116.0,0.8428,0.0,0.287,3.9264,0.7347,0.5147
+vit_promedio,1,31110.0,11116.0,19994.0,9518.5,9688.0,1597.5,10306.0,0.4991,0.0,0.8563,0.0,0.5155,0.0,0.6291,0.0,0.6372,0.0,11116.0,0.8561,0.0,0.4266,3.4748,0.7606,0.5336

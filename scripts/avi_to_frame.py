@@ -76,7 +76,6 @@ def print_progress(current: int, total: Optional[int]) -> None:
     else:
         print(f"\rFrames extraidos: {current}", end="", flush=True)
 
-
 def extract_frames_ffmpeg(video_path: Path, output_folder: Path) -> int:
     total_frames = count_frames_with_ffprobe(video_path)
     frame_pattern = output_folder / FFMPEG_FRAME_PATTERN
@@ -171,7 +170,6 @@ def main() -> None:
         avi_files = [Path(video_path) for video_path in args.videos]
     else:
         avi_files = sorted(SOURCE_FOLDER.glob("*.avi"))
-
     if not avi_files:
         print(f"No se encontraron archivos .avi en {SOURCE_FOLDER}")
         return
@@ -179,10 +177,6 @@ def main() -> None:
     FRAMES_FOLDER.mkdir(parents=True, exist_ok=True)
 
     for video_path in avi_files:
-        if not video_path.exists():
-            raise FileNotFoundError(f"No existe el video: {video_path}")
-        if video_path.suffix.lower() != ".avi":
-            raise ValueError(f"El archivo no es .avi: {video_path}")
 
         output_folder = FRAMES_FOLDER / video_path.stem
         frame_count = extract_frames(video_path, output_folder)

@@ -90,7 +90,6 @@ def load_openclip_encoder(
     )
     model.eval()
 
-    # Si te dieron pesos locales .pt
     if openclip_ckpt:
         # Diferentes versiones de open_clip tienen APIs distintas
         loaded = False

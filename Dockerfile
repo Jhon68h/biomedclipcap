@@ -17,8 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY requirements.txt /workspace/requirements.txt
 
-# PyTorch already included in base image; just install project deps
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r /workspace/requirements.txt
+RUN pip install git+https://github.com/openai/CLIP.git
 
 CMD ["bash"]

@@ -1,0 +1,4 @@
+dataset,fold,reference_model,n_frames_total,n_frames_positive,n_frames_negative,n_cases
+sun,fold_1,biomedclip,5738,2888,2850,39
+sun,fold_2,biomedclip,5662,2812,2850,38
+sun,_all,biomedclip,11400,5700,5700,77

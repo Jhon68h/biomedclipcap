@@ -1,0 +1,9 @@
+﻿id,start,end,segment,lesion_location,size,paris,morphology,diagnosis,report
+2025-03-17_094605_719,68820,81120,Colon Izquierdo,decendente,7,Is,sesil,NICE II,This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 7 mm located in the descending colon.
+2025-03-18_085421_578,8820,24780,Colon Izquierdo,decendente,6,Is,sesil,NICE II,This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 6 mm located in the descending colon.
+2025-05-16_093014_695,30600,33840,Colon Izquierdo,sigmoide,4,Is,sesil,NICE II,This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 4 mm located in the sigmoid colon.
+2025-05-28_110348_321,17040,52440,Colon Derecho,ascendente,8,Is,sesil,NICE II,This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 8 mm located in the ascending colon.
+2025-05-30_102030_811,19320,27900,Transverso,tranverso,6,Is,sesil,NICE II,This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 6 mm located in the transverse colon.
+2025-12-01_080328_674,7221,8902,Colon Derecho,ciego,15,Is,sesil,NICE II,This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 15 mm located in the cecum.
+2025-12-01_133935_383,11026,11160,Colon Derecho,transverso,10,Is,sesil,NICE II,This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 10 mm located in the transverse colon.
+2025-12-01_141231_211,9660,14100,Colon Derecho,ascendente,5,Is,sesil,NICE II,This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 5 mm located in the ascending colon.

@@ -11,7 +11,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_FOLD_ROOT = REPO_ROOT / "fold" / "5kfold"
+DEFAULT_FOLD_ROOT = REPO_ROOT / "fold" / "2fold"
 
 TABLE_I_FILENAME = "table_i_frame_level_metrics.csv"
 TABLE_II_FILENAME = "table_ii_clinical_report_generation_metrics.csv"
@@ -40,6 +40,7 @@ LOCATIONS = [
     "cecum",
     "colon",
 ]
+
 
 STOP_PHRASES = [
     "this is a colonoscopy frame from a",
@@ -491,7 +492,7 @@ def evaluate_model(model_dir: Path) -> Optional[Dict[str, Any]]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Compute Table I and Table II metrics from fold/5kfold prediction CSVs."
+        description="Compute Table I and Table II metrics from fold/2fold prediction CSVs."
     )
     parser.add_argument(
         "--fold_root",

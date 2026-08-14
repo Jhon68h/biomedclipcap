@@ -1,0 +1,20 @@
+{
+  "output_root": "/workspace/plots_multidataset",
+  "datasets": [
+    "sun"
+  ],
+  "models": [
+    "biomedclip",
+    "resnet",
+    "vit"
+  ],
+  "n_rows_total": 34200,
+  "outputs": {
+    "confusion_matrices": "confusion_matrices_by_dataset.png",
+    "dataset_stats_csv": "dataset_stats.csv",
+    "dataset_class_balance": "dataset_class_balance.png",
+    "generalization_gap": "generalization_gap.png",
+    "fold_variability": "fold_variability.png",
+    "lesion_size_distribution": "lesion_size_distribution.png"
+  }
+}
