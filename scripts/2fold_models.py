@@ -20,6 +20,13 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+WEIGHTS_ROOT = REPO_ROOT / "weights"
+
+
+def fold_weights_dir(model_root: Path, fold_name: str) -> Path:
+    """Los .pkl de embeddings viven en weights/sun_<experimento>/<modelo>/<fold>/."""
+    return WEIGHTS_ROOT / f"sun_{model_root.parent.name}" / model_root.name / fold_name
+
 
 DEFAULT_NEGATIVE_CSV = "experiments_colono/experiments_colono/clipclap_train_labeled_negative.csv"
 DEFAULT_POSITIVE_CSV = "experiments_colono/experiments_colono/clipclap_train_labeled_positive.csv"
@@ -41,7 +48,7 @@ MODEL_CONFIG = {
         "openai_clip_name": None,
     },
     "vit": {
-        "weights_path": "clip_weights/ViT-B-16.pt",
+        "weights_path": "clip_weights/ViT-B-32.pt",
         "clip_model_type": "ViT-B/32",
         "test_encoder": "vit",
         "openai_clip_name": "ViT-B/32",
@@ -134,6 +141,15 @@ def parse_args() -> argparse.Namespace:
         help="Frecuencia de checkpoints.",
     )
     parser.add_argument("--bs", type=int, default=4)
+    parser.add_argument("--lr", type=float, default=2e-5, help="Learning rate de AdamW en train.py.")
+    parser.add_argument(
+        "--warmup_steps",
+        type=int,
+        default=5000,
+        help="Warmup del scheduler lineal. Con bs=4 una epoca son ~1400 pasos.",
+    )
+    parser.add_argument("--weight_decay", type=float, default=0.0, help="Weight decay (L2) de AdamW.")
+    parser.add_argument("--dropout", type=float, default=0.0, help="Dropout del mapper transformer.")
     parser.add_argument("--prefix_length", type=int, default=10)
     parser.add_argument("--prefix_length_clip", type=int, default=10)
     parser.add_argument("--mapping_type", type=str, default="transformer", choices=["mlp", "transformer"])
@@ -184,9 +200,6 @@ def write_csv(path: Path, rows: Sequence[Dict[str, object]], fieldnames: Sequenc
             writer.writerow({key: row.get(key, "") for key in fieldnames})
 
 
-    parser.add_argument("--prefix_length_clip", type=int, default=10)
-    parser.add_argument("--mapping_type", type=str, default="transformer", choices=["mlp", "transformer"])
-    parser.add_argument("--num_layers", type=int, default=8)
 def build_rows(
     positive_rows: Sequence[Dict[str, str]],
     negative_rows: Sequence[Dict[str, str]],
@@ -495,8 +508,8 @@ def build_run_commands(
         fold_dir = model_root / "folds" / fold_name
         train_csv = fold_dir / "train.csv"
         val_csv = fold_dir / "val.csv"
-        train_pkl = fold_dir / "data" / "train.pkl"
-        val_pkl = fold_dir / "data" / "val.pkl"
+        train_pkl = fold_weights_dir(model_root, fold_name) / "train.pkl"
+        val_pkl = fold_weights_dir(model_root, fold_name) / "val.pkl"
         train_dir = fold_dir / "train"
         pred_csv = fold_dir / "inference" / "val_predictions_raw.csv"
         val_images = fold_dir / "inference" / "val_images_run_manual"
@@ -532,6 +545,8 @@ def build_run_commands(
             f"--out_dir {shlex.quote(str(train_dir))} "
             f"--prefix {shlex.quote(train_prefix)} "
             f"--epochs {args.epochs} --save_every {args.save_every} --bs {args.bs} "
+            f"--lr {args.lr} --warmup_steps {args.warmup_steps} "
+            f"--weight_decay {args.weight_decay} --dropout {args.dropout} "
             f"--prefix_length {args.prefix_length} --prefix_length_clip {args.prefix_length_clip} "
             f"--mapping_type {shlex.quote(args.mapping_type)} --num_layers {args.num_layers} "
             "--only_prefix --normalize_prefix"
@@ -616,6 +631,14 @@ def main() -> None:
                 str(args.save_every),
                 "--bs",
                 str(args.bs),
+                "--lr",
+                str(args.lr),
+                "--warmup_steps",
+                str(args.warmup_steps),
+                "--weight_decay",
+                str(args.weight_decay),
+                "--dropout",
+                str(args.dropout),
                 "--prefix_length",
                 str(args.prefix_length),
                 "--prefix_length_clip",
@@ -709,7 +732,7 @@ def main() -> None:
     for idx, (train_rows, val_rows) in enumerate(fold_splits, start=1):
         fold_name = f"fold_{idx}"
         fold_dir = folds_dir / fold_name
-        (fold_dir / "data").mkdir(parents=True, exist_ok=True)
+        fold_weights_dir(model_root, fold_name).mkdir(parents=True, exist_ok=True)
         (fold_dir / "train").mkdir(parents=True, exist_ok=True)
         (fold_dir / "inference").mkdir(parents=True, exist_ok=True)
         (fold_dir / "embeddings").mkdir(parents=True, exist_ok=True)
@@ -723,8 +746,8 @@ def main() -> None:
             "fold_dir": to_repo_relative(fold_dir),
             "train_csv": to_repo_relative(train_csv_path),
             "val_csv": to_repo_relative(val_csv_path),
-            "train_pkl": to_repo_relative(fold_dir / "data" / "train.pkl"),
-            "val_pkl": to_repo_relative(fold_dir / "data" / "val.pkl"),
+            "train_pkl": to_repo_relative(fold_weights_dir(model_root, fold_name) / "train.pkl"),
+            "val_pkl": to_repo_relative(fold_weights_dir(model_root, fold_name) / "val.pkl"),
             "train_dir": to_repo_relative(fold_dir / "train"),
             "inference_dir": to_repo_relative(fold_dir / "inference"),
             "val_predictions_raw_csv": to_repo_relative(fold_dir / "inference" / "val_predictions_raw.csv"),
@@ -782,6 +805,10 @@ def main() -> None:
             "epochs": args.epochs,
             "save_every": args.save_every,
             "bs": args.bs,
+            "lr": args.lr,
+            "warmup_steps": args.warmup_steps,
+            "weight_decay": args.weight_decay,
+            "dropout": args.dropout,
             "prefix_length": args.prefix_length,
             "prefix_length_clip": args.prefix_length_clip,
             "mapping_type": args.mapping_type,
@@ -809,7 +836,7 @@ def main() -> None:
         "model": canonical_model,
         "requested_model": args.model,
         "output_subdir": output_subdir,
-z        "gpu": args.gpu,
+        "gpu": args.gpu,
         "total_samples": len(merged_rows),
         "label_distribution": label_counts(merged_rows),
         "total_cases": case_counts(merged_rows),
@@ -942,6 +969,14 @@ z        "gpu": args.gpu,
             str(args.prefix_length_clip),
             "--bs",
             str(args.bs),
+            "--lr",
+            str(args.lr),
+            "--warmup_steps",
+            str(args.warmup_steps),
+            "--weight_decay",
+            str(args.weight_decay),
+            "--dropout",
+            str(args.dropout),
             "--mapping_type",
             str(args.mapping_type),
             "--num_layers",

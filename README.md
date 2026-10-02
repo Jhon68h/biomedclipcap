@@ -1,170 +1,319 @@
-# CLIP prefix captioning.
+# Prediccion_malignidad_calidad_colon_reportes
 
-<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>  
-Inference Notebook: <a href="https://colab.research.google.com/drive/1tuoAC5F4sC7qid56Z0ap-stR3rwdk0ZV?usp=sharing"><img src="https://colab.research.google.com/assets/colab-badge.svg" height=20></a>  
+## Información General
 
+- **Autor:** Jhonnatan David Hernandez Martinez
+- **Director:** Fabio Martinez
+- **Co-Director:** Edgar Rangel
+- **Grado:** Pregrado en Ingeniería de Sistemas
+- **Institución:** Universidad Industrial de Santander (UIS)
+- **Laboratorio:** Biomedical Imaging, Vision and Learning Laboratory
+  ([BIVL²ab](https://bivl2ab.uis.edu.co/))
+- **Fecha de inicio:** [02/2026]
+- **Última publicación de este proyecto:** [02/10/2026]
 
+Este proyecto corresponde a la sección de calidad de colonoscopia dentro del marco de trabajo de grado, siendo asi resultado de un objetivo especifico. Se propuso un modelo de aprendizaje profundo multimodal basado en aprendizaje contrastivo que integre información visual y textual para la caracterización de la malignidad de los pólipos
 
+## Objetivo
 
+### Objetivo general
 
-## Official implementation for the paper ["ClipCap: CLIP Prefix for Image Captioning"](https://arxiv.org/abs/2111.09734)
+Desarrollar una representación de aprendizaje profundo para predecir la malignidad de pólipos usando observaciones colonoscópicas, índices de calidad y reportes clínicos.
 
+### Objetivos específicos
 
+- Seleccionar un conjunto de datos que integre secuencias colonoscópicas, reportes clínicos asociados a pólipos y anotaciones de calidad de colonoscopia.
+- *Desarrollar un modelo de aprendizaje profundo multimodal basado en aprendizaje contrastivo que integre información visual y textual para la caracterización de la malignidad de los pólipos.*(Repositorio dedicado a este proyecto)
+- Desarrollar un modelo de aprendizaje profundo para estimar el índice de preparación intestinal. (Repositorio dedicado a este proyecto)
+- Validar los métodos propuestos mediante métricas de clasificación y de evaluación de reportes generados.
 
+## Método propuesto
 
-## Description  
-Image captioning is a complicated task, where usually a pretrained detection network is used, requires additional supervision in the form of object annotation. We present a new approach that does not requires additional information (i.e. requires only images and captions), thus can be applied to any data. In addition, our model's training time is much faster than similar methods while achieving comparable to state-of-the-art results, even for the Conceptual Captions dataset contains over 3M images. 
+El método adapta **ClipCap** (*CLIP Prefix for Image Captioning*) al dominio de
+colonoscopia: a partir de un cuadro, el modelo genera un reporte clínico breve
+que indica si hay pólipo y, cuando lo hay, su tipo, morfología, tamaño y
+localización. El pipeline está compuesto por tres etapas:
 
-In our work, we use the [CLIP](https://github.com/openai/CLIP) model, which was already trained over an extremely large number of images, thus is capable of generating semantic encodings for arbitrary images without additional supervision. To produce meaningful sentences we fine-tune a pretrained language model, which has been proven to be successful for other natural language tasks. The key idea is to use the CLIP encoding as a prefix to the textual captions by employing a simple mapping network over the raw encoding, and then fine-tune our language model to generate a valid caption. In addition, we present another variant, where we utilize a transformer architecture for the mapping network and avoid the fine-tuning of GPT-2. Still, our light model achieve comaparable to state-of-the-art over nocaps dataset.
+1. **Codificación visual a nivel de cuadro:** cada cuadro se procesa con un
+   encoder visual congelado para obtener un embedding de 512 dimensiones. Se
+   comparan tres encoders:
 
-## COCO Examples
+   | Variante | Modelo | Arquitectura visual | Pesos |
+   |---|---|---|---|
+   | `biomedclip` | BiomedCLIP (`microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224`) | ViT-B/16 | `clip_weights/biomedclip_weights.pt` |
+   | `vit` | CLIP de OpenAI | ViT-B/32 | `clip_weights/ViT-B-32.pt` |
+   | `resnet` | CLIP de OpenAI | ResNet-101 | `clip_weights/RN101.pt` |
 
-<table>
-  <tr>
-    <td><img src="Images/COCO_val2014_000000562207.jpg" ></td>
-    <td><img src="Images/COCO_val2014_000000165547.jpg" ></td>
-    <td><img src="Images/COCO_val2014_000000579664.jpg" ></td>
-  </tr>
-  <tr>
-    <td>A couple of people standing next to an elephant. </td>
-     <td>A wooden table sitting in front of a window.</td>
-     <td>A bunch of bananas sitting on top of a table.</td>
-  </tr>
- </table>
- 
- <table>
-  <tr>
-    <td><img src="Images/COCO_val2014_000000060623.jpg" ></td>
-    <td><img src="Images/COCO_val2014_000000386164.jpg" ></td>
-    <td><img src="Images/COCO_val2014_000000354533.jpg" ></td>
-  </tr>
-  <tr>
-    <td>A woman holding a plate with a piece of cake in front of her face. </td>
-     <td>A wooden table topped with lots of wooden utensils.</td>
-     <td>A red motorcycle parked on top of a dirt field.</td>
-  </tr>
- </table>
+   El ViT-B/16 del proyecto es el de BiomedCLIP (preentrenado en imágenes
+   biomédicas); no se usa el ViT-B/16 de CLIP de OpenAI.
 
+   Los embeddings se precalculan una sola vez con `parse_colono_biomed.py`
+   (BiomedCLIP) o `parse_colono.py` (CLIP) y se guardan en archivos `.pkl`
+   junto con las captions.
+2. **Mapper visual-textual:** un mapper *transformer* (8 capas, prefijo de
+   longitud 10) proyecta el embedding visual a una secuencia de vectores que
+   GPT-2 interpreta como prefijo. GPT-2 se mantiene congelado (`--only_prefix`)
+   y solo se entrena el mapper.
+3. **Generación del reporte:** GPT-2 genera la caption token a token mediante
+   *beam search* (`beam_size = 5`). De la caption se extraen la predicción
+   binaria (pólipo / sin pólipo) y los atributos clínicos (malignidad,
+   localización, clasificación de París y tamaño).
 
-## Conceptual Captions Examples
+Ejemplos de captions:
 
-<table>
-  <tr>
-    <td><img src="Images/CONCEPTUAL_01.jpg" ></td>
-    <td><img src="Images/CONCEPTUAL_02.jpg" ></td>
-    <td><img src="Images/CONCEPTUAL_03.jpg" ></td>
-  </tr>
-  <tr>
-    <td>3D render of a man holding a globe.</td>
-     <td>Students enjoing the cherry blossoms</td>
-     <td>Green leaf of lettuce on a white plate.</td>
-  </tr>
- </table>
- 
- <table>
-  <tr>
-    <td><img src="Images/CONCEPTUAL_04.jpg" ></td>
-    <td><img src="Images/CONCEPTUAL_05.jpg" ></td> 
-    <td><img src="Images/CONCEPTUAL_06.jpg" ></td>
-  </tr>
-  <tr>
-    <td>The hotel and casino on the waterfront. </td>
-     <td>The triangle is a symbol of the soul.</td>
-     <td>Cartoon boy in the bath.</td>
-  </tr>
- </table>
-
-
-## Inference Notebooks
-To help visualize the results we provide a Colab notebook found in `notebooks/biomedclipcap_inference.ipynb`.   
-The notebook will download the pretrained models and run inference on a sample images or 
-on images of your choosing. It is recommended to run this in [Google Colab](https://colab.research.google.com/drive/1tuoAC5F4sC7qid56Z0ap-stR3rwdk0ZV?usp=sharing).
-Inference notebook for the **transformer mapping network (without fine-tune GPT-2)** can be found [here](https://colab.research.google.com/drive/180L3rMFmGujudwO1EJNF-lHIpAsAZ5xq?usp=sharing) for the COCO model (also in `notebooks/transformer_inference.ipynb`).
-
-
-
-Both [COCO](https://drive.google.com/file/d/1IdaBtMSvtyzF0ByVaBHtvM0JYSXRExRX/view?usp=sharing) and [Conceptual Captions](https://drive.google.com/file/d/14pXWwB4Zm82rsDdvbGguLfx9F8aM7ovT/view?usp=sharing) pretrained models are available for mlp mapping network. For the transformer (without fine-tuning GPT-2) we provide [COCO](https://drive.google.com/file/d/1GYPToCqFREwi285wPLhuVExlz7DDUDfJ/view?usp=sharing) pretrained model.
-
-
-
-## Inference GUI
-1. Run it locally from this repository (or configure your own Replicate endpoint).
-2. Integrated to [Huggingface Spaces](https://huggingface.co/spaces) with [Gradio](https://github.com/gradio-app/gradio); use your project Space URL (currently not supporting beam search).
-
-
-## Training prerequisites
-
-[comment]: <> (Dependencies can be found at the [Inference notebook]&#40;https://colab.research.google.com/drive/1tuoAC5F4sC7qid56Z0ap-stR3rwdk0ZV?usp=sharing&#41; )
-Clone, create environment and install dependencies:  
-```
-git clone <your-repo-url>/biomedclipcap.git && cd biomedclipcap
-conda env create -f environment.yml
-conda activate biomedclipcap
+```text
+This is a colonoscopy frame from a patient with a sessile adenoma polyp measuring 7 mm located in the descending colon.
+This is a colonoscopy frame from a patient with no polyps.
 ```
 
-## COCO training
+Para la **estimación del índice de preparación intestinal**, el modelo
+entrenado en SUN se ajusta (*fine-tuning*) sobre los videos de IGHO añadiendo
+una segunda frase a la caption:
 
-Download [train_captions](https://drive.google.com/file/d/1D3EzUK1d1lNhD2hAvRiKPThidiVbP2K_/view?usp=sharing) to `data/coco/annotations`.
-
-Download [training images](http://images.cocodataset.org/zips/train2014.zip) and [validation images](http://images.cocodataset.org/zips/val2014.zip) and unzip (We use Karpathy et el. split).
-
-Extract CLIP features using (output is `data/coco/oscar_split_ViT-B_32_train.pkl`):
-```
-python parse_coco.py --clip_model_type ViT-B/32
-```
-Train with fine-tuning of GPT2:
-```
-python train.py --data ./data/coco/oscar_split_ViT-B_32_train.pkl --out_dir ./coco_train/
+```text
+... located in the descending colon. Bowel preparation score BBPS is 7/9.
 ```
 
-Train only transformer mapping network:
+El BBPS anotado corresponde al **colon completo (0–9)**, por lo que la
+predicción por video se consolida tomando la mediana de los BBPS generados
+sobre todos sus cuadros.
+
+### Datos
+
+- **SUN Multimodal:** 11.400 cuadros (5.700 con pólipo y 5.700 sin pólipo) de
+  77 casos, con captions clínicas. Se evalúa con un esquema 2-fold
+  estratificado por caso (`scripts/2fold_models.py`).
+- **IGHO (cohorte clínica privada):** 15 videos completos de colonoscopia con
+  27 lesiones anotadas (rango de cuadros, segmento, localización, tamaño,
+  clasificación de París, diagnóstico NICE) y BBPS por video. Los videos `.avi`
+  se convierten a cuadros PNG; `igho_inference/video_fps.json` guarda los fps
+  efectivos de extracción, necesarios para reescalar los rangos anotados
+  (escritos en base de 60 fps).
+  - `igho_dataset_with_bbps.csv`: BBPS estimado empíricamente.
+  - `igho_dataset_bbps_gt.csv`: BBPS proporcionado por el especialista.
+  - Para el fine-tuning de BBPS se seleccionan hasta 200 cuadros por lesión y
+    el mismo número de negativos (ratio 1:1, margen de guarda de 300 cuadros
+    alrededor de cada lesión): 8.948 cuadros en total, divididos por video en
+    dos grupos (A: 8 videos, B: 7 videos).
+
+### Resultados
+
+**SUN, 2-fold (`fold/2fold_hp_f1`, checkpoint elegido por F1):**
+
+| Encoder | Accuracy | Precision | Recall | F1 | Specificity |
+|---|---:|---:|---:|---:|---:|
+| BiomedCLIP | 0,786 | 0,880 | 0,662 | **0,756** | 0,910 |
+| CLIP RN101 | 0,676 | 0,901 | 0,395 | 0,549 | 0,957 |
+| CLIP ViT-B/32 | 0,647 | 0,906 | 0,328 | 0,481 | 0,966 |
+
+BiomedCLIP alcanza BLEU-1 de 0,663, BLEU-4 de 0,273 y un error medio de
+tamaño de 3,09 mm.
+
+**IGHO, inferencia sobre videos completos con los modelos de SUN
+(`igho_inference/inference_f1`, 7 videos):** BiomedCLIP obtiene F1 de 0,443,
+recall de 0,645 y especificidad de 0,876 a nivel de cuadro, frente a F1 de
+0,229 (RN101) y 0,191 (ViT-B/32).
+
+**IGHO, fine-tuning con BBPS (n = 15 videos):** la frase de BBPS se emite en
+el 100 % de los cuadros, pero el modelo no supera el baseline trivial de
+predecir siempre el valor más frecuente:
+
+| Etiqueta BBPS | MAE por video | IC 95 % | Baseline trivial |
+|---|---:|---:|---:|
+| Estimada (`igho_training_bbps_generated`) | 1,33 | 0,67–2,13 | 1,33 |
+| Especialista (`igho_training_bbps_real`) | 2,80 | 1,80–3,73 | 1,33 |
+
+Un *linear probe* (ridge, *leave-one-video-out*) directamente sobre los
+embeddings de BiomedCLIP tampoco baja del baseline, lo que indica que, con 15
+videos, la señal de BBPS no es extraíble de estos embeddings
+(`scripts/finetuning_bbps/probe_bbps.py`).
+
+**Limitaciones:** n = 15 videos; varios valores de BBPS aparecen en un solo
+video y no se ven en el entrenamiento de su fold; la selección de checkpoint
+se hace sobre el propio fold de validación.
+
+## Estructura del Repositorio
+
+```text
+├── train.py                       # Entrenamiento del mapper (ClipCap)
+├── test.py                        # Inferencia: genera captions para una carpeta de imágenes
+├── predict.py                     # Modelo y decodificación (beam search / top-p)
+├── parse_colono.py                # Embeddings con CLIP (ViT-B/32, RN101)
+├── parse_colono_biomed.py         # Embeddings con BiomedCLIP
+├── clip_weights/                  # Pesos de los encoders: biomedclip_weights.pt, ViT-B-32.pt, RN101.pt
+├── experiments_colono/            # CSV de SUN (positivos y negativos con caption)
+├── fold/                          # Experimentos 2-fold en SUN
+│   ├── 2fold/                     #   baseline (época 14)
+│   ├── 2fold_best/                #   checkpoint por val_loss
+│   ├── 2fold_hp/                  #   reentrenamiento con nuevos hiperparámetros
+│   └── 2fold_hp_f1/               #   checkpoint por F1 (resultado final)
+├── igho_inference/                # Inferencia y métricas sobre videos de IGHO
+├── igho_training_bbps_generated/  # Fine-tuning BBPS con etiqueta estimada
+├── igho_training_bbps_real/       # Fine-tuning BBPS con etiqueta del especialista
+├── weights/                       # Embeddings (.pkl) usados en entrenamiento y validación
+│   ├── sun_2fold/                 #   SUN baseline: <modelo>/fold_N/{train,val}.pkl
+│   ├── sun_2fold_hp/              #   SUN reentrenamiento: <modelo>/fold_N/{train,val}.pkl
+│   ├── igho_bbps_generated/       #   IGHO BBPS estimado: group_{a,b}.pkl
+│   └── igho_bbps_real/            #   IGHO BBPS especialista: group_{a,b}.pkl
+├── weights.zip                    # Copia comprimida de weights/
+├── plots_multidataset/            # Estadísticas y figuras de SUN e IGHO
+├── scripts/
+│   ├── 2fold_models.py            # Pipeline 2-fold: folds, embeddings, entrenamiento, validación
+│   ├── evaluate_fold_models.py    # Tablas de métricas (cuadro, reporte, lesión)
+│   ├── revalidate_epoch.py        # Re-inferencia con el checkpoint seleccionado
+│   ├── validation.py              # val_loss por época
+│   ├── inferiencia.py             # Inferencia sobre videos reales
+│   ├── avi_to_frame.py            # Extracción de cuadros desde .avi
+│   ├── cut_frames.py              # Recorte lateral de cuadros
+│   ├── reentrenamiento/           # Selección de época por F1
+│   ├── finetuning_bbps/           # Dataset, evaluación y probe de BBPS
+│   └── graphics/                  # Gráficas
+├── logs/                          # Logs de entrenamiento e inferencia
+├── unuse/                         # Scripts y experimentos antiguos
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── README.md                      # Este archivo
 ```
-python train.py --only_prefix --data ./data/coco/oscar_split_ViT-B_32_train.pkl --out_dir ./coco_train/ --mapping_type transformer  --num_layres 8 --prefix_length 40 --prefix_length_clip 40
+
+## Requisitos
+
+### Opción recomendada: Docker
+
+El proyecto incluye un `Dockerfile` basado en PyTorch 2.1.0 con CUDA 11.8 y
+cuDNN 8. La imagen instala las dependencias de `requirements.txt`:
+
+- transformers 4.39.3
+- open-clip-torch
+- CLIP de OpenAI (`git+https://github.com/openai/CLIP.git`)
+- NumPy 1.26.4
+- pandas
+- scikit-learn
+- scikit-image 0.20.0
+- OpenCV 4.9.0.80
+- Pillow
+- Matplotlib
+- tqdm
+- bert-score, evaluate y nltk (métricas de texto)
+
+Para ejecutar los experimentos con GPU se requiere Docker, Docker Compose y
+una instalación funcional de NVIDIA Container Toolkit.
+
+### Instalación local
+
+En un entorno Python con PyTorch y CUDA compatibles con el hardware:
+
+```bash
+pip install -r requirements.txt
+pip install git+https://github.com/openai/CLIP.git
 ```
 
-**If you wish to use ResNet-based CLIP:** 
+La extracción de cuadros requiere además `ffmpeg`/`ffprobe`.
 
-```
-python parse_coco.py --clip_model_type RN50x4
-```
-```
-python train.py --only_prefix --data ./data/coco/oscar_split_RN50x4_train.pkl --out_dir ./coco_train/ --mapping_type transformer  --num_layres 8 --prefix_length 40 --prefix_length_clip 40 --is_rn
-```
+## Instrucciones de Uso
 
-## Conceptual training
+### 1. Preparar los datos y los modelos
 
-Download the .TSV train/val files from [Conceptual Captions](https://ai.google.com/research/ConceptualCaptions/download) and place them under <data_root> directory.
+1. Colocar SUN Multimodal en `Sun_Multimodal/` (`Train/`, `Train_Negative/`)
+   y los CSV de captions en `experiments_colono/experiments_colono/`.
+2. Colocar los pesos de los encoders en `clip_weights/`
+   (`biomedclip_weights.pt`, `ViT-B-32.pt`, `RN101.pt`). `parse_colono.py` y
+   `test.py` cargan CLIP desde esa carpeta y solo descargan los pesos de
+   OpenAI si no están. En la inferencia, `test.py` carga BiomedCLIP desde
+   Hugging Face (`--biomedclip_model_id`). `ViT-B-16.pt`, `RN50.pt` y
+   `RN50x4.pt` no se usan.
+3. Extraer los cuadros de los videos de IGHO:
 
-Download the images and extract CLIP features using (outputs are `<data_root>/conceptual_clip_ViT-B_32_train.pkl` and  `<data_root>/conceptual_clip_ViT-B_32_val.pkl`):
-```
-python parse_conceptual.py --clip_model_type ViT-B/32 --data_root <data_root> --num_threads 16
-```
-Notice, downloading the images might take a few days.
+   ```bash
+   python scripts/avi_to_frame.py ruta/al/video.avi
+   ```
 
-Train with fine-tuning of GPT2:
-```
-python train.py --data <data_root>/conceptual_clip_ViT-B_32_train.pkl --out_dir ./conceptual_train/
-```
-Similarly to the COCO training, you can train a transformer mapping network, and / or parse the images using a ResNet-based CLIP. 
+4. Ajustar en `docker-compose.yml` la ruta local de los cuadros, que se monta
+   en `/frames` dentro del contenedor.
 
-## Citation
-If you use this code for your research, please cite:
-```
-@article{mokady2021clipcap,
-  title={ClipCap: CLIP Prefix for Image Captioning},
-  author={Mokady, Ron and Hertz, Amir and Bermano, Amit H},
-  journal={arXiv preprint arXiv:2111.09734},
-  year={2021}
-}
+Los videos clínicos de IGHO no se incluyen en el repositorio y deben
+permanecer en una ubicación autorizada para su uso.
+
+### 2. Construir el contenedor
+
+Desde la raíz del proyecto:
+
+```bash
+docker compose build
 ```
 
+### 3. Ejecutar el contenedor
 
+```bash
+docker compose up -d
+docker compose exec biomedCLIPCAP bash
+```
 
+Dentro del contenedor, el repositorio está disponible en `/workspace` y los
+cuadros en `/frames`.
 
-## Acknowledgments
-This repository is heavily based on [CLIP](https://github.com/openai/CLIP) and [Hugging-faces](https://github.com/huggingface/transformers) repositories.
-For training we used the data of [COCO dataset](https://cocodataset.org/#home) and [Conceptual Captions](https://ai.google.com/research/ConceptualCaptions/).
+### 4. Entrenar y validar en SUN (2-fold)
 
-## Contact
-For any inquiry please contact us at our email addresses: ron.mokady@gmail.com or amirhertz@mail.tau.ac.il.
+```bash
+python scripts/2fold_models.py \
+    --model all --output_root fold/2fold_hp \
+    --epochs 6 --bs 16 --lr 1e-5 --warmup_steps 400 \
+    --weight_decay 0.01 --dropout 0.1 --num_layers 4 \
+    --save_every 1 --gpu 0
 
+python scripts/reentrenamiento/val_metric_per_epoch.py \
+    --fold_root fold/2fold_hp --metric f1 --gpu 0
+
+python scripts/revalidate_epoch.py \
+    --source_root fold/2fold_hp --output_root fold/2fold_hp_f1 \
+    --checkpoint_policy f1 --gpu 0
+
+python scripts/evaluate_fold_models.py --fold_root fold/2fold_hp_f1
+```
+
+Los pesos, predicciones y tablas (`table_i_*`, `table_ii_*`) se guardan en la
+carpeta indicada en `--output_root`. Más detalle en
+[scripts/reentrenamiento/README.md](scripts/reentrenamiento/README.md).
+
+### 5. Ejecutar inferencia sobre videos de IGHO
+
+```bash
+python scripts/inferiencia.py \
+    --model all --fold all \
+    --checkpoints_root fold/2fold_hp --checkpoint_policy f1 \
+    --images_root /frames/<video_id> \
+    --output_root igho_inference/videos_f1/<video> \
+    --gpu 0
+
+python igho_inference/metrics/igho_metrics.py \
+    --base_dir igho_inference/videos_f1 \
+    --ground_truth_csv igho_inference/igho_dataset_bbps_gt.csv \
+    --video_fps_json igho_inference/video_fps.json
+```
+
+Cada video genera `predictions.csv` por modelo y fold, y un
+`frame_reporte.csv` consolidado.
+
+### 6. Fine-tuning de BBPS
+
+El pipeline completo (construcción del dataset, embeddings por grupo,
+fine-tuning desde el checkpoint de SUN, inferencia con
+`--stop_token_count 2` y evaluación por video) está documentado en
+[scripts/finetuning_bbps/README.md](scripts/finetuning_bbps/README.md).
+
+> Algunos scripts todavía tienen como rutas por defecto `igho/` e
+> `igho_training/`; al ejecutarlos, pasar explícitamente las rutas actuales
+> (`igho_inference/`, `igho_training_bbps_*`).
+
+## Contacto
+
+- **Autor:** [keyler_sanchez](mail:jhon.68h@gmail.com)
+- **GitLab:** [@keyler_sanchez](https://gitlab.com/jhon.68h)
+- **Director:** [famarcar@saber.uis.edu.co](mailto:famarcar@saber.uis.edu.co)
+
+## Licencia
+
+El código base de ClipCap se distribuye bajo licencia MIT (ver `LICENSE`,
+© 2021 rmokady). Los datos clínicos de IGHO y los pesos entrenados con ellos
+deben utilizarse únicamente con autorización de sus autores y respetando las
+restricciones de acceso aplicables.

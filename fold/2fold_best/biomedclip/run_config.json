@@ -1,0 +1,32 @@
+{
+  "generated_at_utc": "2026-08-14T23:42:46.392346+00:00",
+  "mode": "revalidation_only",
+  "model": "biomedclip",
+  "requested_model": "biomedclip",
+  "output_subdir": "biomedclip",
+  "source_root": "fold/2fold",
+  "checkpoint_policy": "best",
+  "checkpoint_epoch": null,
+  "folds": [
+    {
+      "model": "biomedclip",
+      "subdir": "biomedclip",
+      "fold": "fold_1",
+      "epoch": 1,
+      "val_loss": 0.14594422518731764,
+      "checkpoint": "fold/2fold/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-001.pt",
+      "val_predictions_csv": "fold/2fold_best/biomedclip/folds/fold_1/inference/val_predictions.csv",
+      "merged_rows": 5738
+    },
+    {
+      "model": "biomedclip",
+      "subdir": "biomedclip",
+      "fold": "fold_2",
+      "epoch": 1,
+      "val_loss": 0.19774183235780926,
+      "checkpoint": "fold/2fold/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-001.pt",
+      "val_predictions_csv": "fold/2fold_best/biomedclip/folds/fold_2/inference/val_predictions.csv",
+      "merged_rows": 5662
+    }
+  ]
+}

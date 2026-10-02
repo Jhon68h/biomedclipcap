@@ -1,0 +1,36 @@
+[INFO] fold_1: 4184 predicciones cruzadas (0 sin correspondencia en el manifiesto) desde /workspace/igho_bbps_real/folds/fold_1/inference/val_predictions_raw.csv
+[INFO] fold_2: 4764 predicciones cruzadas (0 sin correspondencia en el manifiesto) desde /workspace/igho_bbps_real/folds/fold_2/inference/val_predictions_raw.csv
+
+==============================================================================
+BBPS por video (n=15)
+==============================================================================
+video                      fold     GT   pred  |err|   emis  nota
+-----------------------------------------------------------------
+2025-03-17_094605_719      fold_2    7    4.0    3.0  100%  BBPS no visto en train
+2025-05-16_093014_695      fold_2    9    4.0    5.0  100%  
+2025-05-28_110348_321      fold_2    8    4.0    4.0  100%  
+2025-05-30_102030_811      fold_2    8    4.0    4.0  100%  
+2025-12-01_080328_674      fold_1    9    8.0    1.0  100%  
+2025-12-01_101553_631      fold_1    8    8.0    0.0  100%  
+2025-12-01_133935_383      fold_2    9    4.0    5.0  100%  
+2025-12-01_141231_211      fold_1    8    8.0    0.0  100%  
+2026-05-25-225167          fold_1    4    8.0    4.0  100%  
+2026-05-26-225252          fold_1    4    8.0    4.0  100%  
+2026-05-29_090258_759      fold_1    6    8.0    2.0  100%  BBPS no visto en train
+2026-06-01_101053_265      fold_2    8    4.0    4.0  100%  
+2026-06-10_102045_991      fold_2    9    4.0    5.0  100%  
+2026-06-11_080700_093      fold_1    9    8.0    1.0  100%  
+2026-06-18_051044_453      fold_2    4    4.0    0.0  100%  
+-----------------------------------------------------------------
+bbps_mae (todos los videos)      : 2.800 IC95% [1.800, 3.733]
+bbps_mae (excluyendo BBPS no visto): 2.846  (n=13)
+baseline trivial (siempre 8/9)   : 1.333  -> el modelo NO mejora el baseline
+frames con frase de BBPS         : 100.0% de 8948
+
+Nivel frame sobre el set de validacion submuestreado (no comparable con igho/metrics):
+  recall=0.518 precision=0.850 f1=0.643 specificity=0.909
+  location_acc=0.197 paris_acc=0.513 size_mae=1.702mm bleu_1=0.824 bleu_4=0.551
+
+[OK] /workspace/igho_bbps_real/eval/bbps_per_video.csv
+[OK] /workspace/igho_bbps_real/eval/bbps_summary.json
+[OK] /workspace/igho_bbps_real/eval/predictions_merged.csv

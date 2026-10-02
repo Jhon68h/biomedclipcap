@@ -1,0 +1,32 @@
+{
+  "generated_at_utc": "2026-08-15T01:28:03.158260+00:00",
+  "mode": "revalidation_only",
+  "model": "resnet101",
+  "requested_model": "resnet101",
+  "output_subdir": "resnet",
+  "source_root": "fold/2fold",
+  "checkpoint_policy": "best",
+  "checkpoint_epoch": null,
+  "folds": [
+    {
+      "model": "resnet101",
+      "subdir": "resnet",
+      "fold": "fold_1",
+      "epoch": 1,
+      "val_loss": 0.13540042677969547,
+      "checkpoint": "fold/2fold/resnet/folds/fold_1/train/positive_vs_negative_fold_1-001.pt",
+      "val_predictions_csv": "fold/2fold_best/resnet/folds/fold_1/inference/val_predictions.csv",
+      "merged_rows": 5738
+    },
+    {
+      "model": "resnet101",
+      "subdir": "resnet",
+      "fold": "fold_2",
+      "epoch": 1,
+      "val_loss": 0.15620398284085765,
+      "checkpoint": "fold/2fold/resnet/folds/fold_2/train/positive_vs_negative_fold_2-001.pt",
+      "val_predictions_csv": "fold/2fold_best/resnet/folds/fold_2/inference/val_predictions.csv",
+      "merged_rows": 5662
+    }
+  ]
+}

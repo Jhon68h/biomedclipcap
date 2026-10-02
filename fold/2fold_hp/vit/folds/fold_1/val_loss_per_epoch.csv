@@ -1,0 +1,7 @@
+epoch,checkpoint,val_loss,val_batches,val_samples
+0,fold/2fold_hp/vit/folds/fold_1/train/positive_vs_negative_fold_1-000.pt,0.36728607711007927,359,5738
+1,fold/2fold_hp/vit/folds/fold_1/train/positive_vs_negative_fold_1-001.pt,0.14876952212116898,359,5738
+2,fold/2fold_hp/vit/folds/fold_1/train/positive_vs_negative_fold_1-002.pt,0.12446058696475426,359,5738
+3,fold/2fold_hp/vit/folds/fold_1/train/positive_vs_negative_fold_1-003.pt,0.1320525466514126,359,5738
+4,fold/2fold_hp/vit/folds/fold_1/train/positive_vs_negative_fold_1-004.pt,0.1280797108846826,359,5738
+5,fold/2fold_hp/vit/folds/fold_1/train/positive_vs_negative_fold_1-005.pt,0.12903715760984974,359,5738

@@ -18,7 +18,6 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 
 import numpy as np
 from sklearn.decomposition import PCA
@@ -34,6 +33,14 @@ else:
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+WEIGHTS_ROOT = REPO_ROOT / "weights"
+
+
+def fold_weights_dir(model_root: Path, fold_name: str) -> Path:
+    """Los .pkl de embeddings viven en weights/sun_<experimento>/<modelo>/<fold>/."""
+    return WEIGHTS_ROOT / f"sun_{model_root.parent.name}" / model_root.name / fold_name
+
+
 DEFAULT_INPUT_ROOT = REPO_ROOT / "fold" / "2fold"
 DEFAULT_OUTPUT_ROOT = DEFAULT_INPUT_ROOT / "plots"
 DEFAULT_MODELS = ("biomedclip", "resnet", "vit")
@@ -239,7 +246,7 @@ def collect_model_embeddings(model_root: Path) -> Tuple[np.ndarray, List[Dict[st
     all_meta: List[Dict[str, str]] = []
 
     for fold_dir in fold_dirs:
-        val_pkl = fold_dir / "data" / "val.pkl"
+        val_pkl = fold_weights_dir(model_root, fold_dir.name) / "val.pkl"
         val_csv = fold_dir / "val.csv"
         if not val_pkl.exists() or not val_csv.exists():
             print(f"[WARN] {model_root.name}/{fold_dir.name}: falta val.pkl o val.csv")
@@ -557,17 +564,10 @@ def plot_pca_combined(
         return
 
     n = len(plot_items)
-    if n != 3:
-        raise ValueError(f"Se esperaban exactamente 3 elementos para este layout, pero se recibieron {n}.")
-    fig = plt.figure(figsize=(18, 5.5))
-    
-    gs = GridSpec(1, 3, figure=fig)
-
-    ax1 = fig.add_subplot(gs[0, 0])  
-    ax2 = fig.add_subplot(gs[0, 1])  
-    ax3 = fig.add_subplot(gs[0, 2])
-    
-    ax_list = [ax1, ax2, ax3]
+    ncols = max(1, int(np.ceil(np.sqrt(n))))
+    nrows = int(np.ceil(n / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(6 * ncols, 5.5 * nrows), squeeze=False)
+    ax_list = _as_axes_list(axes)
 
     color_map = {
         "negative": "#2a9d8f",
@@ -602,6 +602,9 @@ def plot_pca_combined(
         ax.set_title(item["model"])
         ax.grid(alpha=0.22, linestyle="--", linewidth=0.6)
         ax.legend(loc="best", fontsize=8, frameon=True)
+
+    for ax in ax_list[n:]:
+        ax.axis("off")
 
     fig.suptitle("PCA of Frame-Level Pre-GPT-2 Token Embeddings by Model", fontsize=14, y=0.98)
     fig.tight_layout()

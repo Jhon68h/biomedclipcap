@@ -1,0 +1,47 @@
+[INFO] group_a.pkl: 4764 frames, dim 512
+[INFO] group_b.pkl: 4184 frames, dim 512
+[INFO] Total: 8948 frames | 15 videos | BBPS [4.0, 6.0, 7.0, 8.0, 9.0]
+[INFO] Baseline trivial (mediana de los otros 14): MAE = 1.3333
+
+    lambda  MAE por video   r Pearson
+--------------------------------------
+    0.0001         1.6704      -0.663
+     0.001         1.6556      -0.651
+      0.01         1.6210      -0.649
+       0.1         1.6134      -0.766
+         1         1.6507      -0.977
+        10         1.6648      -1.000
+       100         1.6665      -1.000
+--------------------------------------
+MEJOR: lambda=0.1  MAE=1.6134  (baseline 1.3333)
+Nota: elegir lambda por el MAE de test es optimista a proposito -- este numero
+      es una COTA SUPERIOR de lo que se puede decodificar linealmente.
+
+video                       GT   probe   |err|
+----------------------------------------------
+2026-05-25-225167            4    7.77    3.77
+2026-05-26-225252            4    7.53    3.53
+2026-06-18_051044_453        4    7.52    3.52
+2026-05-29_090258_759        6    7.42    1.42
+2025-03-17_094605_719        7    7.27    0.27
+2025-05-28_110348_321        8    7.37    0.63
+2025-05-30_102030_811        8    7.37    0.63
+2025-12-01_101553_631        8    7.40    0.60
+2025-12-01_141231_211        8    7.37    0.63
+2026-06-01_101053_265        8    7.42    0.58
+2025-05-16_093014_695        9    7.42    1.58
+2025-12-01_080328_674        9    7.10    1.90
+2025-12-01_133935_383        9    7.30    1.70
+2026-06-10_102045_991        9    7.22    1.78
+2026-06-11_080700_093        9    7.35    1.65
+
+==============================================
+Control por permutacion (200 barajados de las etiquetas):
+  MAE medio al azar : 1.6661
+  percentil 5       : 1.5933
+  MAE real          : 1.6134
+  p-valor empirico  : 0.130
+  -> El probe NO se distingue del azar: la senal de BBPS no es
+     linealmente extraible de estos embeddings con n=15 videos.
+
+[OK] /workspace/igho_bbps_real/eval/probe_bbps.json

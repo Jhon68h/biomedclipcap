@@ -1,0 +1,235 @@
+{
+  "tag": "",
+  "n_videos_evaluated": 15,
+  "n_videos_scored": 15,
+  "bbps_mae_per_video": 1.3333333333333333,
+  "bbps_mae_per_video_std": 1.5886502207249789,
+  "bbps_mae_per_video_sem": 0.41018772318777197,
+  "bbps_mae_per_video_rounded": 1.3333333333333333,
+  "bbps_mae_per_video_rounded_std": 1.5886502207249789,
+  "bbps_mae_ci95": {
+    "ci_low": 0.6666666666666666,
+    "ci_high": 2.134999999999991,
+    "iterations": 2000
+  },
+  "bbps_mae_excluding_unseen_bbps": 0.6666666666666666,
+  "bbps_mae_excluding_unseen_bbps_std": 0.778498944161523,
+  "n_videos_excluded_as_unseen": 3,
+  "unseen_bbps_videos": [
+    {
+      "video_id": "2025-05-28_110348_321",
+      "fold": "fold_2",
+      "gt_bbps": 2,
+      "pred_bbps_median": 7.0,
+      "abs_error": 5.0
+    },
+    {
+      "video_id": "2026-05-26-225252",
+      "fold": "fold_1",
+      "gt_bbps": 3,
+      "pred_bbps_median": 7.0,
+      "abs_error": 4.0
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "fold": "fold_2",
+      "gt_bbps": 4,
+      "pred_bbps_median": 7.0,
+      "abs_error": 3.0
+    }
+  ],
+  "trivial_baseline": {
+    "constant_prediction": 7,
+    "mae": 1.3333333333333333,
+    "beats_baseline": false
+  },
+  "bbps_sentence_emission_rate": 1.0,
+  "n_frames": 8948,
+  "frame_level_all_folds": {
+    "binary": {
+      "num_rows_used": 8948,
+      "tp": 2465,
+      "tn": 3953,
+      "fp": 521,
+      "fn": 2009,
+      "accuracy": 0.7172552525704068,
+      "precision": 0.8255190890823845,
+      "recall": 0.5509611086276263,
+      "f1": 0.660857908847185,
+      "specificity": 0.8835493965131873
+    },
+    "report": {
+      "num_rows_used": 8948,
+      "bleu_1": 0.8242180951139094,
+      "bleu_4": 0.5701050644544348,
+      "malignancy_accuracy": 0.5509611086276263,
+      "location_accuracy": 0.21524362986142154,
+      "paris_accuracy": 0.546714349575324,
+      "size_mae_mm": 1.7517241379310344,
+      "bbps_mae": 1.7336835046937864,
+      "supports": {
+        "malignancy": 4474,
+        "location": 4474,
+        "paris": 4474,
+        "size_mae_mm": 2465,
+        "bbps_mae": 8948
+      }
+    },
+    "bbps_error_dispersion": {
+      "n": 8948,
+      "mean": 1.7336835046937864,
+      "std": 1.6304485066428271,
+      "sem": 0.017236302190111703,
+      "aviso": "std del error por FRAME (n=8948). Los frames del mismo video no son independientes: el sem esta subestimado por ~sqrt(frames_por_video). Para reportar usa bbps_mae_per_video_std."
+    }
+  },
+  "per_fold": [
+    {
+      "fold": "fold_1",
+      "n_rows": 4184,
+      "binary": {
+        "num_rows_used": 4184,
+        "tp": 813,
+        "tn": 1942,
+        "fp": 150,
+        "fn": 1279,
+        "accuracy": 0.6584608030592735,
+        "precision": 0.8442367601246106,
+        "recall": 0.388623326959847,
+        "f1": 0.5322422258592472,
+        "specificity": 0.9282982791586998
+      },
+      "report": {
+        "num_rows_used": 4184,
+        "bleu_1": 0.8237160805647302,
+        "bleu_4": 0.5827781232418348,
+        "malignancy_accuracy": 0.388623326959847,
+        "location_accuracy": 0.15105162523900573,
+        "paris_accuracy": 0.3795411089866157,
+        "size_mae_mm": 2.389913899138991,
+        "bbps_mae": 1.7674474187380498,
+        "supports": {
+          "malignancy": 2092,
+          "location": 2092,
+          "paris": 2092,
+          "size_mae_mm": 813,
+          "bbps_mae": 4184
+        }
+      }
+    },
+    {
+      "fold": "fold_2",
+      "n_rows": 4764,
+      "binary": {
+        "num_rows_used": 4764,
+        "tp": 1652,
+        "tn": 2011,
+        "fp": 371,
+        "fn": 730,
+        "accuracy": 0.7688916876574308,
+        "precision": 0.8166089965397924,
+        "recall": 0.6935348446683459,
+        "f1": 0.7500567536889898,
+        "specificity": 0.8442485306465155
+      },
+      "report": {
+        "num_rows_used": 4764,
+        "bleu_1": 0.8245990531264846,
+        "bleu_4": 0.5609505679022908,
+        "malignancy_accuracy": 0.6935348446683459,
+        "location_accuracy": 0.2716204869857263,
+        "paris_accuracy": 0.6935348446683459,
+        "size_mae_mm": 1.4376513317191284,
+        "bbps_mae": 1.7040302267002518,
+        "supports": {
+          "malignancy": 2382,
+          "location": 2382,
+          "paris": 2382,
+          "size_mae_mm": 1652,
+          "bbps_mae": 4764
+        }
+      }
+    }
+  ],
+  "per_fold_dispersion": {
+    "n_folds": 2,
+    "binary": {
+      "accuracy": {
+        "n": 2,
+        "mean": 0.7136762453583521,
+        "std": 0.0780864273517861,
+        "sem": 0.05521544229907865
+      },
+      "precision": {
+        "n": 2,
+        "mean": 0.8304228783322014,
+        "std": 0.019535778979843724,
+        "sem": 0.013813881792409109
+      },
+      "recall": {
+        "n": 2,
+        "mean": 0.5410790858140965,
+        "std": 0.21560500183356163,
+        "sem": 0.15245575885424942
+      },
+      "f1": {
+        "n": 2,
+        "mean": 0.6411494897741186,
+        "std": 0.154018129669357,
+        "sem": 0.10890726391487131
+      },
+      "specificity": {
+        "n": 2,
+        "mean": 0.8862734049026076,
+        "std": 0.059432147129989434,
+        "sem": 0.04202487425609214
+      }
+    },
+    "report": {
+      "bleu_1": {
+        "n": 2,
+        "mean": 0.8241575668456074,
+        "std": 0.0006243558860181957,
+        "sem": 0.00044148628087720127
+      },
+      "bleu_4": {
+        "n": 2,
+        "mean": 0.5718643455720628,
+        "std": 0.015434412397316159,
+        "sem": 0.010913777669771973
+      },
+      "malignancy_accuracy": {
+        "n": 2,
+        "mean": 0.5410790858140965,
+        "std": 0.21560500183356163,
+        "sem": 0.15245575885424942
+      },
+      "location_accuracy": {
+        "n": 2,
+        "mean": 0.211336056112366,
+        "std": 0.08525505974104942,
+        "sem": 0.060284430873360266
+      },
+      "paris_accuracy": {
+        "n": 2,
+        "mean": 0.5365379768274808,
+        "std": 0.22202709975064785,
+        "sem": 0.1569968678408651
+      },
+      "size_mae_mm": {
+        "n": 2,
+        "mean": 1.9137826154290598,
+        "std": 0.673351318892697,
+        "sem": 0.4761312837099314
+      },
+      "bbps_mae": {
+        "n": 2,
+        "mean": 1.7357388227191508,
+        "std": 0.04484272653373645,
+        "sem": 0.031708596018898964
+      }
+    },
+    "aviso": "media +/- std ENTRE folds. Con 2 folds el std es la semi-distancia entre dos valores, no una estimacion estable de variabilidad."
+  },
+  "advertencia": "Las metricas de deteccion/reporte se calculan sobre el set de validacion submuestreado (cap por lesion + 10% de negativos), no sobre el video completo. No son comparables 1:1 con igho/metrics, que evalua todos los frames y por tanto tiene una proporcion de negativos muy distinta."
+}

@@ -1,0 +1,22 @@
+[INFO] Filas (lesiones) en /workspace/igho/igho_dataset_bbps_gt.csv: 27
+[INFO] Videos: 15 | lesiones: 27
+[INFO] Rangos reescalados de 60 fps a los fps reales: 25 lesiones en 13 videos.
+       2025-05-28_110348_321 -> x0.303167
+       2025-05-30_102030_811 -> x0.333333
+       2025-12-01_080328_674 -> x0.5
+       2025-12-01_101553_631 -> x0.5
+       2025-12-01_133935_383 -> x0.5
+       2025-12-01_141231_211 -> x0.5
+       2026-05-25-225167 -> x0.5
+       2026-05-26-225252 -> x0.5
+       2026-05-29_090258_759 -> x0.5
+       2026-06-01_101053_265 -> x0.5
+       2026-06-10_102045_991 -> x0.5
+       2026-06-11_080700_093 -> x0.5
+       2026-06-18_051044_453 -> x0.5
+[INFO] Positivos: 4474 | negativos: 4474 (100.0% de los positivos) | total: 8948
+[INFO] fold_1: train=4764 (grupo A, 8 videos) | val=4184 (grupo B, 7 videos) | BBPS no vistos en train: [6]
+[INFO] fold_2: train=4184 (grupo B, 7 videos) | val=4764 (grupo A, 8 videos) | BBPS no vistos en train: [7]
+[INFO] Baseline trivial (predecir siempre BBPS 8/9): MAE = 1.3333 sobre n=15 videos
+[OK] Resumen: /workspace/igho_bbps_real/data/build_summary.json
+[OK] Dataset construido en: /workspace/igho_bbps_real

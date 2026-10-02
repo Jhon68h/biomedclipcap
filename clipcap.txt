@@ -1,0 +1,215 @@
+# Modelo Implementado en este Proyecto
+
+Este proyecto implementa un modelo de generacion automatica de descripciones clinicas para imagenes y videos de colonoscopia. La base conceptual viene de ClipCap: se usa un encoder visual tipo CLIP para convertir una imagen en un vector semantico, y luego ese vector se transforma en un prefijo que condiciona a GPT-2 para generar texto.
+
+En este repositorio, ClipCap fue adaptado al dominio medico. En lugar de generar captions generales como las de COCO, el sistema genera frases clinicas sobre frames de colonoscopia. La salida puede indicar si hay o no polipos y, cuando hay lesion, describir atributos como tipo de polipo, morfologia, tamano y localizacion anatomica.
+
+## Objetivo del modelo
+
+El objetivo es transformar un frame de colonoscopia en una descripcion textual clinica.
+
+Ejemplo de caption positiva:
+
+This is a colonoscopy frame from a patient with a flat elevated mucosal adenoma polyp measuring 3 mm located in the transverse colon.
+
+Ejemplo de caption negativa:
+
+This is a colonoscopy frame from a patient with no polyps.
+
+Por tanto, el modelo funciona como un sistema multimodal imagen-texto: recibe una imagen como entrada y produce una caption clinica como salida.
+
+## Arquitectura general
+
+El modelo tiene tres componentes principales:
+
+1. Encoder visual.
+2. Mapper o proyector de prefijo.
+3. GPT-2 como generador de texto.
+
+El flujo completo es:
+
+Imagen de colonoscopia
+  -> encoder visual CLIP/BioMedCLIP
+  -> embedding visual
+  -> mapper entrenable
+  -> prefijo compatible con GPT-2
+  -> GPT-2
+  -> caption clinica generada
+
+## Encoder visual
+
+El encoder visual convierte cada imagen en un embedding numerico. El repositorio permite trabajar con varios encoders:
+
+- BioMedCLIP: CLIP adaptado al dominio biomedico.
+- ViT-B/32: CLIP original de OpenAI con Vision Transformer.
+- RN101: CLIP original de OpenAI con ResNet101.
+
+Los scripts relacionados son:
+
+- parse_colono.py: genera embeddings con CLIP de OpenAI.
+- parse_colono_biomed.py: genera embeddings con BioMedCLIP/OpenCLIP.
+- parse_coco.py: script heredado del ClipCap original para COCO.
+
+Los embeddings se guardan en archivos .pkl junto con las captions. Esos .pkl son luego usados por train.py para entrenar el modelo.
+
+## Mapper visual-textual
+
+GPT-2 no entiende imagenes directamente. Por eso se entrena un mapper que transforma el embedding visual en una secuencia de vectores que GPT-2 puede interpretar como tokens iniciales o prefijo.
+
+En train.py existen dos tipos de mapper:
+
+- MLP: una red completamente conectada simple.
+- Transformer: una pequena arquitectura transformer para proyectar el embedding visual a varios tokens de prefijo.
+
+La configuracion principal del proyecto usa normalmente:
+
+- mapping_type = transformer
+- prefix_length = 10
+- prefix_length_clip = 10
+- num_layers = 8
+- only_prefix = True
+
+Cuando only_prefix=True, GPT-2 queda congelado y se entrena solamente el mapper. Esta variante esta implementada en la clase ClipCaptionPrefix.
+
+## GPT-2 como generador
+
+GPT-2 actua como decodificador de lenguaje. Durante entrenamiento recibe el prefijo visual generado por el mapper y los tokens de la caption real. El entrenamiento consiste en aprender a predecir la siguiente palabra de la caption condicionandose en la imagen.
+
+Durante inferencia, el modelo recibe solo la imagen. El encoder genera el embedding visual, el mapper lo transforma en prefijo, y GPT-2 genera la caption token por token.
+
+La generacion se implementa principalmente en:
+
+- predict.py
+- test.py
+
+El proyecto soporta beam search y nucleus sampling/top-p. En los scripts de evaluacion se usa beam search por defecto.
+
+## Datos usados
+
+El proyecto trabaja con frames de colonoscopia. Las carpetas mas relevantes son:
+
+- Sun_Multimodal/Train
+- Sun_Multimodal/Train_Negative
+- Sun_Multimodal/Test_join
+- dataset_real_colon
+- igho
+
+Los CSV principales estan en:
+
+experiments_colono/experiments_colono/
+
+Archivos importantes:
+
+- clipclap_train_labeled_positive.csv
+- clipclap_train_labeled_negative.csv
+- clipclap_train_labeled_join.csv
+
+Las muestras positivas incluyen campos como image_path, case, polyp_type y caption. Las negativas contienen frames sin polipos y captions de ausencia de polipos.
+
+## Entrenamiento
+
+El entrenamiento principal ocurre en train.py.
+
+El flujo de entrenamiento es:
+
+1. Cargar un archivo .pkl con embeddings visuales y captions.
+2. Tokenizar las captions usando el tokenizer de GPT-2.
+3. Tomar el embedding visual asociado a cada imagen.
+4. Pasarlo por el mapper para obtener un prefijo en el espacio de GPT-2.
+5. Concatenar ese prefijo con los embeddings de texto.
+6. Calcular la perdida de lenguaje contra la caption real.
+7. Actualizar los pesos entrenables, normalmente solo los del mapper.
+
+El entrenamiento guarda checkpoints .pt por epoca y artefactos de perdida, como CSVs y graficas.
+
+## Inferencia en imagenes
+
+La inferencia sobre carpetas de imagenes se realiza con test.py.
+
+El proceso es:
+
+1. Cargar el encoder visual elegido.
+2. Cargar el checkpoint del mapper entrenado.
+3. Leer las imagenes de una carpeta.
+4. Convertir cada imagen en embedding visual.
+5. Proyectar ese embedding al prefijo de GPT-2.
+6. Generar la caption.
+7. Guardar un CSV con image_path y generated_caption.
+
+## Inferencia en videos reales
+
+El repositorio tambien incluye un flujo para videos reales de colonoscopia, especialmente en la carpeta igho.
+
+Los videos .avi se convierten a frames con:
+
+scripts/avi_to_frame.py
+
+Luego se ejecuta inferencia sobre esos frames con:
+
+scripts/inferiencia.py
+
+Los logs output_video_*.log registran ejecuciones largas sobre videos completos. Por ejemplo, output_video_578.log corresponde a una inferencia sobre un video con decenas de miles de frames.
+
+## Evaluacion
+
+La evaluacion esta organizada en un pipeline 2-fold:
+
+scripts/2fold_models.py
+
+Ese pipeline:
+
+1. Une muestras positivas y negativas.
+2. Construye folds balanceados por clase.
+3. Genera embeddings por fold.
+4. Entrena modelos por fold.
+5. Ejecuta inferencia sobre validacion.
+6. Calcula metricas.
+
+Las metricas se calculan principalmente en:
+
+scripts/evaluate_fold_models.py
+
+Se evaluan dos niveles:
+
+- Frame-level: accuracy, precision, recall, F1 y specificity.
+- Reporte clinico: BLEU, exactitud de malignidad, localizacion, clasificacion Paris y error absoluto medio del tamano.
+
+Tambien hay graficas generadas por:
+
+scripts/graphics/graficas.py
+
+## Comparacion de modelos
+
+El proyecto compara tres variantes principales:
+
+- BioMedCLIP + mapper + GPT-2.
+- CLIP ViT-B/32 + mapper + GPT-2.
+- CLIP RN101 + mapper + GPT-2.
+
+La diferencia principal entre estas variantes es el encoder visual. La parte de generacion se mantiene basada en GPT-2 condicionado por prefijo.
+
+## Resultados observados
+
+Los artefactos en fold/2fold muestran resultados altos. En el resumen evaluate_fold_models_summary.json, BioMedCLIP alcanza aproximadamente:
+
+- Accuracy binaria: 0.933.
+- F1 binario: 0.933.
+- BLEU-1: 0.921.
+- BLEU-4: 0.889.
+- MAE de tamano: 0.260 mm.
+
+ViT y ResNet tambien obtienen resultados altos, aunque BioMedCLIP aparece como la mejor variante en varios indicadores.
+
+## Limitacion metodologica importante
+
+El archivo fold/2fold/reporte.md documenta una advertencia relevante: el split 2-fold esta balanceado por clase, pero no separa completamente por caso o paciente.
+
+Esto significa que entrenamiento y validacion pueden compartir frames del mismo caso. Aunque no sean exactamente las mismas imagenes, esta situacion puede producir fuga de informacion y sobreestimar el rendimiento real.
+
+Por eso, los resultados actuales son utiles como validacion interna del pipeline, pero no bastan para afirmar generalizacion clinica a pacientes nuevos. Para una evaluacion mas robusta seria recomendable usar un split por caso, por ejemplo GroupKFold, dejando casos completos fuera del entrenamiento.
+
+## Resumen final
+
+El modelo implementado es un sistema de captioning medico para colonoscopia basado en CLIP/BioMedCLIP y GPT-2. El encoder visual extrae informacion semantica de cada frame, el mapper convierte esa informacion en un prefijo textual compatible con GPT-2, y GPT-2 genera una descripcion clinica.
+
+En esencia, el proyecto busca convertir imagenes y videos de colonoscopia en reportes breves generados automaticamente, comparando distintos encoders visuales para determinar cual produce mejores captions clinicas.

@@ -1,0 +1,2 @@
+source_video,video_dir,model,evaluated_frames,gt_frames_with_lesion,gt_frames_without_lesion,tp,fp,fn,tn,precision,recall,specificity,f1,accuracy,GT Positive Frames,Malignacy Acc.,Loc. Acc.,Paris Acc.,Size (mm),BLEU-1,BLEU-4
+2025-12-01_141231_211,video_211,biomedclip_fold_1,27003,662,26341,480,3400,182,22941,0.12371134020618557,0.7250755287009063,0.8709236551383774,0.21136063408190223,0.867348072436396,662,0.7251,0.4622,0.5378,0.1729,0.7782,0.7385

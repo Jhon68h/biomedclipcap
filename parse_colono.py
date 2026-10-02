@@ -11,9 +11,12 @@ import pandas as pd
 os.environ.setdefault("CUDA_DEVICE_ORDER", "PCI_BUS_ID")
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
 
+# Pesos de CLIP (ViT-B-32.pt, RN101.pt); clip.load solo descarga si no estan aqui.
+CLIP_WEIGHTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "clip_weights")
+
 def main(csv_path: str, images_root: str, out_path: str, clip_model_type: str = "ViT-B/32"):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    clip_model, preprocess = clip.load(clip_model_type, device=device, jit=False)
+    clip_model, preprocess = clip.load(clip_model_type, device=device, jit=False, download_root=CLIP_WEIGHTS_DIR)
     clip_model = clip_model.eval()
 
     df = pd.read_csv(csv_path)

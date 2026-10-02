@@ -4,9 +4,11 @@ import argparse
 import csv
 import json
 import math
+import random
 import re
 from collections import Counter
 from pathlib import Path
+from statistics import median
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 
@@ -15,6 +17,8 @@ DEFAULT_FOLD_ROOT = REPO_ROOT / "fold" / "2fold"
 
 TABLE_I_FILENAME = "table_i_frame_level_metrics.csv"
 TABLE_II_FILENAME = "table_ii_clinical_report_generation_metrics.csv"
+TABLE_I_CI_FILENAME = "table_i_frame_level_metrics_ci.csv"
+TABLE_II_LESION_FILENAME = "table_ii_lesion_level.csv"
 
 CANONICAL_NEGATIVE_CAPTION = "this is a colonoscopy frame from a patient with no polyps."
 
@@ -31,6 +35,14 @@ MORPH = [
 
 LESIONS = ["adenoma", "hyperplastic", "polyp"]
 
+# Ubicaciones anatomicas concretas, de mas especifica a menos.
+#
+# NO incluir el termino generico "colon": la plantilla de TODAS las captions
+# empieza con "This is a colonoscopy frame...", y "colonoscopy" contiene la
+# subcadena "colon". Con el matching por subcadena que se usaba antes, cada
+# frame negativo daba GT="colon" y prediccion="colon" -> acierto gratuito.
+# Eso inflaba location_accuracy: de los 5966 "aciertos" de biomedclip, 5190
+# (87%) venian de frames negativos, no de acertar la ubicacion real.
 LOCATIONS = [
     "sigmoid colon",
     "descending colon",
@@ -38,7 +50,6 @@ LOCATIONS = [
     "ascending colon",
     "rectum",
     "cecum",
-    "colon",
 ]
 
 
@@ -154,11 +165,23 @@ def infer_binary_label_from_caption(text: Any) -> Optional[str]:
 
 
 def extract_attr(text: Any, vocab: Sequence[str]) -> Optional[str]:
+    """Busca el primer termino del vocabulario presente como PALABRA COMPLETA.
+
+    Antes se usaba `value in normalized` (subcadena), lo que producia dos
+    falsos positivos:
+      - "colon" hacia match dentro de "colonoscopy" (presente en el 100% de
+        las captions), inflando location_accuracy con los frames negativos.
+      - "pedunculated" hacia match dentro de "subpedunculated", y solo el
+        orden de la lista evitaba el error.
+    Con \\b ambos casos se resuelven correctamente. El vocabulario se recorre
+    de mas especifico a menos, asi que "flat elevated mucosal" sigue teniendo
+    prioridad sobre "flat".
+    """
     normalized = normalize_text(text)
     if not normalized:
         return None
     for value in vocab:
-        if value in normalized:
+        if re.search(rf"\b{re.escape(value)}\b", normalized):
             return value
     return None
 
@@ -178,6 +201,24 @@ def extract_lesion(text: Any) -> Optional[str]:
 
 def extract_size(text: Any) -> Optional[int]:
     match = re.search(r"(\d+)\s*mm", normalize_text(text))
+    return int(match.group(1)) if match else None
+
+
+def extract_bbps(text: Any) -> Optional[int]:
+    """Score BBPS (0-9) de la frase "Bowel preparation score BBPS is N/9".
+
+    Devuelve None si la caption no lleva BBPS, que es el caso de todos los modelos
+    entrenados solo con SUN: esas filas quedan fuera del promedio, igual que pasa
+    con size_mae_mm cuando el frame es negativo.
+
+    OJO: el BBPS es una propiedad del VIDEO, no del frame. Promediar el error por
+    frame es pseudo-replicacion (n=136527 en vez de n=15) y hunde artificialmente
+    el intervalo de confianza. `bbps_mae` aqui es solo un diagnostico a nivel frame;
+    la metrica que vale es la de scripts/finetuning_bbps/evaluate_bbps.py, que
+    consolida por mediana y compara una vez por video. Ver
+    reportes/finetuning_bbps_igho.md 3.8 y reportes/camino_1_evaluacion_por_lesion.md.
+    """
+    match = re.search(r"bbps\s+is\s+(\d+)\s*/\s*9", normalize_text(text))
     return int(match.group(1)) if match else None
 
 
@@ -223,6 +264,8 @@ def evaluate_clinical(rows: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
         pred_morph = extract_attr(pred_caption, MORPH)
         gt_size = extract_size(gt_caption)
         pred_size = extract_size(pred_caption)
+        gt_bbps = extract_bbps(gt_caption)
+        pred_bbps = extract_bbps(pred_caption)
 
         evaluated.append(
             {
@@ -238,6 +281,9 @@ def evaluate_clinical(rows: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 "gt_size": gt_size,
                 "pred_size": pred_size,
                 "size_error": abs(gt_size - pred_size) if (gt_size is not None and pred_size is not None) else None,
+                "gt_bbps": gt_bbps,
+                "pred_bbps": pred_bbps,
+                "bbps_error": abs(gt_bbps - pred_bbps) if (gt_bbps is not None and pred_bbps is not None) else None,
             }
         )
     return evaluated
@@ -432,6 +478,7 @@ def report_metrics(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     location_accuracy, location_support = mean_over_present(clinical_rows, "location_correct")
     paris_accuracy, paris_support = mean_over_present(clinical_rows, "morph_correct")
     size_mae_mm, size_support = mean_size_error(clinical_rows)
+    bbps_mae, bbps_support = mean_over_present(clinical_rows, "bbps_error")
 
     return {
         "num_rows_used": len(prepared_rows),
@@ -441,11 +488,13 @@ def report_metrics(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         "location_accuracy": location_accuracy,
         "paris_accuracy": paris_accuracy,
         "size_mae_mm": size_mae_mm,
+        "bbps_mae": bbps_mae,
         "supports": {
             "malignancy": malignancy_support,
             "location": location_support,
             "paris": paris_support,
             "size_mae_mm": size_support,
+            "bbps_mae": bbps_support,
         },
     }
 
@@ -474,6 +523,7 @@ def evaluate_model(model_dir: Path) -> Optional[Dict[str, Any]]:
             "location_accuracy",
             "paris_accuracy",
             "size_mae_mm",
+            "bbps_mae",
         ],
     )
 
@@ -487,6 +537,196 @@ def evaluate_model(model_dir: Path) -> Optional[Dict[str, Any]]:
         "report": report,
         "binary_std": binary_std,
         "report_std": report_std,
+        "_rows": rows,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Evaluacion a nivel LESION (Camino 1)
+#
+# Motivo: cada lesion aparece en ~76 frames que comparten EXACTAMENTE el mismo
+# ground truth (mismo tamano, ubicacion, morfologia). Calcular las metricas de
+# atributos por frame promedia el mismo dato 76 veces (pseudo-replicacion), lo
+# que subestima el error estandar por un factor de ~sqrt(76). El tamano, la
+# ubicacion y la morfologia son propiedades DE LA LESION, no de cada imagen.
+#
+# La deteccion (Tabla I) SI es legitima por frame: el polipo genuinamente esta
+# o no visible en cada imagen. Para esa tabla solo se corrigen los intervalos
+# de confianza, remuestreando CASOS completos (los frames de un caso estan
+# fuertemente correlacionados entre si).
+# ---------------------------------------------------------------------------
+
+def case_key(row: Dict[str, Any]) -> Tuple[str, str]:
+    return (str(row.get("fold", "")), str(row.get("case", "")))
+
+
+def true_binary_label(row: Dict[str, Any]) -> Optional[str]:
+    label = infer_binary_label_from_caption(row.get("caption_gt"))
+    if label is None:
+        label = normalize_label(row.get("label"))
+    return label
+
+
+def majority_vote(values: Sequence[Optional[str]]) -> Optional[str]:
+    present = [value for value in values if value]
+    if not present:
+        return None
+    counts = Counter(present)
+    # Orden determinista: primero por frecuencia, luego alfabetico (desempate estable).
+    return sorted(counts.items(), key=lambda item: (-item[1], item[0]))[0][0]
+
+
+def aggregate_lesion(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """Consolida los ~76 frames de una lesion en UNA sola observacion.
+
+    Categoricas -> voto mayoritario; tamano -> mediana (robusta a outliers).
+    Solo se consideran los frames en los que el modelo predijo polipo: si el
+    modelo dice "no polyps" no hay atributos que comparar.
+    """
+    gt_caption = next((row.get("caption_gt") for row in rows if row.get("caption_gt")), "")
+
+    positive_rows = [
+        row for row in rows
+        if infer_binary_label_from_caption(row.get("generated_caption")) == "positive"
+    ]
+    n_frames = len(rows)
+    n_pred_positive = len(positive_rows)
+
+    pred_sizes = [extract_size(row.get("generated_caption")) for row in positive_rows]
+    pred_sizes = [size for size in pred_sizes if size is not None]
+
+    return {
+        "n_frames": n_frames,
+        "n_pred_positive": n_pred_positive,
+        "detected_any": n_pred_positive >= 1,
+        "detected_50pct": (n_pred_positive / n_frames) >= 0.5 if n_frames else False,
+        "gt_location": extract_attr(gt_caption, LOCATIONS),
+        "gt_morph": extract_attr(gt_caption, MORPH),
+        "gt_lesion": extract_lesion(gt_caption),
+        "gt_size": extract_size(gt_caption),
+        "pred_location": majority_vote([extract_attr(r.get("generated_caption"), LOCATIONS) for r in positive_rows]),
+        "pred_morph": majority_vote([extract_attr(r.get("generated_caption"), MORPH) for r in positive_rows]),
+        "pred_lesion": majority_vote([extract_lesion(r.get("generated_caption")) for r in positive_rows]),
+        "pred_size": median(pred_sizes) if pred_sizes else None,
+    }
+
+
+def lesion_level_metrics(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """Metricas de atributos con n = numero de LESIONES (no de frames)."""
+    by_case: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
+    for row in rows:
+        if true_binary_label(row) != "positive":
+            continue
+        by_case.setdefault(case_key(row), []).append(row)
+
+    lesions = [aggregate_lesion(case_rows) for case_rows in by_case.values()]
+    n_lesions = len(lesions)
+    if not n_lesions:
+        return {"n_lesions": 0}
+
+    detected = [lesion for lesion in lesions if lesion["detected_any"]]
+
+    def accuracy_over_detected(gt_key: str, pred_key: str) -> Tuple[float, int]:
+        pairs = [
+            (lesion[gt_key], lesion[pred_key])
+            for lesion in detected
+            if lesion[gt_key] is not None and lesion[pred_key] is not None
+        ]
+        if not pairs:
+            return 0.0, 0
+        correct = sum(1 for gt, pred in pairs if gt == pred)
+        return safe_div(correct, len(pairs)), len(pairs)
+
+    location_accuracy, location_support = accuracy_over_detected("gt_location", "pred_location")
+    paris_accuracy, paris_support = accuracy_over_detected("gt_morph", "pred_morph")
+    malignancy_accuracy, malignancy_support = accuracy_over_detected("gt_lesion", "pred_lesion")
+
+    size_errors = [
+        abs(lesion["gt_size"] - lesion["pred_size"])
+        for lesion in detected
+        if lesion["gt_size"] is not None and lesion["pred_size"] is not None
+    ]
+
+    return {
+        "n_lesions": n_lesions,
+        "n_detected_any": len(detected),
+        "n_detected_50pct": sum(1 for lesion in lesions if lesion["detected_50pct"]),
+        "lesion_detection_rate_any": safe_div(len(detected), n_lesions),
+        "lesion_detection_rate_50pct": safe_div(
+            sum(1 for lesion in lesions if lesion["detected_50pct"]), n_lesions
+        ),
+        "location_accuracy": location_accuracy,
+        "location_support": location_support,
+        "paris_accuracy": paris_accuracy,
+        "paris_support": paris_support,
+        "malignancy_accuracy": malignancy_accuracy,
+        "malignancy_support": malignancy_support,
+        "size_mae_mm": safe_div(sum(size_errors), len(size_errors)) if size_errors else 0.0,
+        "size_support": len(size_errors),
+        "mean_frames_per_lesion": safe_div(sum(l["n_frames"] for l in lesions), n_lesions),
+    }
+
+
+def bootstrap_ci_by_case(
+    rows: Sequence[Dict[str, Any]],
+    n_boot: int = 1000,
+    seed: int = 42,
+    alpha: float = 0.05,
+) -> Dict[str, Dict[str, float]]:
+    """IC de las metricas de deteccion remuestreando CASOS, no frames.
+
+    Los ~76 frames de un caso son vistas casi identicas de la misma lesion, asi
+    que no son observaciones independientes. Remuestrear frames sueltos daria
+    intervalos artificialmente estrechos; se remuestrean casos completos.
+    """
+    # Se precalculan las etiquetas una sola vez: el bootstrap solo cuenta.
+    by_case: Dict[Tuple[str, str], List[Tuple[bool, bool]]] = {}
+    for row in rows:
+        y_true = true_binary_label(row)
+        y_pred = infer_binary_label_from_caption(row.get("generated_caption"))
+        if y_true not in {"positive", "negative"} or y_pred not in {"positive", "negative"}:
+            continue
+        by_case.setdefault(case_key(row), []).append((y_true == "positive", y_pred == "positive"))
+
+    case_keys = list(by_case)
+    if not case_keys or n_boot <= 0:
+        return {}
+
+    rng = random.Random(seed)
+    samples: Dict[str, List[float]] = {name: [] for name in ("accuracy", "precision", "recall", "f1", "specificity")}
+
+    for _ in range(n_boot):
+        tp = tn = fp = fn = 0
+        for _ in case_keys:
+            for true_positive, pred_positive in by_case[rng.choice(case_keys)]:
+                if true_positive and pred_positive:
+                    tp += 1
+                elif (not true_positive) and (not pred_positive):
+                    tn += 1
+                elif (not true_positive) and pred_positive:
+                    fp += 1
+                else:
+                    fn += 1
+
+        precision = safe_div(tp, tp + fp)
+        recall = safe_div(tp, tp + fn)
+        samples["accuracy"].append(safe_div(tp + tn, tp + tn + fp + fn))
+        samples["precision"].append(precision)
+        samples["recall"].append(recall)
+        samples["f1"].append(safe_div(2 * precision * recall, precision + recall))
+        samples["specificity"].append(safe_div(tn, tn + fp))
+
+    def percentile(values: List[float], q: float) -> float:
+        ordered = sorted(values)
+        position = min(len(ordered) - 1, max(0, int(round(q * (len(ordered) - 1)))))
+        return ordered[position]
+
+    return {
+        name: {
+            "ci_low": percentile(values, alpha / 2),
+            "ci_high": percentile(values, 1 - alpha / 2),
+        }
+        for name, values in samples.items()
     }
 
 
@@ -504,6 +744,18 @@ def parse_args() -> argparse.Namespace:
         nargs="*",
         default=None,
         help="Optional subset of model folder names or canonical model names to evaluate.",
+    )
+    parser.add_argument(
+        "--bootstrap",
+        type=int,
+        default=1000,
+        help="Remuestreos bootstrap (por caso) para los IC de Tabla I. 0 = desactivar.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Semilla del bootstrap (reproducibilidad).",
     )
     return parser.parse_args()
 
@@ -529,12 +781,22 @@ def main() -> None:
 
     table_i_rows: List[Dict[str, Any]] = []
     table_ii_rows: List[Dict[str, Any]] = []
+    table_i_ci_rows: List[Dict[str, Any]] = []
+    table_ii_lesion_rows: List[Dict[str, Any]] = []
     summary: Dict[str, Any] = {"fold_root": fold_root.as_posix(), "models": []}
 
     for model_dir in model_dirs:
         result = evaluate_model(model_dir)
         if result is None:
             continue
+
+        rows = result.pop("_rows")
+
+        # --- Camino 1: atributos a nivel lesion + IC por caso para Tabla I ---
+        lesion = lesion_level_metrics(rows)
+        ci = bootstrap_ci_by_case(rows, n_boot=args.bootstrap, seed=args.seed)
+        result["lesion_level"] = lesion
+        result["binary_ci_by_case"] = ci
 
         summary["models"].append(result)
 
@@ -573,13 +835,44 @@ def main() -> None:
                 "paris_accuracy_std": report_std["paris_accuracy"],
                 "size_mae_mm": report["size_mae_mm"],
                 "size_mae_mm_std": report_std["size_mae_mm"],
+                # Solo tiene valores != 0 en modelos con fine-tuning de BBPS; el
+                # support dice cuantos frames traian la frase en GT y prediccion.
+                "bbps_mae": report["bbps_mae"],
+                "bbps_mae_std": report_std["bbps_mae"],
+                "bbps_support": report["supports"]["bbps_mae"],
             }
         )
+
+        if ci:
+            table_i_ci_rows.append(
+                {
+                    "model": result["model"],
+                    **{
+                        f"{metric}{suffix}": value
+                        for metric in ("accuracy", "precision", "recall", "f1", "specificity")
+                        for suffix, value in (
+                            ("", binary[metric]),
+                            ("_ci_low", ci[metric]["ci_low"]),
+                            ("_ci_high", ci[metric]["ci_high"]),
+                        )
+                    },
+                }
+            )
+
+        if lesion.get("n_lesions"):
+            table_ii_lesion_rows.append({"model": result["model"], **lesion})
 
         print(
             f"[{result['model']}] rows={result['num_rows']} folds={result['num_folds']} "
             f"accuracy={binary['accuracy']:.4f} bleu_1={report['bleu_1']:.4f}"
         )
+        if lesion.get("n_lesions"):
+            print(
+                f"    lesiones: n={lesion['n_lesions']} detectadas={lesion['n_detected_any']} "
+                f"({lesion['lesion_detection_rate_any']:.1%}) | "
+                f"size_mae={lesion['size_mae_mm']:.3f}mm (n={lesion['size_support']}) | "
+                f"loc={lesion['location_accuracy']:.3f} (n={lesion['location_support']})"
+            )
 
     table_i_path = fold_root / TABLE_I_FILENAME
     table_ii_path = fold_root / TABLE_II_FILENAME
@@ -617,13 +910,57 @@ def main() -> None:
             "paris_accuracy_std",
             "size_mae_mm",
             "size_mae_mm_std",
+            "bbps_mae",
+            "bbps_mae_std",
+            "bbps_support",
         ],
     )
+
+    table_i_ci_path = fold_root / TABLE_I_CI_FILENAME
+    if table_i_ci_rows:
+        write_csv(
+            table_i_ci_path,
+            table_i_ci_rows,
+            ["model"]
+            + [
+                f"{metric}{suffix}"
+                for metric in ("accuracy", "precision", "recall", "f1", "specificity")
+                for suffix in ("", "_ci_low", "_ci_high")
+            ],
+        )
+
+    table_ii_lesion_path = fold_root / TABLE_II_LESION_FILENAME
+    if table_ii_lesion_rows:
+        write_csv(
+            table_ii_lesion_path,
+            table_ii_lesion_rows,
+            [
+                "model",
+                "n_lesions",
+                "n_detected_any",
+                "lesion_detection_rate_any",
+                "n_detected_50pct",
+                "lesion_detection_rate_50pct",
+                "location_accuracy",
+                "location_support",
+                "paris_accuracy",
+                "paris_support",
+                "malignancy_accuracy",
+                "malignancy_support",
+                "size_mae_mm",
+                "size_support",
+                "mean_frames_per_lesion",
+            ],
+        )
 
     write_json(fold_root / "evaluate_fold_models_summary.json", summary)
 
     print(f"Table I written to: {table_i_path.as_posix()}")
     print(f"Table II written to: {table_ii_path.as_posix()}")
+    if table_i_ci_rows:
+        print(f"Table I (IC bootstrap por caso) written to: {table_i_ci_path.as_posix()}")
+    if table_ii_lesion_rows:
+        print(f"Table II (nivel lesion) written to: {table_ii_lesion_path.as_posix()}")
 
 
 if __name__ == "__main__":

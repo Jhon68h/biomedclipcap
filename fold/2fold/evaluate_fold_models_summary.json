@@ -51,6 +51,44 @@
         "location_accuracy": 0.013138595633490124,
         "paris_accuracy": 0.0008703301639589739,
         "size_mae_mm": 0.12236149384228079
+      },
+      "lesion_level": {
+        "n_lesions": 75,
+        "n_detected_any": 74,
+        "n_detected_50pct": 42,
+        "lesion_detection_rate_any": 0.9866666666666667,
+        "lesion_detection_rate_50pct": 0.56,
+        "location_accuracy": 0.28378378378378377,
+        "location_support": 74,
+        "paris_accuracy": 0.40540540540540543,
+        "paris_support": 74,
+        "malignancy_accuracy": 0.918918918918919,
+        "malignancy_support": 74,
+        "size_mae_mm": 3.27027027027027,
+        "size_support": 74,
+        "mean_frames_per_lesion": 76.0
+      },
+      "binary_ci_by_case": {
+        "accuracy": {
+          "ci_low": 0.6435406698564593,
+          "ci_high": 0.7781954887218046
+        },
+        "precision": {
+          "ci_low": 0.7633775159548355,
+          "ci_high": 0.9447963800904977
+        },
+        "recall": {
+          "ci_low": 0.4818213296398892,
+          "ci_high": 0.5929824561403508
+        },
+        "f1": {
+          "ci_low": 0.607942238267148,
+          "ci_high": 0.712822171896905
+        },
+        "specificity": {
+          "ci_low": 0.8567251461988304,
+          "ci_high": 0.9471177944862156
+        }
       }
     },
     {
@@ -103,6 +141,44 @@
         "location_accuracy": 0.02112140656543801,
         "paris_accuracy": 0.03706389907913453,
         "size_mae_mm": 0.13576453131583288
+      },
+      "lesion_level": {
+        "n_lesions": 75,
+        "n_detected_any": 75,
+        "n_detected_50pct": 41,
+        "lesion_detection_rate_any": 1.0,
+        "lesion_detection_rate_50pct": 0.5466666666666666,
+        "location_accuracy": 0.2,
+        "location_support": 75,
+        "paris_accuracy": 0.5333333333333333,
+        "paris_support": 75,
+        "malignancy_accuracy": 0.92,
+        "malignancy_support": 75,
+        "size_mae_mm": 2.88,
+        "size_support": 75,
+        "mean_frames_per_lesion": 76.0
+      },
+      "binary_ci_by_case": {
+        "accuracy": {
+          "ci_low": 0.612942862994061,
+          "ci_high": 0.7604355716878403
+        },
+        "precision": {
+          "ci_low": 0.656084656084656,
+          "ci_high": 0.9201388888888888
+        },
+        "recall": {
+          "ci_low": 0.48719298245614034,
+          "ci_high": 0.6059556786703602
+        },
+        "f1": {
+          "ci_low": 0.5849377123442808,
+          "ci_high": 0.7069314957438185
+        },
+        "specificity": {
+          "ci_low": 0.7514619883040936,
+          "ci_high": 0.9226120857699805
+        }
       }
     },
     {
@@ -155,6 +231,44 @@
         "location_accuracy": 0.029017079121645167,
         "paris_accuracy": 0.015450700007486717,
         "size_mae_mm": 0.18728128272632927
+      },
+      "lesion_level": {
+        "n_lesions": 75,
+        "n_detected_any": 75,
+        "n_detected_50pct": 45,
+        "lesion_detection_rate_any": 1.0,
+        "lesion_detection_rate_50pct": 0.6,
+        "location_accuracy": 0.22666666666666666,
+        "location_support": 75,
+        "paris_accuracy": 0.4666666666666667,
+        "paris_support": 75,
+        "malignancy_accuracy": 0.9333333333333333,
+        "malignancy_support": 75,
+        "size_mae_mm": 3.02,
+        "size_support": 75,
+        "mean_frames_per_lesion": 76.0
+      },
+      "binary_ci_by_case": {
+        "accuracy": {
+          "ci_low": 0.6271602513747054,
+          "ci_high": 0.7764611805757488
+        },
+        "precision": {
+          "ci_low": 0.6734649598611413,
+          "ci_high": 0.9321163719338277
+        },
+        "recall": {
+          "ci_low": 0.4987719298245614,
+          "ci_high": 0.6228070175438597
+        },
+        "f1": {
+          "ci_low": 0.5985126217659997,
+          "ci_high": 0.7202216066481995
+        },
+        "specificity": {
+          "ci_low": 0.7654970760233918,
+          "ci_high": 0.9292982456140351
+        }
       }
     }
   ]

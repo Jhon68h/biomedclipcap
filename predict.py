@@ -136,17 +136,27 @@ def generate_beam(
     entry_length: int = 67,
     temperature: float = 1.0,
     stop_token: str = ".",
+    stop_token_count: int = 1,
 ):
     """
     Generación con beam search. Devuelve lista de captions ordenados por score.
+
+    `stop_token_count` es cuántas veces tiene que aparecer `stop_token` antes de
+    cortar el beam. Con el valor por defecto (1) el comportamiento es el de
+    siempre: se corta en el primer punto. Hace falta subirlo a 2 para las captions
+    de dos frases del fine-tuning con BBPS ("...descending colon. Bowel preparation
+    score BBPS is 7/9."), porque si no la segunda frase -la del BBPS- nunca se
+    llega a generar. Ver reportes/finetuning_bbps_igho.md.
     """
     model.eval()
     stop_token_index = tokenizer.encode(stop_token)[0]
+    stop_token_count = max(1, int(stop_token_count))
     tokens = None
     scores = None
     device = next(model.parameters()).device
     seq_lengths = torch.ones(beam_size, device=device)
     is_stopped = torch.zeros(beam_size, device=device, dtype=torch.bool)
+    stop_counts = torch.zeros(beam_size, device=device)
 
     with torch.no_grad():
         if embed is not None:
@@ -190,12 +200,14 @@ def generate_beam(
                 generated = generated[next_tokens_source]
                 scores = scores_sum_average * seq_lengths
                 is_stopped = is_stopped[next_tokens_source]
+                stop_counts = stop_counts[next_tokens_source]
 
             next_token_embed = model.gpt.transformer.wte(
                 next_tokens.squeeze()
             ).view(generated.shape[0], 1, -1)
             generated = torch.cat((generated, next_token_embed), dim=1)
-            is_stopped = is_stopped + next_tokens.eq(stop_token_index).squeeze()
+            stop_counts = stop_counts + next_tokens.eq(stop_token_index).squeeze().float()
+            is_stopped = stop_counts >= stop_token_count
             if is_stopped.all():
                 break
 
@@ -210,6 +222,133 @@ def generate_beam(
     return output_texts
 
 
+def _reorder_kv_cache(past_key_values, index: T):
+    """Reordena el KV-cache para que cada fila siga al beam del que desciende.
+
+    `past_key_values` es una tupla de 12 capas, cada una con (key, value) de forma
+    [filas, cabezas, longitud, dim]. En cada paso del beam search las ramas se
+    reordenan (un beam puede descender de otro), y el cache tiene que seguir
+    exactamente ese mismo reordenamiento: si no, cada fila continuaria generando
+    sobre el historial de atencion equivocado, en silencio y sin error.
+    """
+    return tuple(
+        tuple(tensor.index_select(0, index) for tensor in layer)
+        for layer in past_key_values
+    )
+
+
+@torch.no_grad()
+def generate_beam_batched(
+    model: ClipCaptionModel,
+    tokenizer: GPT2Tokenizer,
+    embed: T,
+    beam_size: int = 5,
+    entry_length: int = 67,
+    temperature: float = 1.0,
+    stop_token: str = ".",
+    stop_token_count: int = 1,
+) -> List[str]:
+    """Beam search sobre un lote de prefijos, reutilizando el KV-cache de GPT-2.
+
+    Equivale a llamar `generate_beam()` una vez por imagen y quedarse con el mejor
+    caption (`[0]`), pero procesa las B imagenes a la vez y evita re-procesar la
+    secuencia completa en cada paso. Con captions de ~17 tokens eso baja de ~333
+    posiciones-token por imagen a ~27, y sobre todo amortiza entre B imagenes el
+    costo fijo por paso (leer los pesos de GPT-2 + lanzar los kernels de las 12
+    capas), que es lo que realmente domina el tiempo con batch de una sola imagen.
+
+    embed: [B, prefix_length, D], prefijos ya proyectados por `clip_project`.
+    Devuelve B captions, el mejor beam de cada imagen, en el orden de entrada.
+    """
+    model.eval()
+    device = embed.device
+    batch_size = embed.shape[0]
+    stop_token_index = tokenizer.encode(stop_token)[0]
+    stop_token_count = max(1, int(stop_token_count))
+    rows = batch_size * beam_size
+    temperature = temperature if temperature > 0 else 1.0
+
+    # Paso 0: el prefijo se procesa una sola vez por imagen (aun sin beams).
+    outputs = model.gpt(inputs_embeds=embed, use_cache=True, return_dict=True)
+    logits = (outputs.logits[:, -1, :] / temperature).softmax(-1).log()
+    vocab_size = logits.shape[-1]
+
+    scores, next_tokens = logits.topk(beam_size, -1)  # [B, beam]
+    tokens = next_tokens.unsqueeze(-1)                # [B, beam, 1]
+
+    # El cache del prefijo es comun a las beam_size ramas de cada imagen: se
+    # replica para que las filas queden ordenadas como imagen*beam_size + beam.
+    past = _reorder_kv_cache(
+        outputs.past_key_values,
+        torch.arange(batch_size, device=device).repeat_interleave(beam_size),
+    )
+
+    seq_lengths = torch.ones(batch_size, beam_size, device=device)
+    stop_counts = next_tokens.eq(stop_token_index).float()
+    is_stopped = stop_counts >= stop_token_count
+    batch_index = (
+        torch.arange(batch_size, device=device).unsqueeze(1).expand(batch_size, beam_size)
+    )
+
+    for _ in range(entry_length - 1):
+        if bool(is_stopped.all()):
+            break
+
+        token_embed = model.gpt.transformer.wte(next_tokens.reshape(rows)).unsqueeze(1)
+        outputs = model.gpt(
+            inputs_embeds=token_embed,
+            past_key_values=past,
+            use_cache=True,
+            return_dict=True,
+        )
+        past = outputs.past_key_values
+        logits = (outputs.logits[:, -1, :] / temperature).softmax(-1).log()
+
+        # Un beam ya cerrado no debe seguir acumulando score: se lo obliga a
+        # repetir el token 0 con delta 0 (mismo criterio que generate_beam).
+        # El enmascarado se hace con los logits todavia en 2-D [filas, vocab]:
+        # combinar una mascara 2-D con un indice entero sobre un tensor 3-D es
+        # un IndexError en torch, no un broadcast.
+        flat_stopped = is_stopped.reshape(rows)
+        logits[flat_stopped] = -float(np.inf)
+        logits[flat_stopped, 0] = 0
+
+        logits = logits.view(batch_size, beam_size, vocab_size)
+        scores_sum = scores.unsqueeze(-1) + logits
+        seq_lengths = seq_lengths + (~is_stopped).float()
+        scores_sum_average = scores_sum / seq_lengths.unsqueeze(-1)
+
+        scores_sum_average, flat_next = scores_sum_average.view(batch_size, -1).topk(
+            beam_size, -1
+        )
+        beam_source = torch.div(flat_next, vocab_size, rounding_mode="floor")  # [B, beam]
+        next_tokens = flat_next % vocab_size                                   # [B, beam]
+
+        seq_lengths = seq_lengths[batch_index, beam_source]
+        tokens = tokens[batch_index, beam_source]
+        tokens = torch.cat((tokens, next_tokens.unsqueeze(-1)), dim=-1)
+        scores = scores_sum_average * seq_lengths
+        is_stopped = is_stopped[batch_index, beam_source]
+        stop_counts = stop_counts[batch_index, beam_source]
+        past = _reorder_kv_cache(
+            past, (batch_index * beam_size + beam_source).reshape(rows)
+        )
+
+        stop_counts = stop_counts + next_tokens.eq(stop_token_index).float()
+        is_stopped = stop_counts >= stop_token_count
+
+    scores = scores / seq_lengths
+    best_beam = scores.argmax(dim=-1)  # [B]
+
+    tokens_cpu = tokens.cpu().numpy()
+    lengths_cpu = seq_lengths.cpu().numpy()
+    best_cpu = best_beam.cpu().numpy()
+    return [
+        tokenizer.decode(tokens_cpu[i, best][: int(lengths_cpu[i, best])])
+        for i, best in enumerate(best_cpu)
+    ]
+
+
 def generate2(
     model: ClipCaptionModel,
     tokenizer: GPT2Tokenizer,
@@ -221,13 +360,18 @@ def generate2(
     top_p: float = 0.8,
     temperature: float = 1.0,
     stop_token: str = ".",
+    stop_token_count: int = 1,
 ) -> str:
     """
     Generación por nucleus sampling (top-p). Devuelve un solo caption (string).
+
+    `stop_token_count`: ver la nota en generate_beam. Con captions de dos frases
+    (reporte + BBPS) hay que pasar 2.
     """
     model.eval()
     generated_list = []
     stop_token_index = tokenizer.encode(stop_token)[0]
+    stop_token_count = max(1, int(stop_token_count))
     filter_value = -float("Inf")
     device = next(model.parameters()).device
 
@@ -243,6 +387,7 @@ def generate2(
                 generated = model.gpt.transformer.wte(tokens)
 
             cur_tokens = tokens
+            seen_stops = 0
 
             for _ in range(entry_length):
                 outputs = model.gpt(inputs_embeds=generated)
@@ -270,7 +415,9 @@ def generate2(
                 generated = torch.cat((generated, next_token_embed), dim=1)
 
                 if stop_token_index == next_token.item():
-                    break
+                    seen_stops += 1
+                    if seen_stops >= stop_token_count:
+                        break
 
             output_list = list(cur_tokens.squeeze().cpu().numpy())
             output_text = tokenizer.decode(output_list)

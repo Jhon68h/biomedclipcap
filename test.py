@@ -18,7 +18,10 @@ import clip
 
 # Tu repo
 from train import ClipCaptionPrefix, MappingType
-from predict import generate2, generate_beam
+from predict import generate2, generate_beam, generate_beam_batched
+
+# Pesos de CLIP (ViT-B-32.pt, RN101.pt); clip.load solo descarga si no estan aqui.
+CLIP_WEIGHTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "clip_weights")
 
 
 def iter_images(root_dir: str):
@@ -39,7 +42,7 @@ def load_openai_clip(device: torch.device, model_name: str) -> Tuple[torch.nn.Mo
     Devuelve: (model, preprocess, embed_dim)
     """
     print(f"[INFO] Cargando OpenAI CLIP: {model_name} ...")
-    model, preprocess = clip.load(model_name, device=device, jit=False)
+    model, preprocess = clip.load(model_name, device=device, jit=False, download_root=CLIP_WEIGHTS_DIR)
     model.eval()
 
     # inferir dim haciendo una pasada dummy
@@ -268,11 +271,41 @@ def main():
     # Opcional: forzar prefix_size si ya sabes (si no, se infiere del encoder)
     parser.add_argument("--prefix_size", type=int, default=0)
 
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=32,
+        help=(
+            "Cantidad de imagenes procesadas por lote, tanto en el encoder CLIP como "
+            "en la generacion con beam search (ver --legacy_generation)."
+        ),
+    )
+    parser.add_argument(
+        "--legacy_generation",
+        action="store_true",
+        help=(
+            "Genera imagen por imagen con generate_beam() en vez del beam search en "
+            "lote con KV-cache. Mucho mas lento; sirve para comparar contra el "
+            "comportamiento historico."
+        ),
+    )
+
     # params de generación
     parser.add_argument("--entry_length", type=int, default=67)
     parser.add_argument("--top_p", type=float, default=0.8)
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--stop_token", type=str, default=".")
+    parser.add_argument(
+        "--stop_token_count",
+        type=int,
+        default=1,
+        help=(
+            "Cuantos --stop_token debe emitir el modelo antes de cortar. 1 = caption de "
+            "una frase (comportamiento historico). Usa 2 para los modelos con BBPS, cuya "
+            "caption son dos frases: el reporte y 'Bowel preparation score BBPS is N/9.'; "
+            "con 1 la frase del BBPS nunca se genera."
+        ),
+    )
 
     args = parser.parse_args()
 
@@ -337,43 +370,82 @@ def main():
     print(f"[INFO] Imágenes encontradas: {len(image_paths)}")
 
     rows = []
-    for img_path in tqdm(image_paths, desc="Generando captions"):
-        try:
-            image = Image.open(img_path).convert("RGB")
-        except Exception as e:
-            print(f"[WARN] No se pudo abrir {img_path}: {e}")
-            continue
+    batch_size = max(1, args.batch_size)
+    with tqdm(total=len(image_paths), desc="Generando captions") as pbar:
+        for batch_start in range(0, len(image_paths), batch_size):
+            batch_paths = image_paths[batch_start : batch_start + batch_size]
 
-        image_input = preprocess(image).unsqueeze(0).to(device)
+            valid_paths = []
+            tensors = []
+            for img_path in batch_paths:
+                try:
+                    image = Image.open(img_path).convert("RGB")
+                except Exception as e:
+                    print(f"[WARN] No se pudo abrir {img_path}: {e}")
+                    pbar.update(1)
+                    continue
+                tensors.append(preprocess(image))
+                valid_paths.append(img_path)
 
-        # 5) embedding + prefix
-        clip_embed = encode_image_to_embedding(args.encoder, clip_model, image_input)
-        with torch.no_grad():
-            prefix_embed = mapper.clip_project(clip_embed).view(1, args.prefix_length, -1)
+            if not tensors:
+                continue
 
-        # 6) generación
-        if args.beam_search:
-            caption = generate_beam(
-                mapper,
-                tokenizer,
-                embed=prefix_embed,
-                entry_length=args.entry_length,
-            )[0]
-        else:
-            # FIX para evitar cur_tokens=None dentro de generate2()
-            caption = generate2(
-                mapper,
-                tokenizer,
-                prompt=" ",
-                embed=prefix_embed,
-                entry_count=1,
-                entry_length=args.entry_length,
-                top_p=args.top_p,
-                temperature=args.temperature,
-                stop_token=args.stop_token,
-            )
+            image_batch = torch.stack(tensors).to(device)
 
-        rows.append({"image_path": img_path, "generated_caption": caption})
+            # 5) embedding + prefix, codificados en lote
+            clip_embed = encode_image_to_embedding(args.encoder, clip_model, image_batch)
+            with torch.no_grad():
+                prefix_embed_batch = mapper.clip_project(clip_embed).view(
+                    len(valid_paths), args.prefix_length, -1
+                )
+
+            # 6) generación en lote (beam search con KV-cache)
+            if args.beam_search and not args.legacy_generation:
+                captions = generate_beam_batched(
+                    mapper,
+                    tokenizer,
+                    embed=prefix_embed_batch,
+                    entry_length=args.entry_length,
+                    temperature=args.temperature,
+                    stop_token=args.stop_token,
+                    stop_token_count=args.stop_token_count,
+                )
+                for img_path, caption in zip(valid_paths, captions):
+                    rows.append({"image_path": img_path, "generated_caption": caption})
+                pbar.update(len(valid_paths))
+                continue
+
+            # 6-bis) camino historico: imagen por imagen dentro del lote
+            for i, img_path in enumerate(valid_paths):
+                prefix_embed = prefix_embed_batch[i : i + 1]
+
+                if args.beam_search:
+                    caption = generate_beam(
+                        mapper,
+                        tokenizer,
+                        embed=prefix_embed,
+                        entry_length=args.entry_length,
+                        temperature=args.temperature,
+                        stop_token=args.stop_token,
+                        stop_token_count=args.stop_token_count,
+                    )[0]
+                else:
+                    # FIX para evitar cur_tokens=None dentro de generate2()
+                    caption = generate2(
+                        mapper,
+                        tokenizer,
+                        prompt=" ",
+                        embed=prefix_embed,
+                        entry_count=1,
+                        entry_length=args.entry_length,
+                        top_p=args.top_p,
+                        temperature=args.temperature,
+                        stop_token=args.stop_token,
+                        stop_token_count=args.stop_token_count,
+                    )
+
+                rows.append({"image_path": img_path, "generated_caption": caption})
+                pbar.update(1)
 
     # 7) Guardar CSV
     out_dir = os.path.dirname(args.output_csv)

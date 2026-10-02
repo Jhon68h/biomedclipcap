@@ -1,0 +1,32 @@
+{
+  "generated_at_utc": "2026-08-15T03:12:52.867321+00:00",
+  "mode": "revalidation_only",
+  "model": "vit",
+  "requested_model": "vit",
+  "output_subdir": "vit",
+  "source_root": "fold/2fold",
+  "checkpoint_policy": "best",
+  "checkpoint_epoch": null,
+  "folds": [
+    {
+      "model": "vit",
+      "subdir": "vit",
+      "fold": "fold_1",
+      "epoch": 1,
+      "val_loss": 0.14377696206322496,
+      "checkpoint": "fold/2fold/vit/folds/fold_1/train/positive_vs_negative_fold_1-001.pt",
+      "val_predictions_csv": "fold/2fold_best/vit/folds/fold_1/inference/val_predictions.csv",
+      "merged_rows": 5738
+    },
+    {
+      "model": "vit",
+      "subdir": "vit",
+      "fold": "fold_2",
+      "epoch": 2,
+      "val_loss": 0.16371148283333797,
+      "checkpoint": "fold/2fold/vit/folds/fold_2/train/positive_vs_negative_fold_2-002.pt",
+      "val_predictions_csv": "fold/2fold_best/vit/folds/fold_2/inference/val_predictions.csv",
+      "merged_rows": 5662
+    }
+  ]
+}

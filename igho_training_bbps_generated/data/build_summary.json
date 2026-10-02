@@ -1,0 +1,1038 @@
+{
+  "gt_csv": "/workspace/igho/igho_dataset_copia.csv",
+  "frames_root": "/frames",
+  "output_root": "/workspace/igho_training",
+  "scanned_filesystem": true,
+  "params": {
+    "cap_per_lesion": 200,
+    "negative_ratio": 1.0,
+    "negative_alloc": "proportional",
+    "negative_margin": 300,
+    "overlap_rule": "first_wins",
+    "annotation_fps": 60.0
+  },
+  "fps_rescaling": [
+    {
+      "video_id": "2025-05-28_110348_321",
+      "lesion_id": "2025-05-28_110348_321#L1",
+      "video_fps": 18.19,
+      "factor": 0.3031666666666667,
+      "range_csv": [
+        17040,
+        52440
+      ],
+      "range_reescalado": [
+        5166,
+        15898
+      ]
+    },
+    {
+      "video_id": "2025-05-30_102030_811",
+      "lesion_id": "2025-05-30_102030_811#L1",
+      "video_fps": 20.0,
+      "factor": 0.3333333333333333,
+      "range_csv": [
+        19320,
+        27900
+      ],
+      "range_reescalado": [
+        6440,
+        9300
+      ]
+    },
+    {
+      "video_id": "2025-12-01_080328_674",
+      "lesion_id": "2025-12-01_080328_674#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        12960,
+        19380
+      ],
+      "range_reescalado": [
+        6480,
+        9690
+      ]
+    },
+    {
+      "video_id": "2025-12-01_101553_631",
+      "lesion_id": "2025-12-01_101553_631#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        26460,
+        28140
+      ],
+      "range_reescalado": [
+        13230,
+        14070
+      ]
+    },
+    {
+      "video_id": "2025-12-01_133935_383",
+      "lesion_id": "2025-12-01_133935_383#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        10140,
+        38400
+      ],
+      "range_reescalado": [
+        5070,
+        19200
+      ]
+    },
+    {
+      "video_id": "2025-12-01_141231_211",
+      "lesion_id": "2025-12-01_141231_211#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        9660,
+        10860
+      ],
+      "range_reescalado": [
+        4830,
+        5430
+      ]
+    },
+    {
+      "video_id": "2025-12-01_141231_211",
+      "lesion_id": "2025-12-01_141231_211#L2",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        13980,
+        14100
+      ],
+      "range_reescalado": [
+        6990,
+        7050
+      ]
+    },
+    {
+      "video_id": "2026-05-25-225167",
+      "lesion_id": "2026-05-25-225167#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        21540,
+        22980
+      ],
+      "range_reescalado": [
+        10770,
+        11490
+      ]
+    },
+    {
+      "video_id": "2026-05-26-225252",
+      "lesion_id": "2026-05-26-225252#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        8820,
+        14100
+      ],
+      "range_reescalado": [
+        4410,
+        7050
+      ]
+    },
+    {
+      "video_id": "2026-05-26-225252",
+      "lesion_id": "2026-05-26-225252#L2",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        15840,
+        18000
+      ],
+      "range_reescalado": [
+        7920,
+        9000
+      ]
+    },
+    {
+      "video_id": "2026-05-26-225252",
+      "lesion_id": "2026-05-26-225252#L3",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        20160,
+        23040
+      ],
+      "range_reescalado": [
+        10080,
+        11520
+      ]
+    },
+    {
+      "video_id": "2026-06-10_102045_991",
+      "lesion_id": "2026-06-10_102045_991#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        16620,
+        18540
+      ],
+      "range_reescalado": [
+        8310,
+        9270
+      ]
+    },
+    {
+      "video_id": "2026-06-10_102045_991",
+      "lesion_id": "2026-06-10_102045_991#L2",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        19920,
+        23520
+      ],
+      "range_reescalado": [
+        9960,
+        11760
+      ]
+    },
+    {
+      "video_id": "2026-06-18_051044_453",
+      "lesion_id": "2026-06-18_051044_453#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        16080,
+        18780
+      ],
+      "range_reescalado": [
+        8040,
+        9390
+      ]
+    },
+    {
+      "video_id": "2026-06-18_051044_453",
+      "lesion_id": "2026-06-18_051044_453#L2",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        32280,
+        35280
+      ],
+      "range_reescalado": [
+        16140,
+        17640
+      ]
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        12480,
+        19560
+      ],
+      "range_reescalado": [
+        6240,
+        9780
+      ]
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L2",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        20520,
+        20640
+      ],
+      "range_reescalado": [
+        10260,
+        10320
+      ]
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L3",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        20700,
+        20940
+      ],
+      "range_reescalado": [
+        10350,
+        10470
+      ]
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L4",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        33240,
+        36360
+      ],
+      "range_reescalado": [
+        16620,
+        18180
+      ]
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L5",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        40200,
+        40920
+      ],
+      "range_reescalado": [
+        20100,
+        20460
+      ]
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L6",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        41640,
+        41700
+      ],
+      "range_reescalado": [
+        20820,
+        20850
+      ]
+    },
+    {
+      "video_id": "2026-05-29_090258_759",
+      "lesion_id": "2026-05-29_090258_759#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        28800,
+        28860
+      ],
+      "range_reescalado": [
+        14400,
+        14430
+      ]
+    },
+    {
+      "video_id": "2026-05-29_090258_759",
+      "lesion_id": "2026-05-29_090258_759#L2",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        29640,
+        30240
+      ],
+      "range_reescalado": [
+        14820,
+        15120
+      ]
+    },
+    {
+      "video_id": "2026-06-11_080700_093",
+      "lesion_id": "2026-06-11_080700_093#L1",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        6900,
+        7740
+      ],
+      "range_reescalado": [
+        3450,
+        3870
+      ]
+    },
+    {
+      "video_id": "2026-06-11_080700_093",
+      "lesion_id": "2026-06-11_080700_093#L2",
+      "video_fps": 30.0,
+      "factor": 0.5,
+      "range_csv": [
+        25980,
+        29460
+      ],
+      "range_reescalado": [
+        12990,
+        14730
+      ]
+    }
+  ],
+  "totals": {
+    "videos": 15,
+    "lesions": 27,
+    "positives": 4474,
+    "negatives": 4474,
+    "negative_budget_requested": 4474,
+    "negatives_dropped_by_margin": 14097,
+    "samples": 8948
+  },
+  "caption_format": {
+    "positive": "{report} {report_bbps}.",
+    "negative": "This is a colonoscopy frame from a patient with no polyps. {report_bbps}.",
+    "sentences_per_caption": 2,
+    "nota": "test.py necesita --stop_token_count 2 o el beam search corta antes del BBPS."
+  },
+  "bbps_baseline": {
+    "constant_prediction": 7,
+    "mae": 1.3333333333333333,
+    "n_videos": 15,
+    "nota": "Cualquier bbps_mae del modelo debe quedar por debajo de este numero (3.8)."
+  },
+  "bbps_distribution": {
+    "2": [
+      "2025-05-28_110348_321"
+    ],
+    "3": [
+      "2026-05-26-225252"
+    ],
+    "4": [
+      "2026-06-01_101053_265"
+    ],
+    "5": [
+      "2025-12-01_133935_383",
+      "2026-06-11_080700_093"
+    ],
+    "6": [
+      "2025-05-30_102030_811",
+      "2025-12-01_080328_674"
+    ],
+    "7": [
+      "2025-03-17_094605_719",
+      "2025-12-01_141231_211",
+      "2026-05-25-225167",
+      "2026-05-29_090258_759",
+      "2026-06-10_102045_991",
+      "2026-06-18_051044_453"
+    ],
+    "8": [
+      "2025-05-16_093014_695",
+      "2025-12-01_101553_631"
+    ]
+  },
+  "empty_videos": [],
+  "empty_lesions": [
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L5",
+      "range": [
+        20100,
+        20460
+      ],
+      "frames_expected": 361,
+      "last_frame_on_disk": 19284
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L6",
+      "range": [
+        20820,
+        20850
+      ],
+      "frames_expected": 31,
+      "last_frame_on_disk": 19284
+    }
+  ],
+  "lesions_with_truncated_range": [
+    {
+      "video_id": "2025-03-17_094605_719",
+      "lesion_id": "2025-03-17_094605_719#L1",
+      "range": [
+        68820,
+        81120
+      ],
+      "frames_expected": 12301,
+      "frames_on_disk": 12297
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L5",
+      "range": [
+        20100,
+        20460
+      ],
+      "frames_expected": 361,
+      "frames_on_disk": 0
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "lesion_id": "2026-06-01_101053_265#L6",
+      "range": [
+        20820,
+        20850
+      ],
+      "frames_expected": 31,
+      "frames_on_disk": 0
+    }
+  ],
+  "overlaps": [],
+  "folds": [
+    {
+      "fold": "fold_1",
+      "train_group": "A",
+      "val_group": "B",
+      "train_videos": [
+        "2025-03-17_094605_719",
+        "2025-05-16_093014_695",
+        "2025-05-28_110348_321",
+        "2025-05-30_102030_811",
+        "2025-12-01_133935_383",
+        "2026-06-01_101053_265",
+        "2026-06-10_102045_991",
+        "2026-06-18_051044_453"
+      ],
+      "val_videos": [
+        "2025-12-01_080328_674",
+        "2025-12-01_101553_631",
+        "2025-12-01_141231_211",
+        "2026-05-25-225167",
+        "2026-05-26-225252",
+        "2026-05-29_090258_759",
+        "2026-06-11_080700_093"
+      ],
+      "train_samples": 4764,
+      "val_samples": 4184,
+      "train_positives": 2382,
+      "train_negatives": 2382,
+      "val_positives": 2092,
+      "val_negatives": 2092,
+      "bbps_in_train": [
+        2,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "val_videos_with_bbps_unseen_in_train": [
+        {
+          "video_id": "2026-05-26-225252",
+          "bbps": 3
+        }
+      ],
+      "val_manifest": "/workspace/igho_training/folds/fold_1/inference/val_manifest.csv",
+      "val_images_dir": "/workspace/igho_training/folds/fold_1/inference/val_images"
+    },
+    {
+      "fold": "fold_2",
+      "train_group": "B",
+      "val_group": "A",
+      "train_videos": [
+        "2025-12-01_080328_674",
+        "2025-12-01_101553_631",
+        "2025-12-01_141231_211",
+        "2026-05-25-225167",
+        "2026-05-26-225252",
+        "2026-05-29_090258_759",
+        "2026-06-11_080700_093"
+      ],
+      "val_videos": [
+        "2025-03-17_094605_719",
+        "2025-05-16_093014_695",
+        "2025-05-28_110348_321",
+        "2025-05-30_102030_811",
+        "2025-12-01_133935_383",
+        "2026-06-01_101053_265",
+        "2026-06-10_102045_991",
+        "2026-06-18_051044_453"
+      ],
+      "train_samples": 4184,
+      "val_samples": 4764,
+      "train_positives": 2092,
+      "train_negatives": 2092,
+      "val_positives": 2382,
+      "val_negatives": 2382,
+      "bbps_in_train": [
+        3,
+        5,
+        6,
+        7,
+        8
+      ],
+      "val_videos_with_bbps_unseen_in_train": [
+        {
+          "video_id": "2025-05-28_110348_321",
+          "bbps": 2
+        },
+        {
+          "video_id": "2026-06-01_101053_265",
+          "bbps": 4
+        }
+      ],
+      "val_manifest": "/workspace/igho_training/folds/fold_2/inference/val_manifest.csv",
+      "val_images_dir": "/workspace/igho_training/folds/fold_2/inference/val_images"
+    }
+  ],
+  "videos": [
+    {
+      "video_id": "2025-03-17_094605_719",
+      "bbps": 7,
+      "fold_group": "A",
+      "n_lesions": 1,
+      "frames_on_disk": 102469,
+      "positives_selected": 200,
+      "negatives_available": 89572,
+      "negatives_dropped_by_margin": 600,
+      "lesions": [
+        {
+          "lesion_id": "2025-03-17_094605_719#L1",
+          "range": [
+            68820,
+            81120
+          ],
+          "frames_in_range_arithmetic": 12301,
+          "frames_in_range_on_disk": 12297,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 200
+    },
+    {
+      "video_id": "2025-05-16_093014_695",
+      "bbps": 8,
+      "fold_group": "A",
+      "n_lesions": 1,
+      "frames_on_disk": 48415,
+      "positives_selected": 200,
+      "negatives_available": 44574,
+      "negatives_dropped_by_margin": 600,
+      "lesions": [
+        {
+          "lesion_id": "2025-05-16_093014_695#L1",
+          "range": [
+            30600,
+            33840
+          ],
+          "frames_in_range_arithmetic": 3241,
+          "frames_in_range_on_disk": 3241,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 200
+    },
+    {
+      "video_id": "2025-05-28_110348_321",
+      "bbps": 2,
+      "fold_group": "A",
+      "n_lesions": 1,
+      "frames_on_disk": 17990,
+      "positives_selected": 200,
+      "negatives_available": 6657,
+      "negatives_dropped_by_margin": 600,
+      "lesions": [
+        {
+          "lesion_id": "2025-05-28_110348_321#L1",
+          "range": [
+            5166,
+            15898
+          ],
+          "frames_in_range_arithmetic": 10733,
+          "frames_in_range_on_disk": 10733,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 200
+    },
+    {
+      "video_id": "2025-05-30_102030_811",
+      "bbps": 6,
+      "fold_group": "A",
+      "n_lesions": 1,
+      "frames_on_disk": 12534,
+      "positives_selected": 200,
+      "negatives_available": 9073,
+      "negatives_dropped_by_margin": 600,
+      "lesions": [
+        {
+          "lesion_id": "2025-05-30_102030_811#L1",
+          "range": [
+            6440,
+            9300
+          ],
+          "frames_in_range_arithmetic": 2861,
+          "frames_in_range_on_disk": 2861,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 200
+    },
+    {
+      "video_id": "2025-12-01_080328_674",
+      "bbps": 6,
+      "fold_group": "B",
+      "n_lesions": 1,
+      "frames_on_disk": 14668,
+      "positives_selected": 200,
+      "negatives_available": 10857,
+      "negatives_dropped_by_margin": 600,
+      "lesions": [
+        {
+          "lesion_id": "2025-12-01_080328_674#L1",
+          "range": [
+            6480,
+            9690
+          ],
+          "frames_in_range_arithmetic": 3211,
+          "frames_in_range_on_disk": 3211,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 200
+    },
+    {
+      "video_id": "2025-12-01_101553_631",
+      "bbps": 8,
+      "fold_group": "B",
+      "n_lesions": 1,
+      "frames_on_disk": 15793,
+      "positives_selected": 200,
+      "negatives_available": 14352,
+      "negatives_dropped_by_margin": 600,
+      "lesions": [
+        {
+          "lesion_id": "2025-12-01_101553_631#L1",
+          "range": [
+            13230,
+            14070
+          ],
+          "frames_in_range_arithmetic": 841,
+          "frames_in_range_on_disk": 841,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 200
+    },
+    {
+      "video_id": "2025-12-01_133935_383",
+      "bbps": 5,
+      "fold_group": "A",
+      "n_lesions": 1,
+      "frames_on_disk": 26978,
+      "positives_selected": 200,
+      "negatives_available": 12247,
+      "negatives_dropped_by_margin": 600,
+      "lesions": [
+        {
+          "lesion_id": "2025-12-01_133935_383#L1",
+          "range": [
+            5070,
+            19200
+          ],
+          "frames_in_range_arithmetic": 14131,
+          "frames_in_range_on_disk": 14131,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 200
+    },
+    {
+      "video_id": "2025-12-01_141231_211",
+      "bbps": 7,
+      "fold_group": "B",
+      "n_lesions": 2,
+      "frames_on_disk": 27003,
+      "positives_selected": 261,
+      "negatives_available": 25141,
+      "negatives_dropped_by_margin": 1200,
+      "lesions": [
+        {
+          "lesion_id": "2025-12-01_141231_211#L1",
+          "range": [
+            4830,
+            5430
+          ],
+          "frames_in_range_arithmetic": 601,
+          "frames_in_range_on_disk": 601,
+          "frames_selected": 200
+        },
+        {
+          "lesion_id": "2025-12-01_141231_211#L2",
+          "range": [
+            6990,
+            7050
+          ],
+          "frames_in_range_arithmetic": 61,
+          "frames_in_range_on_disk": 61,
+          "frames_selected": 61
+        }
+      ],
+      "negatives_selected": 261
+    },
+    {
+      "video_id": "2026-05-25-225167",
+      "bbps": 7,
+      "fold_group": "B",
+      "n_lesions": 1,
+      "frames_on_disk": 19056,
+      "positives_selected": 200,
+      "negatives_available": 17735,
+      "negatives_dropped_by_margin": 600,
+      "lesions": [
+        {
+          "lesion_id": "2026-05-25-225167#L1",
+          "range": [
+            10770,
+            11490
+          ],
+          "frames_in_range_arithmetic": 721,
+          "frames_in_range_on_disk": 721,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 200
+    },
+    {
+      "video_id": "2026-05-26-225252",
+      "bbps": 3,
+      "fold_group": "B",
+      "n_lesions": 3,
+      "frames_on_disk": 13742,
+      "positives_selected": 600,
+      "negatives_available": 6779,
+      "negatives_dropped_by_margin": 1800,
+      "lesions": [
+        {
+          "lesion_id": "2026-05-26-225252#L1",
+          "range": [
+            4410,
+            7050
+          ],
+          "frames_in_range_arithmetic": 2641,
+          "frames_in_range_on_disk": 2641,
+          "frames_selected": 200
+        },
+        {
+          "lesion_id": "2026-05-26-225252#L2",
+          "range": [
+            7920,
+            9000
+          ],
+          "frames_in_range_arithmetic": 1081,
+          "frames_in_range_on_disk": 1081,
+          "frames_selected": 200
+        },
+        {
+          "lesion_id": "2026-05-26-225252#L3",
+          "range": [
+            10080,
+            11520
+          ],
+          "frames_in_range_arithmetic": 1441,
+          "frames_in_range_on_disk": 1441,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 600
+    },
+    {
+      "video_id": "2026-06-10_102045_991",
+      "bbps": 7,
+      "fold_group": "A",
+      "n_lesions": 2,
+      "frames_on_disk": 18686,
+      "positives_selected": 400,
+      "negatives_available": 14724,
+      "negatives_dropped_by_margin": 1200,
+      "lesions": [
+        {
+          "lesion_id": "2026-06-10_102045_991#L1",
+          "range": [
+            8310,
+            9270
+          ],
+          "frames_in_range_arithmetic": 961,
+          "frames_in_range_on_disk": 961,
+          "frames_selected": 200
+        },
+        {
+          "lesion_id": "2026-06-10_102045_991#L2",
+          "range": [
+            9960,
+            11760
+          ],
+          "frames_in_range_arithmetic": 1801,
+          "frames_in_range_on_disk": 1801,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 400
+    },
+    {
+      "video_id": "2026-06-18_051044_453",
+      "bbps": 7,
+      "fold_group": "A",
+      "n_lesions": 2,
+      "frames_on_disk": 27006,
+      "positives_selected": 400,
+      "negatives_available": 22954,
+      "negatives_dropped_by_margin": 1200,
+      "lesions": [
+        {
+          "lesion_id": "2026-06-18_051044_453#L1",
+          "range": [
+            8040,
+            9390
+          ],
+          "frames_in_range_arithmetic": 1351,
+          "frames_in_range_on_disk": 1351,
+          "frames_selected": 200
+        },
+        {
+          "lesion_id": "2026-06-18_051044_453#L2",
+          "range": [
+            16140,
+            17640
+          ],
+          "frames_in_range_arithmetic": 1501,
+          "frames_in_range_on_disk": 1501,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 400
+    },
+    {
+      "video_id": "2026-06-01_101053_265",
+      "bbps": 4,
+      "fold_group": "A",
+      "n_lesions": 6,
+      "frames_on_disk": 19285,
+      "positives_selected": 582,
+      "negatives_available": 12293,
+      "negatives_dropped_by_margin": 1708,
+      "lesions": [
+        {
+          "lesion_id": "2026-06-01_101053_265#L1",
+          "range": [
+            6240,
+            9780
+          ],
+          "frames_in_range_arithmetic": 3541,
+          "frames_in_range_on_disk": 3541,
+          "frames_selected": 200
+        },
+        {
+          "lesion_id": "2026-06-01_101053_265#L2",
+          "range": [
+            10260,
+            10320
+          ],
+          "frames_in_range_arithmetic": 61,
+          "frames_in_range_on_disk": 61,
+          "frames_selected": 61
+        },
+        {
+          "lesion_id": "2026-06-01_101053_265#L3",
+          "range": [
+            10350,
+            10470
+          ],
+          "frames_in_range_arithmetic": 121,
+          "frames_in_range_on_disk": 121,
+          "frames_selected": 121
+        },
+        {
+          "lesion_id": "2026-06-01_101053_265#L4",
+          "range": [
+            16620,
+            18180
+          ],
+          "frames_in_range_arithmetic": 1561,
+          "frames_in_range_on_disk": 1561,
+          "frames_selected": 200
+        },
+        {
+          "lesion_id": "2026-06-01_101053_265#L5",
+          "range": [
+            20100,
+            20460
+          ],
+          "frames_in_range_arithmetic": 361,
+          "frames_in_range_on_disk": 0,
+          "frames_selected": 0
+        },
+        {
+          "lesion_id": "2026-06-01_101053_265#L6",
+          "range": [
+            20820,
+            20850
+          ],
+          "frames_in_range_arithmetic": 31,
+          "frames_in_range_on_disk": 0,
+          "frames_selected": 0
+        }
+      ],
+      "negatives_selected": 582
+    },
+    {
+      "video_id": "2026-05-29_090258_759",
+      "bbps": 7,
+      "fold_group": "B",
+      "n_lesions": 2,
+      "frames_on_disk": 18957,
+      "positives_selected": 231,
+      "negatives_available": 17636,
+      "negatives_dropped_by_margin": 989,
+      "lesions": [
+        {
+          "lesion_id": "2026-05-29_090258_759#L1",
+          "range": [
+            14400,
+            14430
+          ],
+          "frames_in_range_arithmetic": 31,
+          "frames_in_range_on_disk": 31,
+          "frames_selected": 31
+        },
+        {
+          "lesion_id": "2026-05-29_090258_759#L2",
+          "range": [
+            14820,
+            15120
+          ],
+          "frames_in_range_arithmetic": 301,
+          "frames_in_range_on_disk": 301,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 231
+    },
+    {
+      "video_id": "2026-06-11_080700_093",
+      "bbps": 5,
+      "fold_group": "B",
+      "n_lesions": 2,
+      "frames_on_disk": 27005,
+      "positives_selected": 400,
+      "negatives_available": 23643,
+      "negatives_dropped_by_margin": 1200,
+      "lesions": [
+        {
+          "lesion_id": "2026-06-11_080700_093#L1",
+          "range": [
+            3450,
+            3870
+          ],
+          "frames_in_range_arithmetic": 421,
+          "frames_in_range_on_disk": 421,
+          "frames_selected": 200
+        },
+        {
+          "lesion_id": "2026-06-11_080700_093#L2",
+          "range": [
+            12990,
+            14730
+          ],
+          "frames_in_range_arithmetic": 1741,
+          "frames_in_range_on_disk": 1741,
+          "frames_selected": 200
+        }
+      ],
+      "negatives_selected": 400
+    }
+  ]
+}

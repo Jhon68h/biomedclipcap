@@ -1,0 +1,275 @@
+{
+  "fold_root": "/workspace/fold/2fold_best",
+  "models": [
+    {
+      "model": "biomedclip",
+      "model_dir": "biomedclip",
+      "source_files": [
+        "/workspace/fold/2fold_best/biomedclip/folds/fold_1/inference/val_predictions.csv",
+        "/workspace/fold/2fold_best/biomedclip/folds/fold_2/inference/val_predictions.csv"
+      ],
+      "num_rows": 11400,
+      "num_folds": 2,
+      "binary": {
+        "num_rows_used": 11400,
+        "tp": 3491,
+        "tn": 5157,
+        "fp": 543,
+        "fn": 2209,
+        "accuracy": 0.7585964912280702,
+        "precision": 0.8653941497273178,
+        "recall": 0.6124561403508771,
+        "f1": 0.7172796383809328,
+        "specificity": 0.9047368421052632
+      },
+      "report": {
+        "num_rows_used": 11400,
+        "bleu_1": 0.6579373650107991,
+        "bleu_4": 0.2638512204571871,
+        "malignancy_accuracy": 0.5677192982456141,
+        "location_accuracy": 0.11771929824561403,
+        "paris_accuracy": 0.25596491228070173,
+        "size_mae_mm": 2.8590661701518187,
+        "supports": {
+          "malignancy": 5700,
+          "location": 5700,
+          "paris": 5700,
+          "size_mae_mm": 3491
+        }
+      },
+      "binary_std": {
+        "accuracy": 0.039856742170997106,
+        "precision": 0.0793935247124446,
+        "recall": 0.16502114995882305,
+        "f1": 0.09175268033948947,
+        "specificity": 0.08333333333333337
+      },
+      "report_std": {
+        "bleu_1": 0.04706355436201337,
+        "bleu_4": 0.03081326661603377,
+        "malignancy_accuracy": 0.14824623792767838,
+        "location_accuracy": 0.01297540615407651,
+        "paris_accuracy": 0.06975743056075466,
+        "size_mae_mm": 0.17898740309386182
+      },
+      "lesion_level": {
+        "n_lesions": 75,
+        "n_detected_any": 72,
+        "n_detected_50pct": 52,
+        "lesion_detection_rate_any": 0.96,
+        "lesion_detection_rate_50pct": 0.6933333333333334,
+        "location_accuracy": 0.19444444444444445,
+        "location_support": 72,
+        "paris_accuracy": 0.4305555555555556,
+        "paris_support": 72,
+        "malignancy_accuracy": 0.9166666666666666,
+        "malignancy_support": 72,
+        "size_mae_mm": 2.9305555555555554,
+        "size_support": 72,
+        "mean_frames_per_lesion": 76.0
+      },
+      "binary_ci_by_case": {
+        "accuracy": {
+          "ci_low": 0.6930590668811767,
+          "ci_high": 0.8060581140350878
+        },
+        "precision": {
+          "ci_low": 0.7696715891558299,
+          "ci_high": 0.9606377678126558
+        },
+        "recall": {
+          "ci_low": 0.5450877192982456,
+          "ci_high": 0.6726315789473685
+        },
+        "f1": {
+          "ci_low": 0.6618252763928029,
+          "ci_high": 0.7712579781758286
+        },
+        "specificity": {
+          "ci_low": 0.8440545808966862,
+          "ci_high": 0.9589181286549707
+        }
+      }
+    },
+    {
+      "model": "resnet101",
+      "model_dir": "resnet",
+      "source_files": [
+        "/workspace/fold/2fold_best/resnet/folds/fold_1/inference/val_predictions.csv",
+        "/workspace/fold/2fold_best/resnet/folds/fold_2/inference/val_predictions.csv"
+      ],
+      "num_rows": 11400,
+      "num_folds": 2,
+      "binary": {
+        "num_rows_used": 11400,
+        "tp": 1783,
+        "tn": 5522,
+        "fp": 178,
+        "fn": 3917,
+        "accuracy": 0.6407894736842106,
+        "precision": 0.9092299847016828,
+        "recall": 0.31280701754385964,
+        "f1": 0.46547448113823264,
+        "specificity": 0.9687719298245614
+      },
+      "report": {
+        "num_rows_used": 11400,
+        "bleu_1": 0.6398815817297526,
+        "bleu_4": 0.3201123595505618,
+        "malignancy_accuracy": 0.2907017543859649,
+        "location_accuracy": 0.058771929824561406,
+        "paris_accuracy": 0.13315789473684211,
+        "size_mae_mm": 3.119461581604038,
+        "supports": {
+          "malignancy": 5700,
+          "location": 5700,
+          "paris": 5700,
+          "size_mae_mm": 1783
+        }
+      },
+      "binary_std": {
+        "accuracy": 0.023536133769687995,
+        "precision": 0.03947660586835844,
+        "recall": 0.07285973646776972,
+        "f1": 0.0764314040049171,
+        "specificity": 0.02140350877192987
+      },
+      "report_std": {
+        "bleu_1": 0.007457399322989611,
+        "bleu_4": 0.014594418979921114,
+        "malignancy_accuracy": 0.08017331736168302,
+        "location_accuracy": 0.004304858875495993,
+        "paris_accuracy": 0.018403271692745374,
+        "size_mae_mm": 0.5011867258154388
+      },
+      "lesion_level": {
+        "n_lesions": 75,
+        "n_detected_any": 69,
+        "n_detected_50pct": 21,
+        "lesion_detection_rate_any": 0.92,
+        "lesion_detection_rate_50pct": 0.28,
+        "location_accuracy": 0.21739130434782608,
+        "location_support": 69,
+        "paris_accuracy": 0.4057971014492754,
+        "paris_support": 69,
+        "malignancy_accuracy": 0.927536231884058,
+        "malignancy_support": 69,
+        "size_mae_mm": 2.9855072463768115,
+        "size_support": 69,
+        "mean_frames_per_lesion": 76.0
+      },
+      "binary_ci_by_case": {
+        "accuracy": {
+          "ci_low": 0.5090058479532164,
+          "ci_high": 0.7228550829127613
+        },
+        "precision": {
+          "ci_low": 0.8100531657805703,
+          "ci_high": 0.9762611275964391
+        },
+        "recall": {
+          "ci_low": 0.25596491228070173,
+          "ci_high": 0.3650877192982456
+        },
+        "f1": {
+          "ci_low": 0.3971187822777929,
+          "ci_high": 0.525
+        },
+        "specificity": {
+          "ci_low": 0.9363157894736842,
+          "ci_high": 0.9883040935672515
+        }
+      }
+    },
+    {
+      "model": "vit",
+      "model_dir": "vit",
+      "source_files": [
+        "/workspace/fold/2fold_best/vit/folds/fold_1/inference/val_predictions.csv",
+        "/workspace/fold/2fold_best/vit/folds/fold_2/inference/val_predictions.csv"
+      ],
+      "num_rows": 11400,
+      "num_folds": 2,
+      "binary": {
+        "num_rows_used": 11400,
+        "tp": 1698,
+        "tn": 5523,
+        "fp": 177,
+        "fn": 4002,
+        "accuracy": 0.633421052631579,
+        "precision": 0.9056,
+        "recall": 0.29789473684210527,
+        "f1": 0.4483168316831683,
+        "specificity": 0.9689473684210527
+      },
+      "report": {
+        "num_rows_used": 11400,
+        "bleu_1": 0.6524123358655732,
+        "bleu_4": 0.35207905033490283,
+        "malignancy_accuracy": 0.23666666666666666,
+        "location_accuracy": 0.11035087719298245,
+        "paris_accuracy": 0.1387719298245614,
+        "size_mae_mm": 2.7014134275618376,
+        "supports": {
+          "malignancy": 5700,
+          "location": 5700,
+          "paris": 5700,
+          "size_mae_mm": 1698
+        }
+      },
+      "binary_std": {
+        "accuracy": 0.0035843698316416206,
+        "precision": 0.014246771879483477,
+        "recall": 0.01918937635696638,
+        "f1": 0.020018345491781053,
+        "specificity": 0.007543859649122797
+      },
+      "report_std": {
+        "bleu_1": 0.0012567994872951238,
+        "bleu_4": 0.0023467012684289523,
+        "malignancy_accuracy": 0.005086284345287115,
+        "location_accuracy": 0.03906191510069626,
+        "paris_accuracy": 0.00027139327693344317,
+        "size_mae_mm": 0.23438854343320137
+      },
+      "lesion_level": {
+        "n_lesions": 75,
+        "n_detected_any": 69,
+        "n_detected_50pct": 14,
+        "lesion_detection_rate_any": 0.92,
+        "lesion_detection_rate_50pct": 0.18666666666666668,
+        "location_accuracy": 0.3188405797101449,
+        "location_support": 69,
+        "paris_accuracy": 0.463768115942029,
+        "paris_support": 69,
+        "malignancy_accuracy": 0.855072463768116,
+        "malignancy_support": 69,
+        "size_mae_mm": 2.420289855072464,
+        "size_support": 69,
+        "mean_frames_per_lesion": 76.0
+      },
+      "binary_ci_by_case": {
+        "accuracy": {
+          "ci_low": 0.4984929283561326,
+          "ci_high": 0.7169465218004798
+        },
+        "precision": {
+          "ci_low": 0.8286020353508302,
+          "ci_high": 0.9668539325842697
+        },
+        "recall": {
+          "ci_low": 0.25,
+          "ci_high": 0.34435595567867033
+        },
+        "f1": {
+          "ci_low": 0.3902773963196923,
+          "ci_high": 0.49881672363923224
+        },
+        "specificity": {
+          "ci_low": 0.9476608187134503,
+          "ci_high": 0.9826510721247563
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-08-19T16:18:08.411634+00:00",
+  "fold_root": "fold/2fold_hp",
+  "selection_metric": "f1",
+  "note": "Metricas de SELECCION (decoding greedy sobre embeddings cacheados). Las tablas del reporte se calculan con beam search via test.py.",
+  "runs": [
+    {
+      "model_dir": "biomedclip",
+      "fold": "fold_1",
+      "csv": "fold/2fold_hp/biomedclip/folds/fold_1/val_task_metric_per_epoch.csv",
+      "epochs_evaluated": 6,
+      "metric": "f1",
+      "best_epoch": 2,
+      "best_metric_value": 0.8081085724102388,
+      "best_checkpoint": "fold/2fold_hp/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-002.pt",
+      "decoding": "greedy",
+      "lesion_metrics_available": true
+    },
+    {
+      "model_dir": "biomedclip",
+      "fold": "fold_2",
+      "csv": "fold/2fold_hp/biomedclip/folds/fold_2/val_task_metric_per_epoch.csv",
+      "epochs_evaluated": 6,
+      "metric": "f1",
+      "best_epoch": 5,
+      "best_metric_value": 0.8124098124098124,
+      "best_checkpoint": "fold/2fold_hp/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-005.pt",
+      "decoding": "greedy",
+      "lesion_metrics_available": true
+    },
+    {
+      "model_dir": "resnet",
+      "fold": "fold_1",
+      "csv": "fold/2fold_hp/resnet/folds/fold_1/val_task_metric_per_epoch.csv",
+      "epochs_evaluated": 6,
+      "metric": "f1",
+      "best_epoch": 5,
+      "best_metric_value": 0.730873786407767,
+      "best_checkpoint": "fold/2fold_hp/resnet/folds/fold_1/train/positive_vs_negative_fold_1-005.pt",
+      "decoding": "greedy",
+      "lesion_metrics_available": true
+    },
+    {
+      "model_dir": "resnet",
+      "fold": "fold_2",
+      "csv": "fold/2fold_hp/resnet/folds/fold_2/val_task_metric_per_epoch.csv",
+      "epochs_evaluated": 6,
+      "metric": "f1",
+      "best_epoch": 2,
+      "best_metric_value": 0.7701884834860799,
+      "best_checkpoint": "fold/2fold_hp/resnet/folds/fold_2/train/positive_vs_negative_fold_2-002.pt",
+      "decoding": "greedy",
+      "lesion_metrics_available": true
+    },
+    {
+      "model_dir": "vit",
+      "fold": "fold_1",
+      "csv": "fold/2fold_hp/vit/folds/fold_1/val_task_metric_per_epoch.csv",
+      "epochs_evaluated": 6,
+      "metric": "f1",
+      "best_epoch": 2,
+      "best_metric_value": 0.6484375,
+      "best_checkpoint": "fold/2fold_hp/vit/folds/fold_1/train/positive_vs_negative_fold_1-002.pt",
+      "decoding": "greedy",
+      "lesion_metrics_available": true
+    },
+    {
+      "model_dir": "vit",
+      "fold": "fold_2",
+      "csv": "fold/2fold_hp/vit/folds/fold_2/val_task_metric_per_epoch.csv",
+      "epochs_evaluated": 6,
+      "metric": "f1",
+      "best_epoch": 3,
+      "best_metric_value": 0.7790973871733968,
+      "best_checkpoint": "fold/2fold_hp/vit/folds/fold_2/train/positive_vs_negative_fold_2-003.pt",
+      "decoding": "greedy",
+      "lesion_metrics_available": true
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+[INFO] group_a.pkl: 4764 frames, dim 512
+[INFO] group_b.pkl: 4184 frames, dim 512
+[INFO] Total: 8948 frames | 15 videos | BBPS [2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+[INFO] Baseline trivial (mediana de los otros 14): MAE = 1.6000
+
+    lambda  MAE por video   r Pearson
+--------------------------------------
+    0.0001         1.5795      -0.620
+     0.001         1.5687      -0.603
+      0.01         1.5704      -0.640
+       0.1         1.5510      -0.766
+         1         1.5312      -0.963
+        10         1.5248      -0.999
+       100         1.5239      -1.000
+--------------------------------------
+MEJOR: lambda=100  MAE=1.5239  (baseline 1.6000)
+Nota: elegir lambda por el MAE de test es optimista a proposito -- este numero
+      es una COTA SUPERIOR de lo que se puede decodificar linealmente.
+
+video                       GT   probe   |err|
+----------------------------------------------
+2025-05-28_110348_321        2    6.21    4.21
+2026-05-26-225252            3    6.14    3.14
+2026-06-01_101053_265        4    6.07    2.07
+2025-12-01_133935_383        5    6.00    1.00
+2026-06-11_080700_093        5    6.00    1.00
+2025-05-30_102030_811        6    5.93    0.07
+2025-12-01_080328_674        6    5.93    0.07
+2025-03-17_094605_719        7    5.86    1.14
+2025-12-01_141231_211        7    5.86    1.14
+2026-05-25-225167            7    5.86    1.14
+2026-05-29_090258_759        7    5.86    1.14
+2026-06-10_102045_991        7    5.86    1.14
+2026-06-18_051044_453        7    5.86    1.14
+2025-05-16_093014_695        8    5.79    2.21
+2025-12-01_101553_631        8    5.79    2.21
+
+==============================================
+Control por permutacion (200 barajados de las etiquetas):
+  MAE medio al azar : 1.5238
+  percentil 5       : 1.5235
+  MAE real          : 1.5239
+  p-valor empirico  : 0.725
+  -> El probe NO se distingue del azar: la senal de BBPS no es
+     linealmente extraible de estos embeddings con n=15 videos.
+
+[OK] /workspace/igho_training/eval/probe_bbps.json

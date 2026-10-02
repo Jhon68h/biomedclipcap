@@ -1,0 +1,6 @@
+epoch,checkpoint,val_loss,val_batches,val_samples
+0,/workspace/igho_bbps_real/folds/fold_2/train/bbps_fold_2-000.pt,0.1653537500912211,596,4764
+1,/workspace/igho_bbps_real/folds/fold_2/train/bbps_fold_2-001.pt,0.15978520968303883,596,4764
+2,/workspace/igho_bbps_real/folds/fold_2/train/bbps_fold_2-002.pt,0.15071182836459687,596,4764
+3,/workspace/igho_bbps_real/folds/fold_2/train/bbps_fold_2-003.pt,0.1458263030063186,596,4764
+4,/workspace/igho_bbps_real/folds/fold_2/train/bbps_fold_2-004.pt,0.14271851850286027,596,4764

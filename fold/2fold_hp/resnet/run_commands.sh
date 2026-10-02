@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Modelo: resnet101
+# GPU: 2
+# Comandos de referencia equivalentes al flujo automático.
+# Nota: la validacion/val_loss se calcula via scripts/validation.py.
+
+# ===== fold_1 =====
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/parse_colono.py --csv_path /workspace/fold/2fold_hp/resnet/folds/fold_1/train.csv --images_root . --out_path /workspace/weights/sun_2fold_hp/resnet/fold_1/train.pkl --clip_model_type RN101
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/parse_colono.py --csv_path /workspace/fold/2fold_hp/resnet/folds/fold_1/val.csv --images_root . --out_path /workspace/weights/sun_2fold_hp/resnet/fold_1/val.pkl --clip_model_type RN101
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/train.py --data /workspace/weights/sun_2fold_hp/resnet/fold_1/train.pkl --out_dir /workspace/fold/2fold_hp/resnet/folds/fold_1/train --prefix positive_vs_negative_fold_1 --epochs 6 --save_every 1 --bs 16 --lr 1e-05 --warmup_steps 400 --weight_decay 0.01 --dropout 0.1 --prefix_length 10 --prefix_length_clip 10 --mapping_type transformer --num_layers 4 --only_prefix --normalize_prefix
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/test.py --images_root /workspace/fold/2fold_hp/resnet/folds/fold_1/inference/val_images_run_manual --checkpoint <CHECKPOINT_FOLD_1> --output_csv /workspace/fold/2fold_hp/resnet/folds/fold_1/inference/val_predictions_raw.csv --prefix_length 10 --mapping_type transformer --num_layers 4 --beam_search --encoder rn101 --openai_clip_name RN101
+
+# ===== fold_2 =====
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/parse_colono.py --csv_path /workspace/fold/2fold_hp/resnet/folds/fold_2/train.csv --images_root . --out_path /workspace/weights/sun_2fold_hp/resnet/fold_2/train.pkl --clip_model_type RN101
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/parse_colono.py --csv_path /workspace/fold/2fold_hp/resnet/folds/fold_2/val.csv --images_root . --out_path /workspace/weights/sun_2fold_hp/resnet/fold_2/val.pkl --clip_model_type RN101
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/train.py --data /workspace/weights/sun_2fold_hp/resnet/fold_2/train.pkl --out_dir /workspace/fold/2fold_hp/resnet/folds/fold_2/train --prefix positive_vs_negative_fold_2 --epochs 6 --save_every 1 --bs 16 --lr 1e-05 --warmup_steps 400 --weight_decay 0.01 --dropout 0.1 --prefix_length 10 --prefix_length_clip 10 --mapping_type transformer --num_layers 4 --only_prefix --normalize_prefix
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/test.py --images_root /workspace/fold/2fold_hp/resnet/folds/fold_2/inference/val_images_run_manual --checkpoint <CHECKPOINT_FOLD_2> --output_csv /workspace/fold/2fold_hp/resnet/folds/fold_2/inference/val_predictions_raw.csv --prefix_length 10 --mapping_type transformer --num_layers 4 --beam_search --encoder rn101 --openai_clip_name RN101
+
+# ===== Post-proceso =====
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/scripts/validation.py --model resnet101 --output_root /workspace/fold/2fold_hp --start_epoch 0 --end_epoch 5
+CUDA_VISIBLE_DEVICES=2 /opt/conda/bin/python /workspace/scripts/graphics/graficas.py --input_root /workspace/fold/2fold_hp --output_root /workspace/fold/2fold_hp/plots --models resnet

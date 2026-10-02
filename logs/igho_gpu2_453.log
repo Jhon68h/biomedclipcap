@@ -1,0 +1,35 @@
+[BBPS] 2026-06-18_051044_453: 'Bowel preparation score BBPS is 7/9' se agregara a cada reporte generado.
+[CKPT] biomedclip/fold_1: mejor epoca por f1=2, f1=0.808109 -> positive_vs_negative_fold_1-002.pt
+[RUN] /opt/conda/bin/python /workspace/test.py --images_root /workspace/igho/report_bbps/2026-06-18_051044_453/frames_selected --checkpoint /workspace/fold/2fold_hp/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-002.pt --output_csv /workspace/igho/report_bbps/2026-06-18_051044_453/biomedclip/fold_1/predictions.csv --prefix_length 10 --mapping_type transformer --num_layers 4 --entry_length 67 --top_p 0.8 --temperature 1.0 --stop_token . --beam_search --encoder biomedclip --biomedclip_model_id hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224
+DEVICE: cuda
+CUDA available: True
+CUDA device count: 1
+CUDA current device: 0
+[INFO] Cargando BioMedCLIP desde hf-hub...
+[INFO]   model_id=hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224
+/opt/conda/lib/python3.10/site-packages/huggingface_hub/file_download.py:949: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/opt/conda/lib/python3.10/site-packages/torch/_utils.py:831: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Traceback (most recent call last):
+  File "/workspace/test.py", line 393, in <module>
+    main()
+  File "/workspace/test.py", line 305, in main
+    clip_model, preprocess, inferred_dim = load_biomedclip_encoder(
+  File "/workspace/test.py", line 154, in load_biomedclip_encoder
+    dummy = torch.zeros(1, 3, 224, 224, device=device)
+RuntimeError: CUDA error: out of memory
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Traceback (most recent call last):
+  File "/workspace/scripts/inferiencia.py", line 775, in <module>
+    main()
+  File "/workspace/scripts/inferiencia.py", line 719, in main
+    run_command(cmd, env)
+  File "/workspace/scripts/inferiencia.py", line 615, in run_command
+    subprocess.run(list(cmd), cwd=str(REPO_ROOT), env=env, check=True)
+  File "/opt/conda/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/opt/conda/bin/python', '/workspace/test.py', '--images_root', '/workspace/igho/report_bbps/2026-06-18_051044_453/frames_selected', '--checkpoint', '/workspace/fold/2fold_hp/biomedclip/folds/fold_1/train/positive_vs_negative_fold_1-002.pt', '--output_csv', '/workspace/igho/report_bbps/2026-06-18_051044_453/biomedclip/fold_1/predictions.csv', '--prefix_length', '10', '--mapping_type', 'transformer', '--num_layers', '4', '--entry_length', '67', '--top_p', '0.8', '--temperature', '1.0', '--stop_token', '.', '--beam_search', '--encoder', 'biomedclip', '--biomedclip_model_id', 'hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224']' returned non-zero exit status 1.

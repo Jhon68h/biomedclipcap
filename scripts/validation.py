@@ -30,6 +30,14 @@ from tqdm import tqdm
 from transformers import GPT2Tokenizer
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+WEIGHTS_ROOT = REPO_ROOT / "weights"
+
+
+def fold_weights_dir(model_root: Path, fold_name: str) -> Path:
+    """Los .pkl de embeddings viven en weights/sun_<experimento>/<modelo>/<fold>/."""
+    return WEIGHTS_ROOT / f"sun_{model_root.parent.name}" / model_root.name / fold_name
+
+
 DEFAULT_OUTPUT_ROOT = "fold/2fold"
 
 MODEL_CONFIG: Dict[str, Dict[str, Optional[str]]] = {
@@ -41,7 +49,7 @@ MODEL_CONFIG: Dict[str, Dict[str, Optional[str]]] = {
         "openai_clip_name": None,
     },
     "vit": {
-        "weights_path": "clip_weights/ViT-B-16.pt",
+        "weights_path": "clip_weights/ViT-B-32.pt",
         "clip_model_type": "ViT-B/32",
         "test_encoder": "vit",
         "openai_clip_name": "ViT-B/32",
@@ -883,7 +891,7 @@ def main() -> None:
             fold_dir = resolve_artifact_path(fold_artifacts.get("fold_dir"), model_root / "folds" / fold_name)
             train_dir = resolve_artifact_path(fold_artifacts.get("train_dir"), fold_dir / "train")
             val_csv = resolve_artifact_path(fold_artifacts.get("val_csv"), fold_dir / "val.csv")
-            val_pkl = resolve_artifact_path(fold_artifacts.get("val_pkl"), fold_dir / "data" / "val.pkl")
+            val_pkl = resolve_artifact_path(fold_artifacts.get("val_pkl"), fold_weights_dir(model_root, fold_name) / "val.pkl")
             inference_dir = resolve_artifact_path(fold_artifacts.get("inference_dir"), fold_dir / "inference")
 
             manifest_csv = resolve_artifact_path(

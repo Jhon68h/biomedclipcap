@@ -12,62 +12,25 @@ env/
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb
 
 # OS / IDE
 .DS_Store
 .idea/
 .vscode/
 
-# Project outputs and experiment artifacts
-outputs/
-experiments_colono/
-checkpoints/
-logs/
-runs/
-dataset_real_colon/
+# Archivos de mas de 100 MB (limite de GitHub por archivo)
+# Pesos de los encoders (CLIP, BiomedCLIP)
+clip_weights/*.pt
+# Checkpoints del mapper por epoca (SUN 2-fold)
+fold/*/*/folds/*/train/*.pt
+# Embeddings pre/post GPT-2 de validacion
+fold/*/*/folds/*/embeddings/val_pre_gpt_embeddings.pt
+fold/*/*/folds/*/embeddings/val_post_gpt_embeddings.pt
+# Checkpoints del fine-tuning de BBPS en IGHO
+igho_training_bbps_*/folds/*/train/*.pt
+# Zip del proyecto
+biomedclipcap.zip
 
-# Datasets, media, and local assets
-data/
-Sun_Multimodal/
-Images/
-*.tsv
-*.parquet
-*.feather
-*.jpg
-*.jpeg
-*.png
-*.bmp
-*.tif
-*.tiff
-*.gif
-
-# Model weights and serialized tensors
-clip_weights/
-*.pt
-*.pth
-*.ckpt
-*.bin
-*.safetensors
-*.pkl
-*.npz
-*.npy
-*.h5
-*.hdf5
-*.onnx
-
-# Archives and packaged data
-*.zip
-*.tar
-*.tar.gz
-*.tgz
-*.7z
-*.gz
-
-# Non-source auxiliary files
-*.txt
-*.pdf
-igho/etiquetas_urgentes/
-igho/cut_frames/
-
-*.log
+# Arboles de enlaces simbolicos a los frames (rutas del contenedor)
+frames_selected/
+val_images*/

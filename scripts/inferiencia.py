@@ -74,6 +74,29 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoints_root", default=DEFAULT_CHECKPOINTS_ROOT)
     parser.add_argument("--output_root", default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--checkpoint", default=None, help="Checkpoint manual para un solo model/fold.")
+    parser.add_argument(
+        "--checkpoint_policy",
+        default="best",
+        choices=["best", "latest", "epoch", "f1"],
+        help=(
+            "Como elegir el checkpoint: 'f1' (mayor metrica de deteccion segun "
+            "val_task_metric_per_epoch.csv, criterio recomendado; ver §2 de "
+            "reportes/reentrenamiento.md), 'best' (menor val_loss, por defecto "
+            "historico), 'latest' (ultima epoca, comportamiento antiguo y "
+            "sobreajustado) o 'epoch' (usa --epoch)."
+        ),
+    )
+    parser.add_argument(
+        "--f1_metric",
+        default="f1",
+        help="Columna a maximizar con --checkpoint_policy f1 (f1, recall, lesion_detection_rate_50pct...).",
+    )
+    parser.add_argument(
+        "--epoch",
+        type=int,
+        default=None,
+        help="Epoca a usar cuando --checkpoint_policy epoch.",
+    )
     parser.add_argument("--gpu", default=None, help="CUDA_VISIBLE_DEVICES, por ejemplo 0 o 1.")
     parser.add_argument("--frame_start", type=int, default=None, help="Frame inicial (incluyente).")
     parser.add_argument("--frame_end", type=int, default=None, help="Frame final (incluyente).")
@@ -84,6 +107,12 @@ def parse_args() -> argparse.Namespace:
         help="Ventana por prefijo: <prefijo>:<inicio>-<fin>. Repetir para multiples.",
     )
 
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=32,
+        help="Cantidad de imagenes codificadas por el encoder CLIP en cada lote (ver test.py --batch_size).",
+    )
     parser.add_argument("--prefix_length", type=int, default=10)
     parser.add_argument("--mapping_type", type=str, default="transformer", choices=["mlp", "transformer"])
     parser.add_argument("--num_layers", type=int, default=8)
@@ -91,6 +120,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top_p", type=float, default=0.8)
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--stop_token", type=str, default=".")
+
+    parser.add_argument(
+        "--video_id",
+        default=None,
+        help=(
+            "id del video en --bbps_csv (columna 'id', ej. 2025-03-17_094605_719). "
+            "Si se pasa, se agrega la frase de BBPS al final de cada reporte generado "
+            "(frame_reporte.csv). El modelo NO genera el BBPS; se conoce de antemano y "
+            "se concatena como texto despues de la generacion, sin tocar el modelo."
+        ),
+    )
+    parser.add_argument(
+        "--bbps_csv",
+        default="igho/igho_dataset_copia.csv",
+        help="CSV con columnas 'id' y 'report_bbps' (usado solo si se pasa --video_id).",
+    )
 
     parser.add_argument("--overwrite", action="store_true", help="Reemplaza output_root si existe.")
     parser.add_argument("--dry_run", action="store_true", help="Solo arma comandos, no ejecuta inferencia.")
@@ -326,20 +371,55 @@ def frame_sort_key(frame_id: str) -> Tuple[str, int]:
     return match.group(1), int(match.group(2))
 
 
-def predictions_to_frame_reports(pred_rows: List[Dict[str, str]]) -> List[Dict[str, str]]:
+def predictions_to_frame_reports(pred_rows: List[Dict[str, str]], bbps_text: str = "") -> List[Dict[str, str]]:
     rows: List[Dict[str, str]] = []
     for row in pred_rows:
         frame_id = extract_frame_id_from_image_path(str(row.get("image_path", "")))
         if frame_id is None:
             continue
+        report = str(row.get("generated_caption", "")).strip()
+        if bbps_text:
+            report = append_bbps_sentence(report, bbps_text)
         rows.append(
             {
                 "frame": frame_id,
-                "reporte_medico": str(row.get("generated_caption", "")).strip(),
+                "reporte_medico": report,
             }
         )
     rows.sort(key=lambda item: frame_sort_key(item["frame"]))
     return rows
+
+
+def append_bbps_sentence(report: str, bbps_text: str) -> str:
+    """Agrega la frase de BBPS al final del reporte generado, como texto plano.
+
+    El BBPS ya se conoce con certeza (viene del CSV del especialista, no de la
+    imagen), asi que no tiene sentido pedirle al modelo que lo "genere" -- eso
+    requeriria reentrenar con una senal que hoy no existe en los datos de SUN.
+    Se concatena despues de generar, sin tocar el modelo ni el prefix.
+    """
+    report = report.strip()
+    bbps_text = bbps_text.strip().rstrip(".")
+    if not bbps_text:
+        return report
+    if not report:
+        return f"{bbps_text}."
+    if not report.endswith((".", "!", "?")):
+        report += "."
+    return f"{report} {bbps_text}."
+
+
+def load_bbps_lookup(bbps_csv: Path) -> Dict[str, str]:
+    lookup: Dict[str, str] = {}
+    if not bbps_csv.exists():
+        return lookup
+    with bbps_csv.open("r", encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            video_id = str(row.get("id", "")).strip()
+            bbps = str(row.get("report_bbps", "")).strip()
+            if video_id and bbps and video_id not in lookup:
+                lookup[video_id] = bbps
+    return lookup
 
 
 def extract_epoch(filename: str, prefix: str) -> Optional[int]:
@@ -349,11 +429,11 @@ def extract_epoch(filename: str, prefix: str) -> Optional[int]:
     return int(match.group(1))
 
 
-def find_latest_checkpoint(train_dir: Path, prefix: str) -> Path:
+def list_checkpoints(train_dir: Path, prefix: str) -> List[Tuple[int, Path]]:
     if not train_dir.exists():
         raise FileNotFoundError(f"No existe directorio de checkpoints: {train_dir}")
 
-    candidates: List[tuple[int, Path]] = []
+    candidates: List[Tuple[int, Path]] = []
     for ckpt in train_dir.glob(f"{prefix}-*.pt"):
         epoch = extract_epoch(ckpt.name, prefix)
         if epoch is not None:
@@ -363,7 +443,133 @@ def find_latest_checkpoint(train_dir: Path, prefix: str) -> Path:
         raise FileNotFoundError(f"No hay checkpoints con prefijo {prefix} en {train_dir}")
 
     candidates.sort(key=lambda item: item[0])
-    return candidates[-1][1]
+    return candidates
+
+
+def find_latest_checkpoint(train_dir: Path, prefix: str) -> Path:
+    return list_checkpoints(train_dir, prefix)[-1][1]
+
+
+def find_checkpoint_for_epoch(train_dir: Path, prefix: str, epoch: int) -> Path:
+    for candidate_epoch, path in list_checkpoints(train_dir, prefix):
+        if candidate_epoch == epoch:
+            return path
+    available = ", ".join(str(e) for e, _ in list_checkpoints(train_dir, prefix))
+    raise FileNotFoundError(
+        f"No existe checkpoint para la epoca {epoch} en {train_dir}. Disponibles: {available}"
+    )
+
+
+def find_best_checkpoint(fold_dir: Path, train_dir: Path, prefix: str) -> Tuple[Path, int, Optional[float]]:
+    """Elige el checkpoint con menor val_loss segun val_loss_per_epoch.csv.
+
+    Motivo: el entrenamiento sobreajusta muy temprano (la val_loss toca su
+    minimo en la epoca 0-1 y luego crece ~2x hasta la epoca 14 en los 3
+    modelos y ambos folds). Usar 'el ultimo checkpoint' desplegaba justamente
+    el modelo mas sobreajustado. Si no existe el CSV, cae a la ultima epoca.
+    """
+    val_loss_csv = fold_dir / "val_loss_per_epoch.csv"
+    if not val_loss_csv.exists():
+        print(f"[WARN] No existe {val_loss_csv}; se usara el ultimo checkpoint.")
+        path = find_latest_checkpoint(train_dir, prefix)
+        return path, extract_epoch(path.name, prefix) or -1, None
+
+    best_epoch: Optional[int] = None
+    best_loss: Optional[float] = None
+    with val_loss_csv.open("r", encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            try:
+                epoch = int(float(row["epoch"]))
+                loss = float(row["val_loss"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if best_loss is None or loss < best_loss:
+                best_loss = loss
+                best_epoch = epoch
+
+    if best_epoch is None:
+        print(f"[WARN] {val_loss_csv} sin filas validas; se usara el ultimo checkpoint.")
+        path = find_latest_checkpoint(train_dir, prefix)
+        return path, extract_epoch(path.name, prefix) or -1, None
+
+    return find_checkpoint_for_epoch(train_dir, prefix, best_epoch), best_epoch, best_loss
+
+
+def find_best_checkpoint_by_task_metric(
+    fold_dir: Path, train_dir: Path, prefix: str, metric: str
+) -> Tuple[Path, int, Optional[float]]:
+    """Elige el checkpoint que MAXIMIZA una metrica de deteccion, no el de menor val_loss.
+
+    `val_loss` mide perplejidad de generacion de texto, no deteccion: un modelo
+    subentrenado que siempre dice "...no polyps." (la mitad del dataset) tiene
+    buena perplejidad y pesimo recall. Verificado en SUN: elegir por val_loss
+    hundio el recall de resnet101 (0.547 -> 0.313) y vit (0.561 -> 0.298).
+    Ver §2 de `reportes/reentrenamiento.md`.
+
+    El CSV lo genera `scripts/reentrenamiento/val_metric_per_epoch.py`.
+    """
+    metric_csv = fold_dir / "val_task_metric_per_epoch.csv"
+    if not metric_csv.exists():
+        raise FileNotFoundError(
+            f"No existe {metric_csv}. Generalo primero con:\n"
+            f"  python scripts/reentrenamiento/val_metric_per_epoch.py "
+            f"--fold_root <raiz_de_entrenamiento>"
+        )
+
+    best_epoch: Optional[int] = None
+    best_value: Optional[float] = None
+    with metric_csv.open("r", encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            try:
+                row_epoch = int(float(row["epoch"]))
+                row_value = float(row[metric])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if best_value is None or row_value > best_value:
+                best_value, best_epoch = row_value, row_epoch
+
+    if best_epoch is None:
+        raise ValueError(f"{metric_csv} no tiene filas validas para la columna '{metric}'.")
+
+    return find_checkpoint_for_epoch(train_dir, prefix, best_epoch), best_epoch, best_value
+
+
+def resolve_checkpoint(
+    checkpoints_root: Path,
+    subdir: str,
+    fold_name: str,
+    policy: str,
+    epoch: Optional[int],
+    f1_metric: str = "f1",
+) -> Path:
+    fold_dir = checkpoints_root / subdir / "folds" / fold_name
+    train_dir = fold_dir / "train"
+    prefix = f"positive_vs_negative_{fold_name}"
+
+    if policy == "f1":
+        path, best_epoch, best_value = find_best_checkpoint_by_task_metric(
+            fold_dir, train_dir, prefix, f1_metric
+        )
+        value_text = f", {f1_metric}={best_value:.6f}" if best_value is not None else ""
+        print(f"[CKPT] {subdir}/{fold_name}: mejor epoca por {f1_metric}={best_epoch}{value_text} -> {path.name}")
+        return path
+
+    if policy == "epoch":
+        if epoch is None:
+            raise ValueError("--checkpoint_policy epoch requiere --epoch N.")
+        path = find_checkpoint_for_epoch(train_dir, prefix, epoch)
+        print(f"[CKPT] {subdir}/{fold_name}: epoca {epoch} (fijada) -> {path.name}")
+        return path
+
+    if policy == "latest":
+        path = find_latest_checkpoint(train_dir, prefix)
+        print(f"[CKPT] {subdir}/{fold_name}: ultima epoca -> {path.name}")
+        return path
+
+    path, best_epoch, best_loss = find_best_checkpoint(fold_dir, train_dir, prefix)
+    loss_text = f", val_loss={best_loss:.6f}" if best_loss is not None else ""
+    print(f"[CKPT] {subdir}/{fold_name}: mejor epoca={best_epoch}{loss_text} -> {path.name}")
+    return path
 
 
 def build_test_command(
@@ -398,6 +604,8 @@ def build_test_command(
         str(args.temperature),
         "--stop_token",
         str(args.stop_token),
+        "--batch_size",
+        str(args.batch_size),
         "--beam_search",
         "--encoder",
         str(spec["encoder"]),
@@ -432,6 +640,18 @@ def main() -> None:
         raise FileNotFoundError(f"No existe carpeta base de dataset: {dataset_root}")
     if not checkpoints_root.exists():
         raise FileNotFoundError(f"No existe carpeta de checkpoints: {checkpoints_root}")
+
+    bbps_text = ""
+    if args.video_id:
+        bbps_lookup = load_bbps_lookup(resolve_repo_path(args.bbps_csv))
+        bbps_text = bbps_lookup.get(args.video_id, "")
+        if bbps_text:
+            print(f"[BBPS] {args.video_id}: '{bbps_text}' se agregara a cada reporte generado.")
+        else:
+            print(
+                f"[WARN] --video_id {args.video_id} no tiene BBPS en {args.bbps_csv}; "
+                "los reportes se generan sin esa frase."
+            )
 
     models = select_models(args.model)
     folds = select_folds(args.fold)
@@ -470,9 +690,13 @@ def main() -> None:
             if args.checkpoint:
                 checkpoint_path = resolve_repo_path(args.checkpoint)
             else:
-                checkpoint_path = find_latest_checkpoint(
-                    checkpoints_root / str(spec["subdir"]) / "folds" / fold_name / "train",
-                    f"positive_vs_negative_{fold_name}",
+                checkpoint_path = resolve_checkpoint(
+                    checkpoints_root=checkpoints_root,
+                    subdir=str(spec["subdir"]),
+                    fold_name=fold_name,
+                    policy=args.checkpoint_policy,
+                    epoch=args.epoch,
+                    f1_metric=args.f1_metric,
                 )
 
             run_dir = output_root / str(spec["subdir"]) / fold_name
@@ -502,7 +726,7 @@ def main() -> None:
             else:
                 run_command(cmd, env)
                 pred_rows = read_predictions_csv(output_csv)
-                frame_report_rows = predictions_to_frame_reports(pred_rows)
+                frame_report_rows = predictions_to_frame_reports(pred_rows, bbps_text=bbps_text)
                 frame_report_csv = run_dir / "frame_reporte.csv"
                 write_frame_report_csv(frame_report_csv, frame_report_rows)
                 for item in frame_report_rows:
@@ -531,7 +755,12 @@ def main() -> None:
                 "output_root": to_repo_relative(output_root),
                 "model": args.model,
                 "fold": args.fold,
+                "checkpoint_policy": args.checkpoint_policy,
+                "checkpoint_epoch": args.epoch,
                 "gpu": args.gpu,
+                "video_id": args.video_id,
+                "bbps_csv": args.bbps_csv if args.video_id else None,
+                "bbps_text_appended": bbps_text or None,
                 "dry_run": bool(args.dry_run),
                 "frame_windows": windows,
                 "selected_frames_count": len(selected_frames),

@@ -1,0 +1,7 @@
+epoch,checkpoint,val_loss,val_batches,val_samples
+0,fold/2fold_hp/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-000.pt,0.5886166144474283,354,5662
+1,fold/2fold_hp/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-001.pt,0.16987185746810327,354,5662
+2,fold/2fold_hp/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-002.pt,0.15836814879786837,354,5662
+3,fold/2fold_hp/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-003.pt,0.156477847881023,354,5662
+4,fold/2fold_hp/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-004.pt,0.16081123131665187,354,5662
+5,fold/2fold_hp/biomedclip/folds/fold_2/train/positive_vs_negative_fold_2-005.pt,0.1602374304135974,354,5662

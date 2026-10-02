@@ -1,0 +1,22 @@
+scikit-image==0.20.0
+transformers==4.39.3
+ftfy
+regex
+tqdm
+numpy==1.26.4
+opencv-python==4.9.0.80
+pillow
+matplotlib
+pandas
+scikit-learn
+requests
+# OpenCLIP (paquete pip)
+# Comando manual: pip install -U open-clip-torch
+open-clip-torch
+ipython
+bert-score
+evaluate
+nltk
+pydrive
+oauth2client
+#git+https://github.com/openai/CLIP.git

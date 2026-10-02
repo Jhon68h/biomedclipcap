@@ -1,0 +1,40 @@
+[INFO] torch.__version__: 2.1.0
+[INFO] torch.cuda.is_available(): True
+[INFO] Device de trabajo: cuda
+
+==== CARGANDO MODELO BIOMEDCLIP (OPENCLIP + PT LOCAL) ====
+[INFO] Model ID (arquitectura): hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224
+[INFO] Cargando pesos locales: clip_weights/biomedclip_weights.pt
+/opt/conda/lib/python3.10/site-packages/huggingface_hub/file_download.py:949: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/opt/conda/lib/python3.10/site-packages/torch/_utils.py:831: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+[INFO] load_state_dict(strict=False) OK
+[INFO] Missing keys: 0
+[INFO] Unexpected keys: 0
+[INFO] Modelo BioMedCLIP listo.
+
+[INFO] Total filas en CSV: 4184
+[INFO] Columnas CSV: ['image_path', 'caption']
+
+[DEBUG] Ejemplos image_path (primeras 5 filas):
+  - raw: /frames/2025-12-01_080328_674/frame_0000.png
+    resolved: /frames/2025-12-01_080328_674/frame_0000.png
+  - raw: /frames/2025-12-01_080328_674/frame_0055.png
+    resolved: /frames/2025-12-01_080328_674/frame_0055.png
+  - raw: /frames/2025-12-01_080328_674/frame_0109.png
+    resolved: /frames/2025-12-01_080328_674/frame_0109.png
+  - raw: /frames/2025-12-01_080328_674/frame_0164.png
+    resolved: /frames/2025-12-01_080328_674/frame_0164.png
+  - raw: /frames/2025-12-01_080328_674/frame_0218.png
+    resolved: /frames/2025-12-01_080328_674/frame_0218.png
+
+[INFO] Paths válidos: 4184 | inválidos: 0
+
+==== GENERANDO EMBEDDINGS ====
+  0%|          | 0/66 [00:00<?, ?it/s]  2%|▏         | 1/66 [00:05<05:56,  5.48s/it]  3%|▎         | 2/66 [00:10<05:37,  5.27s/it]  5%|▍         | 3/66 [00:16<05:37,  5.35s/it]  6%|▌         | 4/66 [00:21<05:27,  5.28s/it]  8%|▊         | 5/66 [00:26<05:19,  5.24s/it]  9%|▉         | 6/66 [00:31<05:15,  5.26s/it] 11%|█         | 7/66 [00:36<05:07,  5.22s/it] 12%|█▏        | 8/66 [00:42<05:04,  5.24s/it] 14%|█▎        | 9/66 [00:47<04:54,  5.16s/it] 15%|█▌        | 10/66 [00:52<04:54,  5.25s/it] 17%|█▋        | 11/66 [00:58<04:54,  5.35s/it] 18%|█▊        | 12/66 [01:03<04:51,  5.40s/it] 20%|█▉        | 13/66 [01:08<04:43,  5.36s/it] 21%|██        | 14/66 [01:13<04:34,  5.27s/it] 23%|██▎       | 15/66 [01:17<03:59,  4.69s/it] 24%|██▍       | 16/66 [01:22<04:01,  4.84s/it] 26%|██▌       | 17/66 [01:27<04:06,  5.03s/it] 27%|██▋       | 18/66 [01:33<04:11,  5.24s/it] 29%|██▉       | 19/66 [01:38<04:05,  5.22s/it] 30%|███       | 20/66 [01:44<03:59,  5.22s/it] 32%|███▏      | 21/66 [01:49<03:58,  5.30s/it] 33%|███▎      | 22/66 [01:54<03:54,  5.33s/it] 35%|███▍      | 23/66 [02:00<03:54,  5.45s/it] 36%|███▋      | 24/66 [02:05<03:38,  5.19s/it] 38%|███▊      | 25/66 [02:11<03:41,  5.39s/it] 39%|███▉      | 26/66 [02:17<03:45,  5.63s/it] 41%|████      | 27/66 [02:23<03:48,  5.85s/it] 42%|████▏     | 28/66 [02:29<03:43,  5.88s/it] 44%|████▍     | 29/66 [02:35<03:33,  5.76s/it] 45%|████▌     | 30/66 [02:40<03:23,  5.66s/it] 47%|████▋     | 31/66 [02:45<03:15,  5.58s/it] 48%|████▊     | 32/66 [02:51<03:07,  5.51s/it] 50%|█████     | 33/66 [02:56<02:56,  5.35s/it] 52%|█████▏    | 34/66 [03:01<02:51,  5.34s/it] 53%|█████▎    | 35/66 [03:07<02:46,  5.37s/it] 55%|█████▍    | 36/66 [03:12<02:42,  5.43s/it] 56%|█████▌    | 37/66 [03:18<02:38,  5.46s/it] 58%|█████▊    | 38/66 [03:23<02:30,  5.39s/it] 59%|█████▉    | 39/66 [03:28<02:23,  5.33s/it] 61%|██████    | 40/66 [03:34<02:22,  5.50s/it] 62%|██████▏   | 41/66 [03:40<02:21,  5.64s/it] 64%|██████▎   | 42/66 [03:45<02:12,  5.51s/it] 65%|██████▌   | 43/66 [03:51<02:08,  5.57s/it] 67%|██████▋   | 44/66 [03:56<01:59,  5.44s/it] 68%|██████▊   | 45/66 [04:01<01:49,  5.24s/it] 70%|██████▉   | 46/66 [04:06<01:46,  5.34s/it] 71%|███████   | 47/66 [04:11<01:39,  5.26s/it] 73%|███████▎  | 48/66 [04:17<01:37,  5.39s/it] 74%|███████▍  | 49/66 [04:23<01:33,  5.48s/it] 76%|███████▌  | 50/66 [04:28<01:27,  5.48s/it] 77%|███████▋  | 51/66 [04:33<01:21,  5.40s/it] 79%|███████▉  | 52/66 [04:39<01:14,  5.33s/it] 80%|████████  | 53/66 [04:44<01:09,  5.38s/it] 82%|████████▏ | 54/66 [04:50<01:05,  5.47s/it] 83%|████████▎ | 55/66 [04:55<00:59,  5.41s/it] 85%|████████▍ | 56/66 [05:01<00:54,  5.42s/it] 86%|████████▋ | 57/66 [05:06<00:48,  5.42s/it] 88%|████████▊ | 58/66 [05:12<00:43,  5.48s/it] 89%|████████▉ | 59/66 [05:17<00:38,  5.45s/it] 91%|█████████ | 60/66 [05:23<00:33,  5.52s/it] 92%|█████████▏| 61/66 [05:29<00:28,  5.77s/it] 94%|█████████▍| 62/66 [05:35<00:23,  5.79s/it] 95%|█████████▌| 63/66 [05:41<00:17,  5.76s/it] 97%|█████████▋| 64/66 [05:46<00:11,  5.76s/it] 98%|█████████▊| 65/66 [05:52<00:05,  5.79s/it]100%|██████████| 66/66 [05:54<00:00,  4.71s/it]100%|██████████| 66/66 [05:54<00:00,  5.38s/it]
+
+==== PROCESO COMPLETADO ====
+[OK] PKL guardado en: igho_bbps_real/embeddings/group_b.pkl
+[OK] Shape embeddings: (4184, 512)
+[OK] Num captions: 4184

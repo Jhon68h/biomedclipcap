@@ -192,7 +192,8 @@ class Transformer(nn.Module):
         return x
 
     def __init__(self, dim_self: int, num_heads: int, num_layers: int, dim_ref: Optional[int] = None,
-                 mlp_ratio: float = 2., act=nnf.relu, norm_layer: nn.Module = nn.LayerNorm, enc_dec: bool = False):
+                 mlp_ratio: float = 2., act=nnf.relu, norm_layer: nn.Module = nn.LayerNorm, enc_dec: bool = False,
+                 dropout: float = 0.):
         super(Transformer, self).__init__()
         dim_ref = dim_ref if dim_ref is not None else dim_self
         self.enc_dec = enc_dec
@@ -201,11 +202,14 @@ class Transformer(nn.Module):
         layers = []
         for i in range(num_layers):
             if i % 2 == 0 and enc_dec:  # cross
-                layers.append(TransformerLayer(dim_self, dim_ref, num_heads, mlp_ratio, act=act, norm_layer=norm_layer))
+                layers.append(TransformerLayer(dim_self, dim_ref, num_heads, mlp_ratio, act=act, norm_layer=norm_layer,
+                                               dropout=dropout))
             elif enc_dec:  # self
-                layers.append(TransformerLayer(dim_self, dim_self, num_heads, mlp_ratio, act=act, norm_layer=norm_layer))
+                layers.append(TransformerLayer(dim_self, dim_self, num_heads, mlp_ratio, act=act, norm_layer=norm_layer,
+                                               dropout=dropout))
             else:  # self or cross
-                layers.append(TransformerLayer(dim_self, dim_ref, num_heads, mlp_ratio, act=act, norm_layer=norm_layer))
+                layers.append(TransformerLayer(dim_self, dim_ref, num_heads, mlp_ratio, act=act, norm_layer=norm_layer,
+                                               dropout=dropout))
         self.layers = nn.ModuleList(layers)
 
 
@@ -218,10 +222,11 @@ class TransformerMapper(nn.Module):
         out = self.transformer(prefix)[:, self.clip_length:]
         return out
 
-    def __init__(self, dim_clip: int, dim_embedding: int, prefix_length: int, clip_length: int, num_layers: int = 8):
+    def __init__(self, dim_clip: int, dim_embedding: int, prefix_length: int, clip_length: int, num_layers: int = 8,
+                 dropout: float = 0.):
         super(TransformerMapper, self).__init__()
         self.clip_length = clip_length
-        self.transformer = Transformer(dim_embedding, 8, num_layers)
+        self.transformer = Transformer(dim_embedding, 8, num_layers, dropout=dropout)
         self.linear = nn.Linear(dim_clip, clip_length * dim_embedding)
         self.prefix_const = nn.Parameter(torch.randn(prefix_length, dim_embedding), requires_grad=True)
 
@@ -243,7 +248,7 @@ class ClipCaptionModel(nn.Module):
         return out
 
     def __init__(self, prefix_length: int, clip_length: Optional[int] = None, prefix_size: int = 512,
-                 num_layers: int = 8, mapping_type: MappingType = MappingType.MLP):
+                 num_layers: int = 8, mapping_type: MappingType = MappingType.MLP, dropout: float = 0.):
         super(ClipCaptionModel, self).__init__()
         self.prefix_length = prefix_length
         self.gpt = GPT2LMHeadModel.from_pretrained('gpt2')
@@ -253,10 +258,28 @@ class ClipCaptionModel(nn.Module):
                                      self.gpt_embedding_size * prefix_length))
         else:
             self.clip_project = TransformerMapper(prefix_size, self.gpt_embedding_size, prefix_length,
-                                                                     clip_length, num_layers)
+                                                                     clip_length, num_layers, dropout=dropout)
 
 
 class ClipCaptionPrefix(ClipCaptionModel):
+    """Solo se entrena el mapper; GPT-2 se usa congelado.
+
+    `parameters()` devuelve unicamente el mapper, asi que el optimizador nunca toco los
+    pesos de GPT-2 -- pero seguian con `requires_grad=True`, de modo que cada backward
+    calculaba los gradientes de los 124M de parametros de GPT-2 para nada. Peor: como
+    `zero_grad()` tambien usa este `parameters()` sobreescrito, esos `.grad` no se
+    limpiaban nunca y se acumulaban durante toda la corrida (~500 MB de buffers vivos).
+
+    Congelarlos aqui elimina el calculo de los gradientes de peso (queda solo el de
+    activaciones, que si hace falta para llegar al mapper) sin cambiar en nada el
+    resultado del entrenamiento: esos gradientes jamas se aplicaron. `state_dict()` no
+    se ve afectado, asi que los checkpoints siguen siendo compatibles.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ClipCaptionPrefix, self).__init__(*args, **kwargs)
+        for param in self.gpt.parameters():
+            param.requires_grad_(False)
 
     def parameters(self, recurse: bool = True):
         return self.clip_project.parameters()
@@ -493,24 +516,158 @@ def save_training_artifacts(
     print(f"[INFO] matplotlib no disponible; gráficas SVG guardadas en: {step_svg} y {epoch_svg}")
 
 
+def load_init_checkpoint(model: ClipCaptionModel, checkpoint_path: str) -> ClipCaptionModel:
+    """Carga pesos previos en el modelo antes de entrenar (fine-tuning).
+
+    `load_model()` (arriba) hace lo equivalente, pero reconstruye el modelo desde un
+    config json y esta pensada para inferencia; el flujo de entrenamiento nunca la
+    llama. Ver reportes/finetuning_bbps_igho.md 3.5: sin esto, entrenar sobre IGHO
+    seria empezar de cero con ~5.9k frames en vez de partir del optimo de SUN.
+
+    Se usa strict=False y se imprime el balance de claves para que un checkpoint de
+    otra arquitectura (otro prefix_length, mapper mlp vs transformer) falle de forma
+    visible y no en silencio.
+    """
+    if not os.path.isfile(checkpoint_path):
+        raise FileNotFoundError(f"No existe el checkpoint de inicializacion: {checkpoint_path}")
+
+    print(f"[INFO] Inicializando pesos desde: {checkpoint_path}")
+    state_dict = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+    if not isinstance(state_dict, dict):
+        raise ValueError(f"{checkpoint_path} no es un state_dict (dict/OrderedDict).")
+
+    cleaned = {}
+    for key, value in state_dict.items():
+        new_key = key[len("module."):] if key.startswith("module.") else key
+        cleaned[new_key] = value
+
+    missing, unexpected = model.load_state_dict(cleaned, strict=False)
+    expected_keys = len(model.state_dict())
+    print(
+        f"[INFO] init_checkpoint cargado | claves del modelo: {expected_keys} | "
+        f"missing: {len(missing)} | unexpected: {len(unexpected)}"
+    )
+    if missing:
+        print(f"[WARN] Claves sin cargar (ejemplo): {list(missing)[:10]}")
+    if unexpected:
+        print(f"[WARN] Claves sobrantes en el checkpoint (ejemplo): {list(unexpected)[:10]}")
+    if len(missing) > expected_keys // 2:
+        raise ValueError(
+            "Mas de la mitad de los pesos quedaron sin inicializar: el checkpoint no "
+            "corresponde a esta arquitectura (revisa --prefix_length, --mapping_type, "
+            "--num_layers, --prefix_length_clip)."
+        )
+    return model
+
+
+def resolve_amp_dtype(mode: str, device: torch.device) -> Optional[torch.dtype]:
+    """Traduce --amp a un dtype de autocast. Devuelve None si hay que entrenar en fp32."""
+    mode = (mode or "off").lower()
+    if mode == "off" or device.type != "cuda":
+        return None
+    if mode == "bf16":
+        return torch.bfloat16
+    if mode == "fp16":
+        return torch.float16
+    # auto: bf16 si la GPU lo soporta (Ampere+), si no fp16.
+    try:
+        if torch.cuda.is_bf16_supported():
+            return torch.bfloat16
+    except Exception:
+        pass
+    return torch.float16
+
+
+@torch.no_grad()
+def evaluate_val_loss(val_dataset: ClipCocoDataset, model: ClipCaptionModel,
+                      device: torch.device, batch_size: int,
+                      amp_dtype: Optional[torch.dtype] = None) -> Tuple[float, int, int]:
+    """Cross-entropy media sobre el set de validacion, con el mismo criterio que el train loop."""
+    was_training = model.training
+    model.eval()
+    loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, drop_last=False,
+                        pin_memory=(device.type == "cuda"))
+    total_loss = 0.0
+    batches = 0
+    samples = 0
+    for tokens, mask, prefix in loader:
+        tokens, mask, prefix = tokens.to(device), mask.to(device), prefix.to(device, dtype=torch.float32)
+        with torch.autocast(device_type=device.type, dtype=amp_dtype, enabled=amp_dtype is not None):
+            outputs = model(tokens, prefix, mask)
+            logits = outputs.logits[:, val_dataset.prefix_length - 1: -1]
+            loss = nnf.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
+        total_loss += float(loss.item())
+        batches += 1
+        samples += int(tokens.shape[0])
+    if was_training:
+        model.train()
+    return (total_loss / batches if batches else 0.0), batches, samples
+
+
 def train(dataset: ClipCocoDataset, model: ClipCaptionModel, args,
-          lr: float = 2e-5, warmup_steps: int = 5000, output_dir: str = ".", output_prefix: str = ""):
+          lr: Optional[float] = None, warmup_steps: Optional[int] = None,
+          output_dir: str = ".", output_prefix: str = "",
+          val_dataset: Optional[ClipCocoDataset] = None):
+
+    # lr/warmup_steps estaban hardcodeados en esta firma; ahora vienen de la CLI.
+    # Los kwargs siguen aceptandose para no romper llamadas antiguas.
+    lr = float(getattr(args, "lr", 2e-5)) if lr is None else float(lr)
+    if warmup_steps is None:
+        warmup_steps = int(getattr(args, "warmup_steps", 5000))
+    warmup_steps = int(warmup_steps)
+    weight_decay = float(getattr(args, "weight_decay", 0.0))
 
     device = torch.device('cuda:0')
     batch_size = args.bs
     epochs = args.epochs
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
+    amp_dtype = resolve_amp_dtype(getattr(args, "amp", "off"), device)
+    if amp_dtype is not None:
+        # Si ya se acepta precision reducida en autocast, TF32 en los matmul fp32 que
+        # quedan fuera es gratis (y en Ampere+ es 2-3x sobre fp32 puro).
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+    # GradScaler solo hace falta en fp16; bf16 tiene el mismo rango que fp32.
+    scaler = torch.cuda.amp.GradScaler(enabled=(amp_dtype == torch.float16))
+
     model = model.to(device)
     model.train()
-    optimizer = AdamW(model.parameters(), lr=lr)
-    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    optimizer = AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    train_dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        drop_last=True,
+        num_workers=int(getattr(args, "num_workers", 0)),
+        pin_memory=(device.type == "cuda"),
+        persistent_workers=bool(int(getattr(args, "num_workers", 0)) > 0),
+    )
+    total_training_steps = epochs * len(train_dataloader)
+    if warmup_steps >= total_training_steps:
+        print(
+            f"[WARN] warmup_steps={warmup_steps} >= pasos totales={total_training_steps}: "
+            "el LR nunca llegaria a su pico. Revisa --warmup_steps."
+        )
     scheduler = get_linear_schedule_with_warmup(
-        optimizer, num_warmup_steps=warmup_steps, num_training_steps=epochs * len(train_dataloader)
+        optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_training_steps
+    )
+    trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(
+        f"[INFO] lr={lr} | warmup_steps={warmup_steps} | weight_decay={weight_decay} | "
+        f"bs={batch_size} | epochs={epochs} | steps/epoch={len(train_dataloader)} | "
+        f"total_steps={total_training_steps}"
+    )
+    print(
+        f"[INFO] amp={'off' if amp_dtype is None else str(amp_dtype).replace('torch.', '')} | "
+        f"parametros entrenables={trainable/1e6:.1f}M"
     )
     # save_config(args)
     step_history = []
     epoch_history = []
+    val_history = []
+    val_loss_csv = os.path.join(output_dir, "val_loss_per_epoch.csv")
     global_step = 0
     for epoch in range(epochs):
         print(f">>> Training epoch {epoch}")
@@ -518,15 +675,18 @@ def train(dataset: ClipCocoDataset, model: ClipCaptionModel, args,
         progress = tqdm(total=len(train_dataloader), desc=output_prefix)
         epoch_losses = []
         for idx, (tokens, mask, prefix) in enumerate(train_dataloader):
-            model.zero_grad()
-            tokens, mask, prefix = tokens.to(device), mask.to(device), prefix.to(device, dtype=torch.float32)
-            outputs = model(tokens, prefix, mask)
-            logits = outputs.logits[:, dataset.prefix_length - 1: -1]
-            loss = nnf.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
-            loss.backward()
-            optimizer.step()
+            tokens = tokens.to(device, non_blocking=True)
+            mask = mask.to(device, non_blocking=True)
+            prefix = prefix.to(device, dtype=torch.float32, non_blocking=True)
+            with torch.autocast(device_type=device.type, dtype=amp_dtype, enabled=amp_dtype is not None):
+                outputs = model(tokens, prefix, mask)
+                logits = outputs.logits[:, dataset.prefix_length - 1: -1]
+                loss = nnf.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
             scheduler.step()
-            optimizer.zero_grad()
+            optimizer.zero_grad(set_to_none=True)
             loss_value = float(loss.item())
             epoch_losses.append(loss_value)
             step_history.append(
@@ -551,11 +711,34 @@ def train(dataset: ClipCocoDataset, model: ClipCaptionModel, args,
             mean_epoch_loss = float(sum(epoch_losses) / len(epoch_losses))
             epoch_history.append({"epoch": epoch, "mean_loss": mean_epoch_loss})
             print(f"[INFO] Epoch {epoch} mean loss: {mean_epoch_loss:.6f}")
+        checkpoint_path = ""
         if epoch % args.save_every == 0 or epoch == epochs - 1:
-            torch.save(
-                model.state_dict(),
-                os.path.join(output_dir, f"{output_prefix}-{epoch:03d}.pt"),
+            checkpoint_path = os.path.join(output_dir, f"{output_prefix}-{epoch:03d}.pt")
+            torch.save(model.state_dict(), checkpoint_path)
+        if val_dataset is not None:
+            val_loss, val_batches, val_samples = evaluate_val_loss(
+                val_dataset, model, device, batch_size, amp_dtype=amp_dtype
             )
+            val_history.append(
+                {
+                    "epoch": epoch,
+                    "checkpoint": checkpoint_path,
+                    "val_loss": val_loss,
+                    "val_batches": val_batches,
+                    "val_samples": val_samples,
+                }
+            )
+            print(f"[INFO] Epoch {epoch} val loss: {val_loss:.6f} ({val_samples} muestras)")
+            # Se reescribe cada epoca para que el CSV sirva aunque el entrenamiento se corte.
+            with open(val_loss_csv, "w", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(
+                    handle,
+                    fieldnames=["epoch", "checkpoint", "val_loss", "val_batches", "val_samples"],
+                )
+                writer.writeheader()
+                writer.writerows(val_history)
+    if val_history:
+        print(f"[INFO] val_loss por epoca guardada en: {val_loss_csv}")
     save_training_artifacts(step_history, epoch_history, output_dir, output_prefix)
     return model
 
@@ -575,6 +758,57 @@ def main():
     parser.add_argument('--prefix_length', type=int, default=10)
     parser.add_argument('--prefix_length_clip', type=int, default=10)
     parser.add_argument('--bs', type=int, default=4)
+    parser.add_argument('--lr', type=float, default=2e-5, help='Learning rate de AdamW.')
+    parser.add_argument(
+        '--warmup_steps',
+        type=int,
+        default=5000,
+        help='Pasos de warmup del scheduler lineal. Con bs=4 una epoca son ~1400 pasos.',
+    )
+    parser.add_argument('--weight_decay', type=float, default=0.0, help='Weight decay de AdamW (L2).')
+    parser.add_argument(
+        '--dropout',
+        type=float,
+        default=0.0,
+        help='Dropout dentro del mapper transformer (attention y MLP).',
+    )
+    parser.add_argument(
+        '--init_checkpoint',
+        type=str,
+        default='',
+        help=(
+            'Checkpoint .pt (state_dict de ClipCaptionPrefix/ClipCaptionModel) con el que '
+            'inicializar los pesos ANTES de entrenar. Es lo que convierte este script en '
+            'fine-tuning: sin el flag el modelo arranca de cero. Ver '
+            'reportes/finetuning_bbps_igho.md 3.5.'
+        ),
+    )
+    parser.add_argument(
+        '--val_data',
+        type=str,
+        default='',
+        help=(
+            'PKL de validacion (mismo formato que --data). Si se pasa, cada epoca escribe '
+            'val_loss_per_epoch.csv en --out_dir para poder elegir la mejor epoca sin '
+            'tener que generar captions.'
+        ),
+    )
+    parser.add_argument(
+        '--amp',
+        choices=['off', 'auto', 'bf16', 'fp16'],
+        default='off',
+        help=(
+            "Precision mixta. 'off' (por defecto) mantiene el fp32 de siempre para no "
+            "cambiar corridas ya hechas; 'auto' usa bf16 si la GPU lo soporta (Ampere+) "
+            "y fp16 si no, y ademas habilita TF32. Tipicamente ~2x mas rapido."
+        ),
+    )
+    parser.add_argument(
+        '--num_workers',
+        type=int,
+        default=0,
+        help='Workers del DataLoader. Los embeddings ya estan en RAM, asi que 0-2 basta.',
+    )
     parser.add_argument('--only_prefix', dest='only_prefix', action='store_true', default=True)
     parser.add_argument('--mapping_type', type=str, default='transformer', help='mlp/transformer')
     parser.add_argument('--num_layers', type=int, default=8)
@@ -586,21 +820,40 @@ def main():
         args.data = os.path.join(project_root, args.data)
     if not os.path.isabs(args.out_dir):
         args.out_dir = os.path.join(project_root, args.out_dir)
+    if args.init_checkpoint and not os.path.isabs(args.init_checkpoint):
+        args.init_checkpoint = os.path.join(project_root, args.init_checkpoint)
+    if args.val_data and not os.path.isabs(args.val_data):
+        args.val_data = os.path.join(project_root, args.val_data)
 
     prefix_length = args.prefix_length
     dataset = ClipCocoDataset(args.data, prefix_length, normalize_prefix=args.normalize_prefix)
+    val_dataset = None
+    if args.val_data:
+        print(f"[INFO] Dataset de validacion: {args.val_data}")
+        val_dataset = ClipCocoDataset(args.val_data, prefix_length, normalize_prefix=args.normalize_prefix)
     prefix_dim = 640 if args.is_rn else 512
     args.mapping_type = {'mlp': MappingType.MLP, 'transformer': MappingType.Transformer}[args.mapping_type]
     if args.only_prefix:
         model = ClipCaptionPrefix(prefix_length, clip_length=args.prefix_length_clip, prefix_size=prefix_dim,
-                                  num_layers=args.num_layers, mapping_type=args.mapping_type)
+                                  num_layers=args.num_layers, mapping_type=args.mapping_type,
+                                  dropout=args.dropout)
         print("Train only prefix")
     else:
         model = ClipCaptionModel(prefix_length, clip_length=args.prefix_length_clip, prefix_size=prefix_dim,
-                                  num_layers=args.num_layers, mapping_type=args.mapping_type)
+                                  num_layers=args.num_layers, mapping_type=args.mapping_type,
+                                  dropout=args.dropout)
         print("Train both prefix and GPT")
         sys.stdout.flush()
-    train(dataset, model, args, output_dir=args.out_dir, output_prefix=args.prefix)
+    if args.init_checkpoint:
+        load_init_checkpoint(model, args.init_checkpoint)
+    train(
+        dataset,
+        model,
+        args,
+        output_dir=args.out_dir,
+        output_prefix=args.prefix,
+        val_dataset=val_dataset,
+    )
 
 
 if __name__ == '__main__':
